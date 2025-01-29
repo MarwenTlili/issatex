@@ -19,6 +19,23 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    
+    App\EventListener\GenericPostPersistEventListener:
+        arguments:
+            $prefixes:
+                App\Entity\AffectationEmployeIlot: 'AIE'
+                App\Entity\Article: 'ART'
+                App\Entity\Client: 'CLI'
+                App\Entity\Employe: 'EMP'
+                App\Entity\Ilot: 'ILO'
+                App\Entity\Machine: 'MAC'
+                App\Entity\OrdreFabrication: 'ORD'
+                App\Entity\Planning: 'PLA'
+                App\Entity\Presence: 'PRE'
+                App\Entity\Production: 'PRO'
+                App\Entity\TailleOrdreFabrication: 'TOF'
+        tags:
+            - { name: doctrine.entity_listener }
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
