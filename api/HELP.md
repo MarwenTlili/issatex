@@ -158,6 +158,7 @@ est-il une optimization a faire pour facilisé la calcule des rendements (quotid
 
 -   id (PK)
 -   nbr_employes
+-   nbr_of_traites
 -   quantite_totale
 -   rendement (%)
 -   ilot_id (FK)
