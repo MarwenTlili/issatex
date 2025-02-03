@@ -29,9 +29,8 @@ class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterfa
         $articles = [$article_0, $article_1];
 
         foreach ($articles as $key => $article) {
-            // new \DateTime('-2 weeks')
-            // $dateCreation = $this->faker->dateTimeBetween("-3 week", "-1 week");
             $dateCreation = new \DateTime('-2 weeks');
+            // $dateCreation = $this->faker->dateTimeBetween("-3 week", "-1 week");
             $dateCloture = clone $dateCreation;
             $dateCloture->modify('+1 month');
 

@@ -34,9 +34,6 @@ class Production {
     #[ORM\Column]
     private ?int $quantiteTotale = null;
 
-    #[ORM\Column(nullable: true)]
-    private ?int $tempsProductif = null;
-
     #[ORM\ManyToOne(inversedBy: 'productions')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Planning $planning = null;
@@ -100,15 +97,6 @@ class Production {
     public function setQuantiteTotale(int $quantiteTotale): static {
         $this->quantiteTotale = $quantiteTotale;
 
-        return $this;
-    }
-
-    public function getTempsProductif(): ?int {
-        return $this->tempsProductif;
-    }
-
-    public function setTempsProductif(int $tempsProductif): static {
-        $this->tempsProductif = $tempsProductif;
         return $this;
     }
 

@@ -39,7 +39,7 @@ class TailleOrdreFabricationFixtures extends Fixture implements DependentFixture
             // Track total quantities per OF
             $ordreFabricationQuantities[spl_object_id($of)] = 0;
             foreach ($taillesArticle as $tailleArticle) {
-                $random = $this->faker->numberBetween(100, 600);
+                $random = $this->faker->numberBetween(400, 900);
                 $quantite = intval(Helper::roundUpToNearest($random, 100));
 
                 $taille = new TailleOrdreFabrication();

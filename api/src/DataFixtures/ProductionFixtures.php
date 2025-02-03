@@ -50,7 +50,6 @@ class ProductionFixtures extends Fixture implements DependentFixtureInterface, F
                         $quantitePremiereChoix = $this->faker->numberBetween($quantiteParJour - 5, $quantiteParJour);
                         $quantiteDeuxiemeChoix = $this->faker->numberBetween(1, 5);
                         $qantiteTotale = $quantitePremiereChoix + $quantiteDeuxiemeChoix;
-                        $tempsProductif = $qantiteTotale * $of->getTempsUnitaire() / 100;
 
                         $production = new Production();
                         $production->setDateProduction($jour)
@@ -58,7 +57,6 @@ class ProductionFixtures extends Fixture implements DependentFixtureInterface, F
                             ->setQuantitePremiereChoix($quantitePremiereChoix)
                             ->setQuantiteDeuxiemeChoix($quantiteDeuxiemeChoix)
                             ->setQuantiteTotale($qantiteTotale)
-                            ->setTempsProductif($tempsProductif)
                             ->setPlanning($planning)
                         ;
                         $manager->persist($production);

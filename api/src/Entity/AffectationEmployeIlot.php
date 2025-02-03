@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: AffectationEmployeIlotRepository::class)]
-#[ApiResource]
+#[ApiResource(paginationClientItemsPerPage: true)]
 class AffectationEmployeIlot {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
