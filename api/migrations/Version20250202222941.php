@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250129113138 extends AbstractMigration
+final class Version20250202222941 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -30,6 +30,7 @@ final class Version20250129113138 extends AbstractMigration
         $this->addSql('CREATE SEQUENCE planning_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE presence_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE production_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
+        $this->addSql('CREATE SEQUENCE rendement_quotidien_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE SEQUENCE taille_ordre_fabrication_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE TABLE affectation_employe_ilot (id INT NOT NULL, employe_id INT NOT NULL, ilot_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, date_debut DATE NOT NULL, date_fin DATE NOT NULL, est_responsable BOOLEAN DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1C3FEDC5146F3EA3 ON affectation_employe_ilot (ref)');
@@ -65,9 +66,11 @@ final class Version20250129113138 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_6977C7A51B65292 ON presence (employe_id)');
         $this->addSql('CREATE INDEX IDX_6977C7A59A4BD21C ON presence (ilot_id)');
         $this->addSql('CREATE INDEX IDX_6977C7A53D865311 ON presence (planning_id)');
-        $this->addSql('CREATE TABLE production (id INT NOT NULL, planning_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, date_production DATE NOT NULL, taille_article VARCHAR(255) NOT NULL, quantite_premiere_choix INT NOT NULL, quantite_deuxieme_choix INT NOT NULL, quantite_totale INT NOT NULL, temps_productif INT DEFAULT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE production (id INT NOT NULL, planning_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, date_production DATE NOT NULL, taille_article VARCHAR(255) NOT NULL, quantite_premiere_choix INT NOT NULL, quantite_deuxieme_choix INT NOT NULL, quantite_totale INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_D3EDB1E0146F3EA3 ON production (ref)');
         $this->addSql('CREATE INDEX IDX_D3EDB1E03D865311 ON production (planning_id)');
+        $this->addSql('CREATE TABLE rendement_quotidien (id INT NOT NULL, ilot_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, nbr_employes INT NOT NULL, nbr_oftraites INT NOT NULL, quantite_totale INT NOT NULL, rendement INT NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE INDEX IDX_AFF2EAB19A4BD21C ON rendement_quotidien (ilot_id)');
         $this->addSql('CREATE TABLE taille_ordre_fabrication (id INT NOT NULL, ordre_fabrication_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, taille_article VARCHAR(255) NOT NULL, quantite INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_345AC7DE146F3EA3 ON taille_ordre_fabrication (ref)');
         $this->addSql('CREATE INDEX IDX_345AC7DE6A91B091 ON taille_ordre_fabrication (ordre_fabrication_id)');
@@ -83,6 +86,7 @@ final class Version20250129113138 extends AbstractMigration
         $this->addSql('ALTER TABLE presence ADD CONSTRAINT FK_6977C7A59A4BD21C FOREIGN KEY (ilot_id) REFERENCES ilot (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE presence ADD CONSTRAINT FK_6977C7A53D865311 FOREIGN KEY (planning_id) REFERENCES planning (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE production ADD CONSTRAINT FK_D3EDB1E03D865311 FOREIGN KEY (planning_id) REFERENCES planning (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE rendement_quotidien ADD CONSTRAINT FK_AFF2EAB19A4BD21C FOREIGN KEY (ilot_id) REFERENCES ilot (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE taille_ordre_fabrication ADD CONSTRAINT FK_345AC7DE6A91B091 FOREIGN KEY (ordre_fabrication_id) REFERENCES ordre_fabrication (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
     }
 
@@ -100,6 +104,7 @@ final class Version20250129113138 extends AbstractMigration
         $this->addSql('DROP SEQUENCE planning_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE presence_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE production_id_seq CASCADE');
+        $this->addSql('DROP SEQUENCE rendement_quotidien_id_seq CASCADE');
         $this->addSql('DROP SEQUENCE taille_ordre_fabrication_id_seq CASCADE');
         $this->addSql('ALTER TABLE affectation_employe_ilot DROP CONSTRAINT FK_1C3FEDC51B65292');
         $this->addSql('ALTER TABLE affectation_employe_ilot DROP CONSTRAINT FK_1C3FEDC59A4BD21C');
@@ -113,6 +118,7 @@ final class Version20250129113138 extends AbstractMigration
         $this->addSql('ALTER TABLE presence DROP CONSTRAINT FK_6977C7A59A4BD21C');
         $this->addSql('ALTER TABLE presence DROP CONSTRAINT FK_6977C7A53D865311');
         $this->addSql('ALTER TABLE production DROP CONSTRAINT FK_D3EDB1E03D865311');
+        $this->addSql('ALTER TABLE rendement_quotidien DROP CONSTRAINT FK_AFF2EAB19A4BD21C');
         $this->addSql('ALTER TABLE taille_ordre_fabrication DROP CONSTRAINT FK_345AC7DE6A91B091');
         $this->addSql('DROP TABLE affectation_employe_ilot');
         $this->addSql('DROP TABLE article');
@@ -124,6 +130,7 @@ final class Version20250129113138 extends AbstractMigration
         $this->addSql('DROP TABLE planning');
         $this->addSql('DROP TABLE presence');
         $this->addSql('DROP TABLE production');
+        $this->addSql('DROP TABLE rendement_quotidien');
         $this->addSql('DROP TABLE taille_ordre_fabrication');
     }
 }

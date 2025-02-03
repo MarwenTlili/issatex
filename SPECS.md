@@ -90,6 +90,7 @@ R = (150 x 6 + 200 x 5) / (5 x 8 x 60) ≈ 79%
 -   id (PK)
 -   designation
 -   composition
+-   client_id (FK)
 
 ### client
 
@@ -125,7 +126,7 @@ R = (150 x 6 + 200 x 5) / (5 x 8 x 60) ≈ 79%
 -   date_cloture
 -   urgent (boolean)
 -   statut (CREE,EN_COURS,TERMINE,ANNULE,EN_ATTENTE)
--   quantite_totale
+-   quantite_totale (somme des quantités des tailles (M,L,XL) dans taille_ordre_fabrication)
 -   prix_unitaire
 -   temps_unitaire (en cmn "centième de minute")
 -   client_id (FK)
@@ -160,32 +161,21 @@ R = (150 x 6 + 200 x 5) / (5 x 8 x 60) ≈ 79%
 -   quantite_premiere_choix
 -   quantite_deuxieme_choix
 -   quantite_totale (quantite_premiere_choix + quantite_deuxieme_choix)
--   temps_productif
+-   temps_productif (quantite_totale \* temps_unitaire)
 -   planning_id (FK)
 
-### rendement
+### rendement_quotidien
 
 -   id (PK)
--   date_calcul (date de calcul de rendement)
--   type_rendement (jour, semaine, mois, annee)
--   rendement_moyen (%)
-
-### rendement_par_ilot
-
--   id (PK)
--   nombre_employes
--   nombre_of_traites
+-   nbr_employes
 -   quantite_totale
--   pourcentage_rendement
--   temps_productif
--   temps_presence
+-   rendement (%)
 -   ilot_id (FK)
--   rendement_id (FK)
 
 ### taille_ordre_fabrication
 
 -   id (PK)
--   taille_article (M,L,XL)
+-   taille (M,L,XL)
 -   quantite
 -   ordre_fabrication_id (FK)
 

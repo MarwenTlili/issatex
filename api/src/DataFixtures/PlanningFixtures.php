@@ -44,8 +44,8 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
                     ->setDateDebut($dateDebut)
                     ->setDateFin($dateFin)
                     ->setOrdreFabrication($of)
-                    // ->setIlot($key % 2 === 0 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"))
-                    ->setIlot($this->getReference("ILOT_0"))
+                    ->setIlot($key % 2 === 0 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"))
+                    // ->setIlot($this->getReference("ILOT_0"))
                 ;
                 $manager->persist($planning);
 

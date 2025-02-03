@@ -84,3 +84,17 @@ ORDER BY i.id;
 -- -----------+----+------------+------------+----------------
 --         15 | 11 | 2025-01-20 | 2025-01-25 |            691
 --         16 | 12 | 2025-01-20 | 2025-01-25 |           1014
+
+-------------------------------------------------------------------------------
+
+SELECT
+    pre.planning_id AS planning_id,
+    COUNT(DISTINCT pre.employe_id) AS nbr_employes,
+    SUM(pre.temps_presence) AS temps_presence_totale,
+    SUM(pre.temps_presence) / COUNT(DISTINCT pre.employe_id) AS temps_presence_moyene
+FROM presence pre
+WHERE
+    pre.date_presence = '2025-01-20'
+    AND pre.statut = 'Present'
+GROUP BY
+    pre.planning_id;
