@@ -97,6 +97,8 @@ R = (150 x 6 + 200 x 5) / (5 x 8 x 60) ≈ 79%
 -   id (PK)
 -   nom
 -   email
+-   adresse
+-   privilegie (boolean)
 
 ### employe
 
@@ -161,13 +163,13 @@ R = (150 x 6 + 200 x 5) / (5 x 8 x 60) ≈ 79%
 -   quantite_premiere_choix
 -   quantite_deuxieme_choix
 -   quantite_totale (quantite_premiere_choix + quantite_deuxieme_choix)
--   temps_productif (quantite_totale \* temps_unitaire)
 -   planning_id (FK)
 
 ### rendement_quotidien
 
 -   id (PK)
 -   nbr_employes
+-   nbr_of_traites
 -   quantite_totale
 -   rendement (%)
 -   ilot_id (FK)
