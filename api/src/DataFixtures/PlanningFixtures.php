@@ -51,6 +51,10 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
                     // ->setIlot($key % 2 === 0 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"))
                     // ->setIlot($this->getReference("ILOT_0"))
                 ;
+
+                $of->setLance(true);
+                
+                $manager->persist($of);
                 $manager->persist($planning);
 
                 $referenceName = "PLANNING_" . $key;

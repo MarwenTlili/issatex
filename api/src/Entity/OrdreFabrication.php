@@ -43,6 +43,9 @@ class OrdreFabrication {
     #[ORM\Column]
     private ?int $tempsUnitaire = null;
 
+    #[ORM\Column(type: "boolean", options:["default" => false])]
+    private ?bool $lance = null;
+
     #[ORM\ManyToOne(inversedBy: 'ordreFabrications')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Client $client = null;
@@ -172,6 +175,16 @@ class OrdreFabrication {
 
     public function setArticle(?Article $article): static {
         $this->article = $article;
+        return $this;
+    }
+
+    public function isLance(): ?bool {
+        return $this->lance;
+    }
+
+    public function setLance(bool $lance): static {
+        $this->lance = $lance;
+
         return $this;
     }
 

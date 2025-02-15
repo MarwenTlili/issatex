@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20250215210318 extends AbstractMigration
+final class Version20250215223242 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -52,7 +52,7 @@ final class Version20250215210318 extends AbstractMigration
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1505DF84146F3EA3 ON machine (ref)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_1505DF846C6E55B5 ON machine (nom)');
         $this->addSql('CREATE INDEX IDX_1505DF849A4BD21C ON machine (ilot_id)');
-        $this->addSql('CREATE TABLE ordre_fabrication (id INT NOT NULL, client_id INT NOT NULL, article_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, date_creation TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, date_cloture TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, urgent BOOLEAN NOT NULL, statut VARCHAR(255) NOT NULL, quantite_totale INT NOT NULL, prix_unitaire NUMERIC(10, 2) NOT NULL, temps_unitaire INT NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE ordre_fabrication (id INT NOT NULL, client_id INT NOT NULL, article_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, date_creation TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, date_cloture TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, urgent BOOLEAN NOT NULL, statut VARCHAR(255) NOT NULL, quantite_totale INT NOT NULL, prix_unitaire NUMERIC(10, 2) NOT NULL, temps_unitaire INT NOT NULL, lance BOOLEAN DEFAULT false NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_7FB222D2146F3EA3 ON ordre_fabrication (ref)');
         $this->addSql('CREATE INDEX IDX_7FB222D219EB6921 ON ordre_fabrication (client_id)');
         $this->addSql('CREATE INDEX IDX_7FB222D27294869C ON ordre_fabrication (article_id)');

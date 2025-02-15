@@ -44,11 +44,12 @@ class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterfa
 
             $of->setDateCreation($dateCreation)
                 ->setDateCloture($dateCloture)
-                ->setUrgent(false)
+                ->setUrgent($this->faker->boolean(50))
                 ->setStatut(StatutOF::CREE)
                 ->setQuantiteTotale(0)
                 ->setPrixUnitaire(8)
                 ->setTempsUnitaire($tempsUnitaire)
+                ->setLance(false)
                 ->setArticle($article)
                 ->setClient($article->getClient())
             ;
