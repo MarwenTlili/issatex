@@ -13,21 +13,18 @@ use Faker\Factory;
 class PlanningFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface {
     protected $faker;
 
-    public const PLANNING_0 = "PLANNING_0";
-    public const PLANNING_1 = "PLANNING_1";
-
     public function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 
-        /** @var OrdreFabrication $of_0 */
-        $of_0 = $this->getReference(OrdreFabricationFixtues::OF_0);
+        /** @var OrdreFabrication[] $ordreFabrications */
+        $ordreFabrications = [];
+        $i = 0;
+        while ($this->hasReference("ORDRE_FABRICATION_$i")) {
+            array_push($ordreFabrications, $this->getReference("ORDRE_FABRICATION_$i"));
+            $i++;
+        }
 
-        /** @var OrdreFabrication $of_1 */
-        $of_1 = $this->getReference(OrdreFabricationFixtues::OF_1);
-
-        $ofs = [$of_0, $of_1];
-
-        foreach ($ofs as $key => $of) {
+        foreach ($ordreFabrications as $key => $of) {
             $dateCreation = $of->getDateCreation();
             if ($dateCreation instanceof \DateTime) {
                 $planning = new Planning();
@@ -43,8 +40,15 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
                 $planning->setDateCreation($datePlanning)
                     ->setDateDebut($dateDebut)
                     ->setDateFin($dateFin)
+                    ->setReporte(false)
                     ->setOrdreFabrication($of)
-                    ->setIlot($key % 2 === 0 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"))
+                    // 2 première plannings dans la même Ilot
+                    ->setIlot(
+                        $key < 2
+                            ? $this->getReference("ILOT_0")
+                            : $this->getReference("ILOT_1")
+                    )
+                    // ->setIlot($key % 2 === 0 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"))
                     // ->setIlot($this->getReference("ILOT_0"))
                 ;
                 $manager->persist($planning);

@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
 use App\Enum\StatutMachine;
 
 #[ORM\Entity(repositoryClass: MachineRepository::class)]
-#[ApiResource]
+#[ApiResource(paginationClientItemsPerPage: true)]
 class Machine {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -26,7 +26,7 @@ class Machine {
     private ?string $type = null;
 
     #[ORM\Column(type: Types::STRING, enumType: StatutMachine::class)]
-    private ?StatutMachine $statutMachine;
+    private ?StatutMachine $statut;
 
     #[ORM\ManyToOne(inversedBy: 'machines')]
     private ?Ilot $ilot = null;
@@ -62,12 +62,12 @@ class Machine {
         return $this;
     }
 
-    public function getStatutMachine(): ?StatutMachine {
-        return $this->statutMachine;
+    public function getStatut(): ?StatutMachine {
+        return $this->statut;
     }
 
-    public function setStatutMachine(?StatutMachine $statutMachine): self {
-        $this->statutMachine = $statutMachine;
+    public function setStatut(?StatutMachine $statut): self {
+        $this->statut = $statut;
         return $this;
     }
 

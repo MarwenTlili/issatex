@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\OrdreFabrication;
 use App\Entity\TailleOrdreFabrication;
 use App\Enum\TailleArticle;
 use Doctrine\Bundle\FixturesBundle\Fixture;
@@ -13,34 +14,25 @@ use Faker\Factory;
 class TailleOrdreFabricationFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface {
     protected $faker;
 
-    public const TAILLE_ORDRE_FABRICATION_0_L = "TAILLE_ORDRE_FABRICATION_0_L";
-    public const TAILLE_ORDRE_FABRICATION_0_M = "TAILLE_ORDRE_FABRICATION_0_M";
-    public const TAILLE_ORDRE_FABRICATION_0_XL = "TAILLE_ORDRE_FABRICATION_0_XL";
-
-    public const TAILLE_ORDRE_FABRICATION_1_L = "TAILLE_ORDRE_FABRICATION_1_L";
-    public const TAILLE_ORDRE_FABRICATION_1_M = "TAILLE_ORDRE_FABRICATION_1_M";
-    public const TAILLE_ORDRE_FABRICATION_1_XL = "TAILLE_ORDRE_FABRICATION_1_XL";
-
     public function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
-        $taillesArticle = [TailleArticle::L, TailleArticle::M, TailleArticle::XL];
 
-        /** @var OrdreFabrication $of0|null */
-        $of0 = $this->getReference(OrdreFabricationFixtues::OF_0);
-
-        /** @var OrdreFabrication $of2|null */
-        $of1 = $this->getReference(OrdreFabricationFixtues::OF_1);
-
-        $ofs = [$of0, $of1];
+        /** @var OrdreFabrication[] */
+        $ordreFabrications = [];
+        $i = 0;
+        while ($this->hasReference("ORDRE_FABRICATION_$i")) {
+            array_push($ordreFabrications, $this->getReference("ORDRE_FABRICATION_$i"));
+            $i++;
+        }
 
         $ordreFabricationQuantities = [];
 
-        foreach ($ofs as $key => $of) {
-            // Track total quantities per OF
+        foreach ($ordreFabrications as $key => $of) {
+            // Suivi des quantités totales par ordre de fabrication
             $ordreFabricationQuantities[spl_object_id($of)] = 0;
-            foreach ($taillesArticle as $tailleArticle) {
-                $random = $this->faker->numberBetween(400, 900);
-                $quantite = intval(Helper::roundUpToNearest($random, 100));
+            foreach (TailleArticle::cases() as $tailleArticle) {
+                $random = $this->faker->numberBetween(200, 400);
+                $quantite = ceil($random / 100) * 100;
 
                 $taille = new TailleOrdreFabrication();
                 $taille->setTailleArticle($tailleArticle)
@@ -57,8 +49,8 @@ class TailleOrdreFabricationFixtures extends Fixture implements DependentFixture
         }
         $manager->flush();
 
-        // Update quantiteTotale for each OrdreFabrication
-        foreach ($ofs as $of) {
+        // Mise à jour de la quantite totale pour chaque ordre de fabrication
+        foreach ($ordreFabrications as $of) {
             $of->setQuantiteTotale($ordreFabricationQuantities[spl_object_id($of)]);
             $manager->persist($of);
         }

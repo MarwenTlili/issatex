@@ -9,7 +9,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EmployeRepository::class)]
-#[ApiResource]
+#[ApiResource(paginationClientItemsPerPage: true)]
 class Employe {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]

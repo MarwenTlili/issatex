@@ -3,7 +3,8 @@
 namespace App\DataFixtures;
 
 use App\Entity\AffectationEmployeIlot;
-use App\Entity\Planning;
+use App\Entity\Employe;
+use App\Entity\Ilot;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -16,22 +17,29 @@ class AffectationEmployeIlotFixtures extends Fixture implements DependentFixture
     function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 
-        /** @var Planning $planning_0 */
-        $planning_0 = $this->getReference(PlanningFixtures::PLANNING_0);
+        /** @var Employe[] */
+        $employes = [];
+        $i = 0;
+        while ($this->hasReference("EMPLOYE_$i")) {
+            array_push($employes, $this->getReference("EMPLOYE_$i"));
+            $i++;
+        }
 
-        /** @var Planning $planning_1 */
-        $planning_1 = $this->getReference(PlanningFixtures::PLANNING_1);
+        /** @var Ilot[] */
+        $ilots = [];
+        $j = 0;
+        while ($this->hasReference("ILOT_$j")) {
+            array_push($ilots, $this->getReference("ILOT_$j"));
+            $j++;
+        }
 
-        for ($i = 0; $i < 12; $i++) {
-            $planning = $i < 6 ? $planning_0 : $planning_1;
-            
+        $numIlots = count($ilots);
+
+        foreach ($employes as $key => $employe) {
             $affectation = new AffectationEmployeIlot();
-            $affectation->setDateDebut($planning->getDateDebut())
-                ->setDateFin($planning->getDateFin())
-                ->setEstResponsable($i == 0 || $i == 6 ? true : false)
-                ->setEmploye($this->getReference(sprintf("EMPLOYE_%d", $i)))
-                ->setIlot($planning->getIlot())
-            ;
+            $affectation->setResponsable($key === 0 || $key === 6)
+                ->setEmploye($employe)
+                ->setIlot($ilots[$key % $numIlots]);  // round-robin
 
             $manager->persist($affectation);
         }
@@ -41,9 +49,8 @@ class AffectationEmployeIlotFixtures extends Fixture implements DependentFixture
 
     public function getDependencies() {
         return [
-            IlotFixtures::class,
             EmployeFixtures::class,
-            PlanningFixtures::class
+            IlotFixtures::class
         ];
     }
 

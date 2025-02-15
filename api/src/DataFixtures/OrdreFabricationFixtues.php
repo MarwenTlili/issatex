@@ -14,28 +14,31 @@ use Faker\Factory;
 class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterface, FixtureGroupInterface {
     protected $faker;
 
-    public const OF_0 = "OF_0";
-    public const OF_1 = "OF_1";
-
     public function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 
-        /** @var Article $article_0 */
-        $article_0 = $this->getReference(ArticleFixtures::ARTICLE_0);
-
-        /** @var Article $article_1 */
-        $article_1 = $this->getReference(ArticleFixtures::ARTICLE_1);
-
-        $articles = [$article_0, $article_1];
+        /** @var Article[] */
+        $articles = [];
+        $i = 0;
+        while ($this->hasReference("ARTICLE_$i")) {
+            array_push($articles, $this->getReference("ARTICLE_$i"));
+            $i++;
+        }
 
         foreach ($articles as $key => $article) {
-            $dateCreation = new \DateTime('-2 weeks');
-            // $dateCreation = $this->faker->dateTimeBetween("-3 week", "-1 week");
+            // $dateCreation = new \DateTime('-2 weeks');
+            $dateCreation = $this->faker->unique()->dateTimeBetween("-4 week", "-1 week");
+
+            // 2 première of dans la même semaine
+            // $dateCreation = $key < 2
+            //     ? new \DateTime('-3 weeks')
+            //     : $this->faker->dateTimeBetween("-2 week", "-1 week");
+
             $dateCloture = clone $dateCreation;
             $dateCloture->modify('+1 month');
 
-            $random = $this->faker->numberBetween(300, 700);
-            $tempsUnitaire = intval(Helper::roundUpToNearest($random, 100));
+            $random = $this->faker->numberBetween(1000, 4000);
+            $tempsUnitaire = ceil($random / 1000) * 1000;
 
             $of = new OrdreFabrication();
 
@@ -51,7 +54,7 @@ class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterfa
             ;
             $manager->persist($of);
 
-            $referenceName = "OF_" . $key;
+            $referenceName = "ORDRE_FABRICATION_" . $key;
             $this->addReference($referenceName, $of);
         }
 

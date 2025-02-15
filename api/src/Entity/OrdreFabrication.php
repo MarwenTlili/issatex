@@ -12,7 +12,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrdreFabricationRepository::class)]
-#[ApiResource]
+#[ApiResource(paginationClientItemsPerPage: true)]
 class OrdreFabrication {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
