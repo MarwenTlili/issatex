@@ -33,7 +33,6 @@ services:
                 App\Entity\Planning: 'PLA'
                 App\Entity\Presence: 'PRE'
                 App\Entity\Production: 'PRO'
-                App\Entity\RendementQuotidien: 'REQ'
                 App\Entity\TailleOrdreFabrication: 'TOF'
         tags:
             - { name: doctrine.entity_listener }
