@@ -2,73 +2,74 @@
 
 namespace App\DataFixtures;
 
-use App\Entity\Planning;
 use App\Entity\Presence;
+use App\Entity\Production;
 use App\Enum\StatutPresence;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Faker\Factory;
 
-class PresenceFixtures extends Fixture implements DependentFixtureInterface {
+class PresenceFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface {
   protected $faker;
 
   public function load(ObjectManager $manager): void {
     $this->faker = Factory::create();
 
-    /** @var Planning $planning_0 */
-    $planning_0 = $this->getReference(PlanningFixtures::PLANNING_0);
+    /** @var Production[] */
+    $productions = [];
 
-    /** @var Planning $planning_1 */
-    $planning_1 = $this->getReference(PlanningFixtures::PLANNING_1);
+    $i = 0;
+    while ($this->hasReference("PRODUCTION_" . $i)) {
+      array_push($productions, $this->getReference("PRODUCTION_$i"));
+      $i++;
+    }
 
-    // jours
-    for ($i = 0; $i < 6; $i++) {
-      // employes
-      for ($j = 0; $j < 12; $j++) {
-        // chaque 6 employes fait une planning
-        $planning = $j < 6 ? $planning_0 : $planning_1;
+    $j = 0;
+    foreach ($productions as $production) {
+      $planning = $production->getPlanning();
+      $ilot = $planning->getIlot();
+      $affectations = $ilot->getAffectations();
+      foreach ($affectations as $affectation) {
+        // Locale time with timezone
+        $heureDebut = \DateTime::createFromFormat("H:i:s", "08:00:00", new \DateTimeZone('Africa/Tunis'));
+        // Convert locale time to UTC 
+        $heureDebut->setTimezone(new \DateTimeZone('UTC'));
 
-        $jour = clone $planning->getDateDebut();
-        if ($jour instanceof \DateTime) {
-          // Remet l'offset à 0 pour le nouveau planning
-          $offset = $i % 6;
-          $jour->modify("+" . $offset . " day");
+        $heureFin = clone $heureDebut;
+        $heureFin->modify("+9 hours");
 
-          $presence = new Presence();
-          // Locale time with timezone
-          $heureDebut = \DateTime::createFromFormat("H:i:s", "08:00:00", new \DateTimeZone('Africa/Tunis'));
-          // Convert locale time to UTC 
-          $heureDebut->setTimezone(new \DateTimeZone('UTC'));
+        // Probabilité de 5 % pour l'absence
+        $absent = $this->faker->boolean(5); // 5 % de chance de retourner true
 
-          $heureFin = clone $heureDebut;
-          $heureFin->modify("+9 hours");
+        $presence = new Presence();
+        $presence->setDatePresence($production->getDateProduction())
+          ->setHeureDebut($heureDebut)
+          ->setHeureFin($heureDebut)
+          ->setStatut($absent ? StatutPresence::ABSENT : StatutPresence::PRESENT)
+          ->setTempsPresence($absent ? 0 : 8)
+          ->setEmploye($affectation->getEmploye())
+          ->setProduction($production)
+        ;
 
-          // Probabilité de 5 % pour l'absence
-          $isAbsent = $this->faker->boolean(5); // 5 % de chance de retourner true
-
-          $presence->setDatePresence($jour)
-            ->setHeureDebut($heureDebut)
-            ->setHeureFin($heureFin)
-            ->setStatut($isAbsent ? StatutPresence::ABSENT : StatutPresence::PRESENT)
-            ->setTempsPresence($isAbsent ? 0 : 8)
-            ->setEmploye($this->getReference(sprintf("EMPLOYE_%d", $j)))
-            ->setIlot($planning->getIlot())
-            ->setPlanning($planning)
-          ;
-
-          $manager->persist($presence);
-        }
+        $manager->persist($presence);
+        $this->addReference("PRESENCE_$j", $presence);
+        $j++;
       }
     }
+
     $manager->flush();
   }
 
   public function getDependencies() {
     return [
-      EmployeFixtures::class,
-      IlotFixtures::class,
-      PlanningFixtures::class
+      AffectationEmployeIlotFixtures::class,
+      ProductionFixtures::class
     ];
+  }
+
+  public static function getGroups(): array {
+    return ['load'];
   }
 }

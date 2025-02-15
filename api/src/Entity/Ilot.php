@@ -39,12 +39,6 @@ class Ilot {
     private Collection $machines;
 
     /**
-     * @var Collection<int, Presence>
-     */
-    #[ORM\OneToMany(mappedBy: 'ilot', targetEntity: Presence::class, orphanRemoval: true)]
-    private Collection $presences;
-
-    /**
      * @var Collection<int, IlotEmploye>
      */
     #[ORM\OneToMany(mappedBy: 'ilot', targetEntity: AffectationEmployeIlot::class, orphanRemoval: true)]
@@ -53,7 +47,6 @@ class Ilot {
     public function __construct() {
         $this->plannings = new ArrayCollection();
         $this->machines = new ArrayCollection();
-        $this->presences = new ArrayCollection();
         $this->affectations = new ArrayCollection();
     }
 
@@ -140,38 +133,13 @@ class Ilot {
     }
 
     /**
-     * @return Collection<int, Presence>
-     */
-    public function getPresences(): Collection {
-        return $this->presences;
-    }
-
-    public function addPresence(Presence $presence): static {
-        if (!$this->presences->contains($presence)) {
-            $this->presences->add($presence);
-            $presence->setIlot($this);
-        }
-        return $this;
-    }
-
-    public function removePresence(Presence $presence): static {
-        if ($this->presences->removeElement($presence)) {
-            // set the owning side to null (unless already changed)
-            if ($presence->getIlot() === $this) {
-                $presence->setIlot(null);
-            }
-        }
-        return $this;
-    }
-
-    /**
      * @return Collection<int, IlotEmploye>
      */
-    public function getIlotEmployes(): Collection {
+    public function getAffectations(): Collection {
         return $this->affectations;
     }
 
-    public function addIlotEmploye(AffectationEmployeIlot $affectation): static {
+    public function addAffectation(AffectationEmployeIlot $affectation): static {
         if (!$this->affectations->contains($affectation)) {
             $this->affectations->add($affectation);
             $affectation->setIlot($this);
@@ -179,7 +147,7 @@ class Ilot {
         return $this;
     }
 
-    public function removeIlotEmploye(AffectationEmployeIlot $affectation): static {
+    public function removeAffectation(AffectationEmployeIlot $affectation): static {
         if ($this->affectations->removeElement($affectation)) {
             // set the owning side to null (unless already changed)
             if ($affectation->getIlot() === $this) {

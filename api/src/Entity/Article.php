@@ -10,7 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
-#[ApiResource]
+#[ApiResource(paginationClientItemsPerPage: true)]
 class Article {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -35,7 +35,6 @@ class Article {
      */
     #[ORM\OneToMany(mappedBy: 'article', targetEntity: OrdreFabrication::class, orphanRemoval: true)]
     private Collection $ordreFabrications;
-
 
     public function __construct() {
         $this->ordreFabrications = new ArrayCollection();

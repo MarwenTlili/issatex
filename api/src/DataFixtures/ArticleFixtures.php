@@ -13,31 +13,29 @@ use Faker\Factory;
 class ArticleFixtures extends Fixture implements DependentFixtureInterface, FixtureGroupInterface {
     protected $faker;
 
-    public const ARTICLE_0 = "ARTICLE_0";
-    public const ARTICLE_1 = "ARTICLE_1";
-
     public function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 
-        /** @var Client $client_0 */
-        $client_0 = $this->getReference(ClientFixtures::CLIENT_0);
+        /** @var Client[] */
+        $clients = [];
+        $c = 0;
+        while ($this->hasReference("CLIENT_$c")) {
+            array_push($clients, $this->getReference("CLIENT_$c"));
+            $c++;
+        }
 
-        /** @var Client $client_1 */
-        $client_1 = $this->getReference(ClientFixtures::CLIENT_1);
-
-        $clients = [$client_0, $client_1];
-
-        foreach ($clients as $key => $client) {
+        $clientCount = count($clients);
+        
+        for ($i = 0; $i < 3; $i++) {
             $article = new Article();
             $article->setDesignation($this->faker->unique()->sentence(3))
                 ->setComposition($this->faker->text())
-                ->setClient($client)
+                ->setClient($clients[$i % $clientCount]) // round-robin
             ;
 
             $manager->persist($article);
 
-            // Add references for each article
-            $referenceName = "ARTICLE_" . $key;
+            $referenceName = "ARTICLE_" . $i;
             $this->addReference($referenceName, $article);
         }
 

@@ -10,9 +10,6 @@ use Faker\Factory;
 class ClientFixtures extends Fixture {
     protected $faker;
 
-    public const CLIENT_0 = "CLIENT_0";
-    public const CLIENT_1 = "CLIENT_1";
-
     public function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 

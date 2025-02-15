@@ -10,9 +10,6 @@ use Faker\Factory;
 class IlotFixtures extends Fixture {
     protected $faker;
 
-    public const ILOT_0 = "ILOT_0";
-    public const ILOT_1 = "ILOT_1";
-
     function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 

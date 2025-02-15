@@ -22,10 +22,10 @@ class Presence {
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $datePresence = null;
 
-    #[ORM\Column(type: "time")]
+    #[ORM\Column(type: "time", nullable: true)]
     private ?\DateTimeInterface $heureDebut = null;
 
-    #[ORM\Column(type: "time")]
+    #[ORM\Column(type: "time", nullable: true)]
     private ?\DateTimeInterface $heureFin = null;
 
     #[ORM\Column(type: "string", enumType: StatutPresence::class)]
@@ -40,10 +40,7 @@ class Presence {
 
     #[ORM\ManyToOne(inversedBy: 'presences')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Ilot $ilot = null;
-
-    #[ORM\ManyToOne(inversedBy: 'presences')]
-    private ?Planning $planning = null;
+    private ?Production $production = null;
 
     public function getId(): ?int {
         return $this->id;
@@ -71,7 +68,7 @@ class Presence {
         return $this->heureDebut;
     }
 
-    public function setHeureDebut(\DateTimeInterface $heureDebut): static {
+    public function setHeureDebut(?\DateTimeInterface $heureDebut): static {
         $this->heureDebut = $heureDebut;
         return $this;
     }
@@ -80,7 +77,7 @@ class Presence {
         return $this->heureFin;
     }
 
-    public function setHeureFin(\DateTimeInterface $heureFin): static {
+    public function setHeureFin(?\DateTimeInterface $heureFin): static {
         $this->heureFin = $heureFin;
 
         return $this;
@@ -114,24 +111,12 @@ class Presence {
         return $this;
     }
 
-    public function getIlot(): ?Ilot {
-        return $this->ilot;
+    public function getProduction(): ?Production {
+        return $this->production;
     }
 
-    public function setIlot(?Ilot $ilot): static {
-        $this->ilot = $ilot;
-
-        return $this;
-    }
-
-    public function getPlanning(): ?Planning
-    {
-        return $this->planning;
-    }
-
-    public function setPlanning(?Planning $planning): static
-    {
-        $this->planning = $planning;
+    public function setProduction(?Production $production): static {
+        $this->production = $production;
 
         return $this;
     }

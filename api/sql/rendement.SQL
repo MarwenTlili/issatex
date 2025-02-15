@@ -1,100 +1,126 @@
 WITH
-    employes AS (
-        SELECT ilot_id, COUNT(DISTINCT employe_id) AS nbr_employes
-        FROM presence
-        WHERE
-            date_presence = '2025-01-20'
-            AND statut = 'Present'
-        GROUP BY
-            ilot_id
+    vars AS (
+        SELECT '2025-02-03'::date AS target_date
     ),
-    temps_presence_aggreg AS (
-        SELECT ilot_id, SUM(temps_presence) AS total_temps_presence
-        FROM presence
-        WHERE
-            date_presence = '2025-01-20'
-            AND statut = 'Present'
+    empl_counts AS (
+        SELECT aei.ilot_id AS Ilot, COUNT(DISTINCT aei.employe_id) AS nbr_emples
+        FROM affectation_employe_ilot aei
         GROUP BY
-            ilot_id
+            aei.ilot_id
     ),
-    quantites_demandées AS (
-        SELECT pl.ilot_id, SUM(DISTINCT ofa.quantite_totale) AS quantite_demandée
+    traites_counts AS (
+        SELECT pla.ilot_id AS Ilot, COUNT(DISTINCT pla.id) AS nbr_of_traites
+        FROM planning pla
+        GROUP BY
+            pla.ilot_id
+    ),
+    quantites AS (
+        SELECT pla.ilot_id AS Ilot, COALESCE(SUM(pro.quantite_totale), 0) AS quantites_totales
         FROM
-            planning pl
-            JOIN ordre_fabrication ofa ON pl.ordre_fabrication_id = ofa.id
+            production pro
+            JOIN planning pla ON pro.planning_id = pla.id
+            CROSS JOIN vars
+        WHERE
+            pro.date_production = vars.target_date
         GROUP BY
-            pl.ilot_id
+            pla.ilot_id
+    ),
+    presence_data AS (
+        SELECT aei.ilot_id AS Ilot, COALESCE(
+                SUM(pr.temps_presence) * 60, 0
+            ) AS temps_presence_min
+        FROM
+            presence pr
+            JOIN affectation_employe_ilot aei ON pr.employe_id = aei.employe_id
+            CROSS JOIN vars
+        WHERE
+            pr.date_presence = vars.target_date
+        GROUP BY
+            aei.ilot_id
+    ),
+    productif_data AS (
+        SELECT pla.ilot_id AS Ilot, COALESCE(
+                SUM(
+                    pro.quantite_totale * (of.temps_unitaire / 100)
+                ), 0
+            ) AS temps_productif
+        FROM
+            production pro
+            JOIN planning pla ON pro.planning_id = pla.id
+            JOIN ordre_fabrication of ON pla.ordre_fabrication_id = of.id
+            CROSS JOIN vars
+        WHERE
+            pro.date_production = vars.target_date
+        GROUP BY
+            pla.ilot_id
     )
 SELECT
-    i.id AS code_ilot,
-    e.nbr_employes,
-    COUNT(
-        DISTINCT pl.ordre_fabrication_id
-    ) AS nbr_of_traites,
-    SUM(pro.quantite_totale) AS quantites_totales,
-    qd.quantite_demandée,
-    ROUND(
-        (
-            SUM(pro.quantite_totale) * 100.0
-        ) / NULLIF(qd.quantite_demandée, 0),
-        2
-    ) AS rendement
+    i.id AS Ilot,
+    COALESCE(e.nbr_emples, 0) AS nbr_emples,
+    COALESCE(t.nbr_of_traites, 0) AS nbr_of_traites,
+    COALESCE(q.quantites_totales, 0) AS quantites_totales,
+    COALESCE(p.temps_presence_min, 0) AS temps_presence_min,
+    COALESCE(prod.temps_productif, 0) AS temps_productif,
+    CASE
+        WHEN COALESCE(p.temps_presence_min, 0) = 0 THEN 0
+        ELSE ROUND(
+            COALESCE(prod.temps_productif, 0) * 100.0 / p.temps_presence_min,
+            2
+        )
+    END AS "rendement (%)"
 FROM
     ilot i
-    JOIN planning pl ON i.id = pl.ilot_id
-    JOIN production pro ON pl.id = pro.planning_id
-    AND pro.date_production = '2025-01-20'
-    JOIN employes e ON i.id = e.ilot_id
-    JOIN temps_presence_aggreg tp ON i.id = tp.ilot_id
-    JOIN quantites_demandées qd ON i.id = qd.ilot_id
+    LEFT JOIN empl_counts e ON i.id = e.Ilot
+    LEFT JOIN traites_counts t ON i.id = t.Ilot
+    LEFT JOIN quantites q ON i.id = q.Ilot
+    LEFT JOIN presence_data p ON i.id = p.Ilot
+    LEFT JOIN productif_data prod ON i.id = prod.Ilot;
+--  ilot | nbr_emples | nbr_of_traites | quantites_totales | temps_presence (min) | temps_productif | rendement (%)
+-- ------+------------+----------------+-------------------+----------------------+-----------------+---------------
+--    81 |          6 |              2 |               298 |                16320 |            8940 |         54.78
+--    82 |          6 |              1 |               165 |                 7680 |            4950 |         64.45
+-- (2 rows)
+-----------------------------------------------------------------------------------
+-- 1. Valider les sous-requêtes individuellement
+-- empl_counts : Vérifie si le nombre d'employés par îlot est correct en le
+-- comparant avec un comptage manuel à partir de la table affectation_employe_ilot
+SELECT ilot_id, COUNT(DISTINCT employe_id)
+FROM affectation_employe_ilot
 GROUP BY
-    i.id,
-    e.nbr_employes,
-    tp.total_temps_presence,
-    qd.quantite_demandée
-ORDER BY i.id;
+    ilot_id;
 
---  code_ilot | nbr_employes | nbr_of_traites | quantites_totales | quantites_demandées | rendement
--- -----------+--------------+----------------+-------------------+---------------------+-----------
---         13 |            5 |              1 |               249 |                4500 |      5.53
+-- traites_counts : Vérifie le nombre de traitements effectués pour chaque îlot.
+SELECT ilot_id, COUNT(DISTINCT id) FROM planning GROUP BY ilot_id;
 
--------------------------------------------------------------------------------
--- quantités produit des plannings
-SELECT
-    i.id AS code_ilot,
-    pl.id AS planning_id,
-    -- pl.date_debut,
-    -- pl.date_fin,
-    SUM(pro.quantite_totale) AS somme_attendue
+-- quantites : Vérifie les quantités totales produites à la date cible.
+SELECT pla.ilot_id, SUM(pro.quantite_totale)
+FROM production pro
+    JOIN planning pla ON pro.planning_id = pla.id
+WHERE
+    pro.date_production = '2025-01-27'
+GROUP BY
+    pla.ilot_id;
+
+-- presence_data : Vérifie le temps de présence total en minutes.
+SELECT aei.ilot_id, SUM(pr.temps_presence) * 60 AS "temps_presence (min)"
 FROM
-    ilot i
-    JOIN planning pl ON i.id = pl.ilot_id
-    JOIN production pro ON pl.id = pro.planning_id
+    presence pr
+    JOIN affectation_employe_ilot aei ON pr.employe_id = aei.employe_id
 WHERE
-    pro.date_production BETWEEN pl.date_debut AND pl.date_fin
-    AND pro.date_production = '2025-01-20'
+    pr.date_presence = '2025-01-27'
 GROUP BY
-    i.id,
-    pl.id
-    -- pl.date_debut,
-    -- pl.date_fin
-ORDER BY i.id;
+    aei.ilot_id;
 
---  code_ilot | id | date_debut |  date_fin  | somme_attendue
--- -----------+----+------------+------------+----------------
---         15 | 11 | 2025-01-20 | 2025-01-25 |            691
---         16 | 12 | 2025-01-20 | 2025-01-25 |           1014
-
--------------------------------------------------------------------------------
-
-SELECT
-    pre.planning_id AS planning_id,
-    COUNT(DISTINCT pre.employe_id) AS nbr_employes,
-    SUM(pre.temps_presence) AS temps_presence_totale,
-    SUM(pre.temps_presence) / COUNT(DISTINCT pre.employe_id) AS temps_presence_moyene
-FROM presence pre
+-- productif_data : Vérifie le temps productif.
+SELECT pla.ilot_id, SUM(
+        pro.quantite_totale * (of.temps_unitaire / 100)
+    )
+FROM
+    production pro
+    JOIN planning pla ON pro.planning_id = pla.id
+    JOIN ordre_fabrication of ON pla.ordre_fabrication_id = of.id
 WHERE
-    pre.date_presence = '2025-01-20'
-    AND pre.statut = 'Present'
+    pro.date_production = '2025-01-27'
 GROUP BY
-    pre.planning_id;
+    pla.ilot_id;
+-----------------------------------------------------------------------------------

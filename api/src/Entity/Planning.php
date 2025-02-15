@@ -8,9 +8,17 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
+#[ORM\Table(
+    name: "planning",
+    options: [
+        "check" => "date_debut < date_fin",
+        "check" => "date_debut > date_creation"
+    ]
+)]
 #[ORM\Entity(repositoryClass: PlanningRepository::class)]
-#[ApiResource]
+#[ApiResource(paginationClientItemsPerPage: true)]
 class Planning {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -23,11 +31,16 @@ class Planning {
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreation = null;
 
+    #[Assert\GreaterThan(propertyPath: "date_creation", message: "La date de debut doit être postérieure à la date de création.")]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $dateDebut = null;
 
+    #[Assert\GreaterThan(propertyPath: "date_debut", message: "La date de fin doit être postérieure à la date de début.")]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $dateFin = null;
+
+    #[ORM\Column(type: "boolean", options: ["default" => false])]
+    private ?bool $reporte = null;
 
     #[ORM\ManyToOne(inversedBy: 'plannings')]
     #[ORM\JoinColumn(nullable: false)]
@@ -43,17 +56,9 @@ class Planning {
     #[ORM\OneToMany(mappedBy: 'planning', targetEntity: Production::class, orphanRemoval: true)]
     private Collection $productions;
 
-    /**
-     * @var Collection<int, Presence>
-     */
-    #[ORM\OneToMany(mappedBy: 'planning', targetEntity: Presence::class)]
-    private Collection $presences;
-
     public function __construct() {
         $this->productions = new ArrayCollection();
-        $this->presences = new ArrayCollection();
     }
-
 
     public function getId(): ?int {
         return $this->id;
@@ -92,6 +97,16 @@ class Planning {
 
     public function setDateFin(\DateTimeInterface $dateFin): static {
         $this->dateFin = $dateFin;
+        return $this;
+    }
+
+    public function isReporte(): ?bool {
+        return $this->reporte;
+    }
+
+    public function setReporte(bool $reporte): static {
+        $this->reporte = $reporte;
+
         return $this;
     }
 
@@ -134,33 +149,6 @@ class Planning {
             // set the owning side to null (unless already changed)
             if ($production->getPlanning() === $this) {
                 $production->setPlanning(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Presence>
-     */
-    public function getPresences(): Collection {
-        return $this->presences;
-    }
-
-    public function addPresence(Presence $presence): static {
-        if (!$this->presences->contains($presence)) {
-            $this->presences->add($presence);
-            $presence->setPlanning($this);
-        }
-
-        return $this;
-    }
-
-    public function removePresence(Presence $presence): static {
-        if ($this->presences->removeElement($presence)) {
-            // set the owning side to null (unless already changed)
-            if ($presence->getPlanning() === $this) {
-                $presence->setPlanning(null);
             }
         }
 
