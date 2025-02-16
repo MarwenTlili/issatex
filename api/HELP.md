@@ -62,13 +62,40 @@ php bin/console cache:clear
 php bin/console debug:router
 ```
 
----
+## Endpoints
 
-## Curl
+### Rendements Quotidien
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/rendements_par_ilots/2025-02-03' \
+  'http://localhost:8080/rendements/2025-01-27?periode=jour' \
+  -H 'accept: application/ld+json' \
+  | json_pp
+```
+
+### Rendements Hebdomadaire
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/rendements/2025-01-27?periode=semaine' \
+  -H 'accept: application/ld+json' \
+  | json_pp
+```
+
+### Rendements Mensuel
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/rendements/2025-01' \
+  -H 'accept: application/ld+json' \
+  | json_pp
+```
+
+### Rendements Annuel
+
+```bash
+curl -X 'GET' \
+  'http://localhost:8080/rendements/2025' \
   -H 'accept: application/ld+json' \
   | json_pp
 ```
