@@ -1,3 +1,4 @@
+-- Rendement Quotidien par Ilot
 WITH
     vars AS (
         SELECT '2025-02-03'::date AS target_date
