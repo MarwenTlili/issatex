@@ -23,11 +23,11 @@ psql -h localhost -U app -d issatex
 
 ## URLs
 
-| URL                         | Path             | Language   | Description |
-| --------------------------- | ---------------- | ---------- | ----------- |
-| http://localhost:8080/docs/ | api/             | PHP        | The API     |
-| http://localhost/           | pwa/             | TypeScript | The Next.js |
-| http://localhost/admin/     | pwa/pages/admin/ | TypeScript | The Admin   |
+| URL                     | Path             | Language   | Description |
+| ----------------------- | ---------------- | ---------- | ----------- |
+| http://localhost/docs/  | api/             | PHP        | The API     |
+| http://localhost/       | pwa/             | TypeScript | The Next.js |
+| http://localhost/admin/ | pwa/pages/admin/ | TypeScript | The Admin   |
 
 ## Migration
 
@@ -38,6 +38,13 @@ php bin/console make:migration
 php bin/console doctrine:migrations:migrate
 
 php bin/console doctrine:schema:validate
+```
+
+## Mercure
+
+```bash
+# From php container
+curl -v https://localhost/.well-known/mercure?topic=https://localhost/ordre_fabrications
 ```
 
 ## Fixtures
@@ -68,7 +75,7 @@ php bin/console debug:router
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/rendements/2025-01-27?periode=jour' \
+  'http://localhost/rendements/2025-01-27?periode=jour' \
   -H 'accept: application/ld+json' \
   | json_pp
 ```
@@ -77,7 +84,7 @@ curl -X 'GET' \
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/rendements/2025-01-27?periode=semaine' \
+  'http://localhost/rendements/2025-01-27?periode=semaine' \
   -H 'accept: application/ld+json' \
   | json_pp
 ```
@@ -86,7 +93,7 @@ curl -X 'GET' \
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/rendements/2025-01' \
+  'http://localhost/rendements/2025-01' \
   -H 'accept: application/ld+json' \
   | json_pp
 ```
@@ -95,7 +102,7 @@ curl -X 'GET' \
 
 ```bash
 curl -X 'GET' \
-  'http://localhost:8080/rendements/2025' \
+  'http://localhost/rendements/2025' \
   -H 'accept: application/ld+json' \
   | json_pp
 ```
