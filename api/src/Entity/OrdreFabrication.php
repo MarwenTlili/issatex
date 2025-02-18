@@ -3,6 +3,11 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Enum\StatutOF;
 use App\Enum\TailleArticle;
 use App\Repository\OrdreFabricationRepository;
@@ -12,7 +17,17 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrdreFabricationRepository::class)]
-#[ApiResource(paginationClientItemsPerPage: true, mercure: true)]
+#[ApiResource(
+    paginationClientItemsPerPage: true,
+    mercure: true,
+    operations: [
+        new Post(),
+        new Get(),
+        new GetCollection(),
+        new Put(),
+        new Delete()
+    ]
+)]
 class OrdreFabrication {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
@@ -43,7 +58,7 @@ class OrdreFabrication {
     #[ORM\Column]
     private ?int $tempsUnitaire = null;
 
-    #[ORM\Column(type: "boolean", options:["default" => false])]
+    #[ORM\Column(type: "boolean", options: ["default" => false])]
     private ?bool $lance = null;
 
     #[ORM\ManyToOne(inversedBy: 'ordreFabrications')]
