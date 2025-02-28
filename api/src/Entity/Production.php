@@ -14,7 +14,7 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource(paginationClientItemsPerPage: true)]
 class Production {
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
 

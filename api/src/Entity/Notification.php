@@ -12,8 +12,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource]
 class Notification {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\GeneratedValue(strategy: "SEQUENCE")]
+    #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
