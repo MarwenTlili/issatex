@@ -43,6 +43,10 @@ class Client {
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Article::class, orphanRemoval: true)]
     private Collection $articles;
 
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $account = null;
+
     public function __construct() {
         $this->ordreFabrications = new ArrayCollection();
         $this->articles = new ArrayCollection();
@@ -132,13 +136,11 @@ class Client {
     /**
      * @return Collection<int, Article>
      */
-    public function getArticles(): Collection
-    {
+    public function getArticles(): Collection {
         return $this->articles;
     }
 
-    public function addArticle(Article $article): static
-    {
+    public function addArticle(Article $article): static {
         if (!$this->articles->contains($article)) {
             $this->articles->add($article);
             $article->setClient($this);
@@ -147,14 +149,23 @@ class Client {
         return $this;
     }
 
-    public function removeArticle(Article $article): static
-    {
+    public function removeArticle(Article $article): static {
         if ($this->articles->removeElement($article)) {
             // set the owning side to null (unless already changed)
             if ($article->getClient() === $this) {
                 $article->setClient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAccount(): ?User {
+        return $this->account;
+    }
+
+    public function setAccount(User $account): static {
+        $this->account = $account;
 
         return $this;
     }

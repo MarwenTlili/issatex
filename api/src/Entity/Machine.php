@@ -12,7 +12,7 @@ use App\Enum\StatutMachine;
 #[ApiResource(paginationClientItemsPerPage: true)]
 class Machine {
     #[ORM\Id]
-    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
 
