@@ -5,6 +5,8 @@ DROP SCHEMA public CASCADE;
 CREATE SCHEMA public;
 -------------------------------------------------------------------------------
 -- tables
+SELECT * FROM "user";
+SELECT * FROM "user" WHERE email LIKE 'admin%';
 
 SELECT * FROM article;
 
