@@ -21,5 +21,9 @@
 /phpunit.xml
 ###< symfony/phpunit-bridge ###
 
-# personal temp folder
-/tmp
+# shared certs from caddy
+/frankenphp/certs
+
+###> lexik/jwt-authentication-bundle ###
+/config/jwt/*.pem
+###< lexik/jwt-authentication-bundle ###
