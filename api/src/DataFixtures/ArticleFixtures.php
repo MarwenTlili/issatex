@@ -18,7 +18,7 @@ class ArticleFixtures extends Fixture implements DependentFixtureInterface, Fixt
 
         /** @var Client[] */
         $clients = [];
-        $c = 0;
+        $c = 2;
         while ($this->hasReference("CLIENT_$c")) {
             array_push($clients, $this->getReference("CLIENT_$c"));
             $c++;
@@ -26,7 +26,7 @@ class ArticleFixtures extends Fixture implements DependentFixtureInterface, Fixt
 
         $clientCount = count($clients);
         
-        for ($i = 0; $i < 3; $i++) {
+        for ($i = 2; $i < 5; $i++) {
             $article = new Article();
             $article->setDesignation($this->faker->unique()->sentence(3))
                 ->setComposition($this->faker->text())

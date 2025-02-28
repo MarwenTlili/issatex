@@ -19,7 +19,7 @@ class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterfa
 
         /** @var Article[] */
         $articles = [];
-        $i = 0;
+        $i = 2;
         while ($this->hasReference("ARTICLE_$i")) {
             array_push($articles, $this->getReference("ARTICLE_$i"));
             $i++;

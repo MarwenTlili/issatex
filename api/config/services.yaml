@@ -19,6 +19,10 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\State\UserPasswordHasher:
+        bind:
+            $processor: '@api_platform.doctrine.orm.state.persist_processor'
     
     App\EventListener\GenericPostPersistEventListener:
         arguments:
@@ -34,6 +38,7 @@ services:
                 App\Entity\Presence: 'PRE'
                 App\Entity\Production: 'PRO'
                 App\Entity\TailleOrdreFabrication: 'TOF'
+                App\Entity\User: 'USR'
         tags:
             - { name: doctrine.entity_listener }
 
