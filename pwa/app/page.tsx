@@ -1,4 +1,3 @@
-import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -12,11 +11,8 @@ import "@fontsource/poppins";
 import "@fontsource/poppins/600.css";
 import "@fontsource/poppins/700.css";
 
-const Welcome = () => (
+const Index = () => (
   <div className="w-full overflow-x-hidden">
-    <Head>
-      <title>Welcome to API Platform!</title>
-    </Head>
     <section className="w-full bg-spider-cover relative">
       <a
         href="https://les-tilleuls.coop/en"
@@ -162,7 +158,7 @@ const Welcome = () => (
     </div>
   </div>
 );
-export default Welcome;
+export default Index;
 
 const Card = ({
   image,
