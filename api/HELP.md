@@ -35,7 +35,7 @@ psql -h localhost -U app -d issatex
 php bin/console make:entity
 
 php bin/console make:migration
-php bin/console doctrine:migrations:migrate
+php bin/console doctrine:migrations:migrate -n
 
 php bin/console doctrine:schema:validate
 ```
@@ -143,11 +143,30 @@ curl -X 'GET' \
   | json_pp
 ```
 
-## Testing
+## PHPUnit Testing
+
+Set testing database name and URI in **.env.test** or **.env.test.local**
+
+```bash
+DATABASE_URL="postgresql://app:app@database:5432/issatex_test?serverVersion=16&charset=utf8"
+```
+
+Migrate testing database
 
 ```bash
 php bin/console doctrine:database:create --env=test
 php bin/console make:migration --env=test
 php bin/console doctrine:migrations:migrate -n --env=test
-php bin/console doctrine:fixtures:load -n --env=test
+```
+
+Load fixtures to testing database
+
+```bash
+php bin/console doctrine:fixtures:load -n --env=test --group=load
+```
+
+running tests
+
+```bash
+php bin/phpunit
 ```
