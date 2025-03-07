@@ -15,3 +15,6 @@ api_platform:
             JWT:
                 name: Authorization
                 type: header
+    formats:
+        jsonld: ['application/ld+json']
+        multipart: ['multipart/form-data']

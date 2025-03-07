@@ -39,6 +39,7 @@ services:
                 App\Entity\Production: 'PRO'
                 App\Entity\TailleOrdreFabrication: 'TOF'
                 App\Entity\User: 'USR'
+                App\Entity\Avatar: 'AVA'
         tags:
             - { name: doctrine.entity_listener }
 

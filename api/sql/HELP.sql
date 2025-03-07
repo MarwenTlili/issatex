@@ -8,6 +8,8 @@ CREATE SCHEMA public;
 SELECT * FROM "user";
 SELECT * FROM "user" WHERE email LIKE 'admin%';
 
+SELECT * FROM avatar;
+
 SELECT * FROM article;
 
 SELECT * FROM ilot;
