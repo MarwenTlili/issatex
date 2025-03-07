@@ -5,11 +5,12 @@ namespace App\DataFixtures;
 use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Faker\Factory;
 
-class UserFixtures extends Fixture implements FixtureGroupInterface {
+class UserFixtures extends Fixture implements FixtureGroupInterface, DependentFixtureInterface {
     private $passwordHasher;
     protected $faker;
 
@@ -25,7 +26,9 @@ class UserFixtures extends Fixture implements FixtureGroupInterface {
         $admin->setUsername("admin")
             ->setEmail("admin@example.com")
             ->setPassword($this->passwordHasher->hashPassword($admin, "admin"))
-            ->setRoles(["ROLE_ADMIN"]);
+            ->setRoles(["ROLE_ADMIN"])
+            ->setAvatar($this->getReference("AVATAR_0"))
+            ->setEnabled(true);
         $manager->persist($admin);
         $this->addReference("USER_0", $admin);
 
@@ -34,7 +37,8 @@ class UserFixtures extends Fixture implements FixtureGroupInterface {
         $secretaire->setUsername("secretaire")
             ->setEmail("secretaire@example.com")
             ->setPassword($this->passwordHasher->hashPassword($secretaire, "secretaire"))
-            ->setRoles(["ROLE_SECRETAIRE"]);
+            ->setRoles(["ROLE_SECRETARY"])
+            ->setEnabled(true);
         $manager->persist($secretaire);
         $this->addReference("USER_1", $secretaire);
 
@@ -56,6 +60,12 @@ class UserFixtures extends Fixture implements FixtureGroupInterface {
         }
 
         $manager->flush();
+    }
+
+    function getDependencies() {
+        return  [
+            AvatarFixtures::class,
+        ];
     }
 
     public static function getGroups(): array {

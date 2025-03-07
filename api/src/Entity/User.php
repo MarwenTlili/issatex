@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
 use App\Repository\UserRepository;
 use App\State\UserPasswordHasher;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -18,19 +18,26 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
+#[Vich\Uploadable]
+#[ORM\HasLifecycleCallbacks]
 #[ApiResource(
-    operations: [
-        new GetCollection(),
-        new Post(processor: UserPasswordHasher::class, validationContext: ['groups' => ['Default', 'user:create']]),
-        new Get(),
-        new Put(processor: UserPasswordHasher::class),
-        new Patch(processor: UserPasswordHasher::class),
-        new Delete(),
-    ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:create', 'user:update']],
-    paginationClientItemsPerPage: true
+    paginationClientItemsPerPage: true,
+    operations: [
+        new Post(
+            processor: UserPasswordHasher::class,
+            validationContext: ['groups' => ['Default', 'user:create']],
+        ),
+        new GetCollection(),
+        new Get(),
+        new Patch(
+            processor: UserPasswordHasher::class,
+        ),
+        new Delete(),
+    ],
 )]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -84,8 +91,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     #[ORM\OneToMany(mappedBy: 'account', targetEntity: Notification::class, orphanRemoval: true)]
     private Collection $notifications;
 
+    #[ApiProperty(types: ['https://schema.org/image'])]
+    #[Groups(['user:read', 'user:create', 'user:update'])]
+    #[ORM\OneToOne(cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private ?Avatar $avatar = null;
+
+    #[Groups(['user:read', 'user:create', 'user:update'])]
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[Groups(['user:read', 'user:create', 'user:update'])]
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $lastLoginAt = null;
+
+    #[Groups(['user:read', 'user:create', 'user:update'])]
+    #[ORM\Column(nullable: true)]
+    private ?bool $enabled = null;
+
     public function __construct() {
         $this->notifications = new ArrayCollection();
+    }
+
+    #[ORM\PrePersist]
+    public function setPrePersistValues(): void {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->lastLoginAt = new \DateTimeImmutable();
+        if ($this->isEnabled() === null) {
+            $this->setEnabled(false);
+        }
     }
 
     public function getId(): ?int {
@@ -207,6 +240,46 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
                 $notification->setAccount(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAvatar(): ?Avatar {
+        return $this->avatar;
+    }
+
+    public function setAvatar(?Avatar $avatar): static {
+        $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeImmutable {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeImmutable $createdAt): self {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getLastLoginAt(): ?\DateTimeImmutable {
+        return $this->lastLoginAt;
+    }
+
+    public function setLastLoginAt(?\DateTimeImmutable $lastLoginAt): self {
+        $this->lastLoginAt = $lastLoginAt;
+
+        return $this;
+    }
+
+    public function isEnabled(): ?bool {
+        return $this->enabled;
+    }
+
+    public function setEnabled(?bool $enabled): self {
+        $this->enabled = $enabled;
 
         return $this;
     }
