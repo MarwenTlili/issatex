@@ -21,7 +21,6 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Entity(repositoryClass: AvatarRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['avatar:read']],
-    types: ['https://schema.org/MediaObject'],
     outputFormats: ['jsonld' => ['application/ld+json']],
     operations: [
         new Post(
