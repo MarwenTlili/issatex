@@ -3,11 +3,12 @@
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
-// use Hautelook\AliceBundle\PhpUnit\ReloadDatabaseTrait;
 use Symfony\Component\HttpFoundation\Response;
 
 class TokensTest extends ApiTestCase {
-    // use ReloadDatabaseTrait;
+    private const AUTH_URL = '/api/token/login';
+    private const TOKEN_REFRESH = '/api/token/refresh';
+    private const TOKEN_INVALIDATE = '/api/token/invalidate';
 
     private const IDENTIFIER = 'admin';
     private const PASSWORD = 'admin';
@@ -45,7 +46,7 @@ class TokensTest extends ApiTestCase {
         $this->invalidateToken($client, $refresh_token);
 
         // Ensure invalidated refresh token cannot be used again
-        $client->request('GET', '/api/auth/token/refresh', [
+        $client->request('GET', self::TOKEN_REFRESH, [
             'json' => ['refresh_token' => $refresh_token]
         ]);
         $this->assertResponseStatusCodeSame(Response::HTTP_UNAUTHORIZED);
@@ -53,7 +54,7 @@ class TokensTest extends ApiTestCase {
     }
 
     private function authenticate($client, string $username, string $password): array {
-        $response = $client->request('POST', '/api/auth/login', [
+        $response = $client->request('POST', self::AUTH_URL, [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => ['username' => $username, 'password' => $password]
         ]);
@@ -63,7 +64,7 @@ class TokensTest extends ApiTestCase {
     }
 
     private function refresh_token($client, string $refresh_token): array {
-        $response = $client->request('POST', '/api/auth/token/refresh', [
+        $response = $client->request('POST', self::TOKEN_REFRESH, [
             'json' => ['refresh_token' => $refresh_token]
         ]);
 
@@ -72,7 +73,7 @@ class TokensTest extends ApiTestCase {
     }
 
     private function invalidateToken($client, string $refresh_token): void {
-        $client->request('POST', '/api/auth/token/invalidate', [
+        $client->request('POST', self::TOKEN_INVALIDATE, [
             'json' => ['refresh_token' => $refresh_token]
         ]);
 
