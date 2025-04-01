@@ -84,6 +84,9 @@ pnpm add @mui/icons-material@5.16.14
 
 # Generate resource
 pnpm create @api-platform/client --resource presence -g next
+
+# RDF canonization standard in nodejs
+pnpm add rdf-canonize
 ```
 
 ## ShadCN
