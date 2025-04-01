@@ -15,22 +15,16 @@
     "jsx": "preserve",
     "incremental": true,
     "paths": {
+      "@/app/*": ["./app/*"],
       "@/components/*": ["./components/*"],
+      "@/config/*": ["./config/*"],
+      "@/hooks/*": ["./hooks/*"],
       "@/lib/*": ["./lib/*"],
       "@/styles/*": ["./styles/*"],
-      "@/hooks/*": ["./hooks/*"]
+      "@/types/*": ["./types/*"],
     },
-    "plugins": [
-      {"name": "next"}
-    ]
+    "plugins": [{ "name": "next" }]
   },
-  "include": [
-    "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules", "tmp"
-  ]
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules", "tmp"]
 }

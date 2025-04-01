@@ -9,6 +9,7 @@ class TokensTest extends ApiTestCase {
     private const AUTH_URL = '/api/token/login';
     private const TOKEN_REFRESH = '/api/token/refresh';
     private const TOKEN_INVALIDATE = '/api/token/invalidate';
+    private const IS_REFRESH_TOKEN_SINGLE_USE = false;
 
     private const IDENTIFIER = 'admin';
     private const PASSWORD = 'admin';
@@ -24,26 +25,29 @@ class TokensTest extends ApiTestCase {
         $authResponse = $this->authenticate($client, self::IDENTIFIER, self::PASSWORD);
         $this->assertValidAuthResponse($authResponse);
 
-        $token = $authResponse['token'];
+        $access_token = $authResponse['access_token'];
         $refresh_token = $authResponse['refresh_token'];
 
         // Test access with valid token
-        $this->assertAuthorizedAccess($client, $token);
+        $this->assertAuthorizedAccess($client, $access_token);
 
         // Refresh token
-        $refreshResponse = $this->refresh_token($client, $refresh_token);
+        $refreshResponse = $this->requestRefreshToken($client, $refresh_token);
         $this->assertValidAuthResponse($refreshResponse);
         /**
          * check/remove this if "single_use: true"
          * in config/packages/gesdinet_jwt_refresh_token.yaml
          */
-        $this->assertEquals($refreshResponse['refresh_token'], $refresh_token);
+        self::IS_REFRESH_TOKEN_SINGLE_USE ?
+            $this->assertNotEquals($refreshResponse['refresh_token'], $refresh_token)
+            :
+            $this->assertEquals($refreshResponse['refresh_token'], $refresh_token);
 
         // Test access with refreshed token
-        $this->assertAuthorizedAccess($client, $refreshResponse['token']);
+        $this->assertAuthorizedAccess($client, $refreshResponse['access_token']);
 
         // Invalidate refresh token
-        $this->invalidateToken($client, $refresh_token);
+        $this->invalidateRefreshToken($client, $refresh_token);
 
         // Ensure invalidated refresh token cannot be used again
         $client->request('GET', self::TOKEN_REFRESH, [
@@ -63,7 +67,7 @@ class TokensTest extends ApiTestCase {
         return $response->toArray();
     }
 
-    private function refresh_token($client, string $refresh_token): array {
+    private function requestRefreshToken($client, string $refresh_token): array {
         $response = $client->request('POST', self::TOKEN_REFRESH, [
             'json' => ['refresh_token' => $refresh_token]
         ]);
@@ -72,17 +76,20 @@ class TokensTest extends ApiTestCase {
         return $response->toArray();
     }
 
-    private function invalidateToken($client, string $refresh_token): void {
+    private function invalidateRefreshToken($client, string $refresh_token): void {
         $client->request('POST', self::TOKEN_INVALIDATE, [
             'json' => ['refresh_token' => $refresh_token]
         ]);
 
         $this->assertResponseIsSuccessful();
-        $this->assertJsonContains(['message' => 'The supplied refresh_token has been invalidated.']);
+        self::IS_REFRESH_TOKEN_SINGLE_USE ?
+            $this->assertJsonContains(['message' => 'The supplied refresh_token is already invalid.'])
+            :
+            $this->assertJsonContains(['message' => 'The supplied refresh_token has been invalidated.']);
     }
 
-    private function assertAuthorizedAccess($client, string $token): void {
-        $client->request('GET', '/api/users', ['auth_bearer' => $token]);
+    private function assertAuthorizedAccess($client, string $access_token): void {
+        $client->request('GET', '/api/users', ['auth_bearer' => $access_token]);
 
         $this->assertResponseIsSuccessful();
         $this->assertResponseHeaderSame('content-type', 'application/ld+json; charset=utf-8');
@@ -95,7 +102,7 @@ class TokensTest extends ApiTestCase {
     }
 
     private function assertValidAuthResponse(array $response): void {
-        $this->assertArrayHasKey('token', $response);
+        $this->assertArrayHasKey('access_token', $response);
         $this->assertArrayHasKey('refresh_token', $response);
     }
 }

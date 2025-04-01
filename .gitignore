@@ -2,5 +2,8 @@
 /helm/api-platform/charts/*
 !/helm/api-platform/charts/.gitignore
 
+# ignore envs
+**/.env
+
 # personal temp folder
 **/tmp

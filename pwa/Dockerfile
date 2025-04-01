@@ -14,8 +14,9 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /srv/app
 
-RUN corepack enable && \
-	corepack prepare --activate pnpm@latest && \
+RUN npm install -g corepack@latest && \
+    corepack enable && \
+	corepack prepare --activate pnpm@latest-10 && \
 	pnpm config -g set store-dir /.pnpm-store
 
 # Next.js collects completely anonymous telemetry data about general usage.

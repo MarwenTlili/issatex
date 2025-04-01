@@ -4,12 +4,12 @@ controllers:
         namespace: App\Controller
     type: attribute
 
-auth_login:
-    path: /api/auth/login
-    methods: ['POST']
+api_token_login:
+    path: /api/token/login
+    methods: ["POST"]
 
-gesdinet_jwt_refresh_token:
-    path: /api/auth/token/refresh
+api_token_refresh:
+    path: /api/token/refresh
 
 api_token_invalidate:
-    path: /api/auth/token/invalidate
+    path: /api/token/invalidate
