@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
+import { logger } from "@/lib/utils/Logger";
 
 export async function middleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
