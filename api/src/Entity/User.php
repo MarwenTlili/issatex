@@ -46,6 +46,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     #[Groups(['user:read'])]

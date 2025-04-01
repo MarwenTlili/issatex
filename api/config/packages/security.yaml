@@ -2,7 +2,7 @@ security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         # Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
-        App\Entity\User: 'auto'
+        App\Entity\User: "auto"
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         # used to reload user from session & other features (e.g. switch_user)
@@ -15,11 +15,10 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         login:
-            pattern: ^/api/auth/login$
+            pattern: ^/api/token/login
             stateless: true
             json_login:
-                provider: users
-                check_path: auth_login # The name in routes.yaml is enough for mapping
+                check_path: api_token_login
                 username_path: username
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
@@ -31,19 +30,17 @@ security:
             entry_point: jwt
             jwt: ~
             refresh_jwt:
-                check_path: gesdinet_jwt_refresh_token # The name in routes.yaml
-                provider: users  # MUST (if there is multiple user providers)
+                check_path: api_token_refresh
+                provider: users
             logout:
                 path: api_token_invalidate
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/$, roles: PUBLIC_ACCESS } # Allows accessing the Swagger UI
         - { path: ^/docs, roles: PUBLIC_ACCESS } # Allows accessing the Swagger UI docs
-        - { path: ^/api/auth, roles: PUBLIC_ACCESS }
+        - { path: ^/api/token/(login|refresh|invalidate), roles: PUBLIC_ACCESS } # Allow accessing JWT routes
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY } # IS_AUTHENTICATED_FULLY
 
 when@test:

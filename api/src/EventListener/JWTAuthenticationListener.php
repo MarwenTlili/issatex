@@ -19,8 +19,19 @@ class JWTAuthenticationListener {
      * Handle successful authentication
      */
     public function onAuthenticationSuccess(AuthenticationSuccessEvent $event) {
-        // $data = $event->getData();
+        // default data: { "token": "..." }
+        $data = $event->getData();
+
+        /** @var User */
         $user = $event->getUser();
+
+        $event->setData([
+            'access_token' => $data['token'],
+            'refresh_token' => '', // Refresh Token will be implemented by "gesdinet/jwt-refresh-token-bundle"
+            'expires_in' => 3600, // 3600 = 1 hour, 300 = 5 seccond
+            // 'refresh_token_expires_in' => '',
+            'token_type' => 'Bearer',
+        ]);
 
         if (!$user instanceof UserInterface) {
             return;
