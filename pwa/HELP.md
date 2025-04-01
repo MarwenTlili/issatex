@@ -6,49 +6,50 @@
 
 ```
 issatex
-|   +-- app
-|   |   +-- (admin)                    # Protected routes (e.g: admin, analytics, settings, ...)
-|   |   |   +-- admin
+|   +-- src
+|   |   +-- app
+|   |   |   +-- (admin)                    # Protected routes (e.g: admin, analytics, settings, ...)
+|   |   |   |   +-- admin
+|   |   |   |   |   +-- page.tsx
+|   |   |   |   +-- layout.tsx
+|   |   |   +-- (main)                     # Public routes (e.g: login, register, ...)
+|   |   |   |   +-- login
+|   |   |   |   |   +-- page.tsx
+|   |   |   |   +-- layout.tsx
 |   |   |   |   +-- page.tsx
-|   |   |   +-- layout.tsx
-|   |   +-- (main)                     # Public routes (e.g: login, register, ...)
-|   |   |   +-- login
-|   |   |   |   +-- page.tsx
+|   |   |   +-- api
+|   |   |   |   +-- auth
+|   |   |   |   |   +-- [...nextauth]
+|   |   |   |   |   |   +-- auth-functions.ts
+|   |   |   |   |   |   +-- options.ts
+|   |   |   |   |   |   +-- route.ts
+|   |   |   +-- global-error.tsx
 |   |   |   +-- layout.tsx
 |   |   |   +-- page.tsx
-|   |   +-- api
-|   |   |   +-- auth
-|   |   |   |   +-- [...nextauth]
-|   |   |   |   |   +-- auth-functions.ts
-|   |   |   |   |   +-- options.ts
-|   |   |   |   |   +-- route.ts
-|   |   +-- global-error.tsx
-|   |   +-- layout.tsx
-|   |   +-- page.tsx
-|   |   +-- not-found.tsx
-|   +-- components
-|   |   +-- admin
-|   |   +-- ui                         # Reusable UI components (e.g: Navbar.tsx, Buttons.tsx, Modals.tsx, ...)
-|   |   +-- footer.tsx
-|   |   +-- navbar.tsx
-|   |   +-- providers.tsx              # SessionProvider, QueryClientProvider
-|   +-- config
-|   |   +-- entrypoint.ts
-|   +-- hooks
-|   |   +-- useAuthProvider.ts         # auth provider hook for admin
-|   |   +-- useDataProvider.ts         # data provider hook for admin
-|   +-- lib                            # eg: helpers.ts, axios.ts, auth.ts (JWT, session), ...
-|   |   +-- utils
-|   |   |   +-- auth.ts
-|   |   |   +-- logger.ts
-|   |   +-- utils.ts
+|   |   |   +-- not-found.tsx
+|   |   +-- components
+|   |   |   +-- admin
+|   |   |   +-- ui                         # Reusable UI components (e.g: Navbar.tsx, Buttons.tsx, Modals.tsx, ...)
+|   |   |   +-- footer.tsx
+|   |   |   +-- navbar.tsx
+|   |   |   +-- providers.tsx              # SessionProvider, QueryClientProvider
+|   |   +-- config
+|   |   |   +-- entrypoint.ts
+|   |   +-- hooks
+|   |   |   +-- useAuthProvider.ts         # auth provider hook for admin
+|   |   |   +-- useDataProvider.ts         # data provider hook for admin
+|   |   +-- lib                            # eg: helpers.ts, axios.ts, auth.ts (JWT, session), ...
+|   |   |   +-- utils
+|   |   |   |   +-- auth.ts
+|   |   |   |   +-- logger.ts
+|   |   |   +-- utils.ts
+|   |   +-- styles
+|   |   |   +-- globals.css
+|   |   +-- types                          # eg: auth.ts, user.ts, ...
+|   |   |   +-- index.ts
+|   |   |   +-- next-auth.d.ts
+|   |   +-- middleware.ts                  # Only one `middleware.ts` file is supported per project
 |   +-- public                         # images, fonts, favicon.ico
-|   +-- styles
-|   |   +-- globals.css
-|   +-- types                          # eg: auth.ts, user.ts, ...
-|   |   +-- index.ts
-|   |   +-- next-auth.d.ts
-|   +-- middleware.ts                  # Only one `middleware.ts` file is supported per project
 +-- .env.local                      # Local environment variables
 +-- .env.development                # Development environment variables
 +-- .env.production                 # Production environment variables
