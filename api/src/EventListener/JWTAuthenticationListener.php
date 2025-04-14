@@ -28,6 +28,7 @@ class JWTAuthenticationListener {
         $event->setData([
             'access_token' => $data['token'],
             'refresh_token' => '', // Refresh Token will be implemented by "gesdinet/jwt-refresh-token-bundle"
+            // see config/packages/lexik_jwt_authentication.yaml
             'expires_in' => 3600, // 3600 = 1 hour, 300 = 5 seccond
             // 'refresh_token_expires_in' => '',
             'token_type' => 'Bearer',
