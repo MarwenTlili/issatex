@@ -42,22 +42,30 @@ class UserFixtures extends Fixture implements FixtureGroupInterface, DependentFi
         $manager->persist($secretaire);
         $this->addReference("USER_1", $secretaire);
 
-        // clients
-        for ($i = 2; $i < 4; $i++) {
-            $email = $this->faker->email();
-            $username = explode('@', $email)[0];
+        // Client 1
+        $client1 = new User();
+        $client1->setUsername("jameson")
+            ->setEmail("jameson@example.com")
+            ->setPassword($this->passwordHasher->hashPassword($client1, "jameson"))
+            ->setRoles(["ROLE_CLIENT"])
+            ->setEnabled(true);
 
-            $user = new User();
-            $user->setUsername($username)
-                ->setEmail($email)
-                ->setPassword($this->passwordHasher->hashPassword($user, $username))
-                ->setRoles(["ROLE_USER"]);
+        $manager->persist($client1);
 
-            $manager->persist($user);
+        $referenceName = "USER_2";
+        $this->addReference($referenceName, $client1);
 
-            $referenceName = "USER_" . $i;
-            $this->addReference($referenceName, $user);
-        }
+        // Client 2
+        $client2 = new User();
+        $client2->setUsername("bartoletti")
+            ->setEmail("bartoletti@example.com")
+            ->setPassword($this->passwordHasher->hashPassword($client2, "bartoletti"))
+            ->setRoles(["ROLE_CLIENT"]);
+
+        $manager->persist($client2);
+
+        $referenceName = "USER_3";
+        $this->addReference($referenceName, $client2);
 
         $manager->flush();
     }
