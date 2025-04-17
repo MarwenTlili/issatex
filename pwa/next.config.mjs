@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 
+/**
+ * @type {import('next').NextConfig}
+ */
 const nextConfig = {
     reactStrictMode: true,
     swcMinify: true,
@@ -10,11 +13,17 @@ const nextConfig = {
             {
                 protocol: "https",
                 hostname: "localhost",
-                port: "",
-                pathname: "",
-                search: "",
             },
         ],
+    },
+    webpack: (config, { webpack }) => { // Note the webpack parameter here
+        // Ignore rdf-canonize-native on both client and server
+        config.plugins.push(
+            new webpack.IgnorePlugin({
+                resourceRegExp: /^rdf-canonize-native$/,
+            })
+        );
+        return config;
     },
 };
 
