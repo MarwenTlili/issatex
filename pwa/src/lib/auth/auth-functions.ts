@@ -1,7 +1,7 @@
 import { JWT } from "next-auth/jwt";
 
-import { FETCH_PROFILE_URL, TOKEN_REFRESH_URL } from "@/config/entrypoint";
-import { JwtAuthData, UserProfile } from "@/types/index";
+import { TOKEN_REFRESH_URL } from "@/config/entrypoint";
+import { JwtAuthData } from "@/types/index";
 import { logger } from "@/lib/utils/Logger";
 
 /**
@@ -96,26 +96,3 @@ export async function refreshTokens(token: JWT): Promise<JWT> {
     };
   }
 }
-
-// /**
-//  * Fetch user's profile informations
-//  * @param token string
-//  * @returns Promise<UserProfile | JwtError>
-//  */
-// export async function fetchUserProfile(
-//   token: string
-// ): Promise<UserProfile | null> {
-//   try {
-//     const userProfile = await apiFetch<UserProfile>(
-//       FETCH_PROFILE_URL,
-//       "GET",
-//       token
-//     );
-
-//     return userProfile;
-//   } catch (error) {
-//     logger("error", "Failed to fetch user's profile");
-//     // throw new Error("Failed to fetch user's profile informations");
-//     return null;
-//   }
-// }
