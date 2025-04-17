@@ -32,10 +32,6 @@ export const authOptions: NextAuthOptions = {
 
           if (!authData) return null;
 
-          /** Fetch user profile with the access token */
-          // const profileData = await fetchUserProfile(authData.access_token);
-          // if (!profileData) return null;
-
           // Use access_token's payload to check for access token expiration
           const payload = parseJwt<JwtPayload>(authData.access_token);
 
@@ -45,12 +41,12 @@ export const authOptions: NextAuthOptions = {
             id: payload.sub,
             name: payload.username,
             email: payload.email,
-            roles: payload.roles as string[],
+            roles: payload.roles,
             image: payload.avatar,
             accessToken: authData.access_token,
             refreshToken: authData.refresh_token,
             /** store expires_in in user's object as timestamp (ms) after calculation */
-            expiresAt: Date.now() + (authData.expires_in * 1000), // ms
+            expiresAt: Date.now() + authData.expires_in * 1000, // ms
             // accessTokenExpires: new Date(payload.exp as number).toISOString(),
           };
 
@@ -65,9 +61,6 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user, account }) {
-      // logger("info", "async jwt - user", user);
-      // logger("info", "async jwt - account", account);
-
       // Initial sign in
       if (user && account) {
         const jwt: JWT = {
@@ -115,9 +108,6 @@ export const authOptions: NextAuthOptions = {
        */
       // session.expires = new Date(token.expiresAt as number).toISOString();
 
-      // logger("info", "async session - session: ", session);
-      // logger("info", "async session - token: ", token);
-
       return session;
     },
   },
@@ -133,7 +123,3 @@ export const authOptions: NextAuthOptions = {
     maxAge: 60 * 60 * 24, // 1 day
   },
 };
-
-// function isJwtError(obj: any): obj is JwtError {
-//   return obj && typeof obj.code === "number" && typeof obj.message === "string";
-// }
