@@ -55,7 +55,7 @@ class Avatar {
     private ?int $id = null;
 
     #[ApiProperty(types: ['https://schema.org/contentUrl'], writable: false)]
-    #[Groups(['avatar:read'])]
+    #[Groups(['avatar:read','user:read'])]
     private ?string $contentUrl = null;
 
     #[Vich\UploadableField(mapping: 'avatars', fileNameProperty: 'filePath')]
