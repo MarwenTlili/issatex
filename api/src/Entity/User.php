@@ -41,6 +41,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
         ),
         new Delete(),
     ],
+    order: ['createdAt' => 'DESC']
 )]
 #[ApiFilter(OrderFilter::class, properties: ['createdAt'])]
 #[ApiFilter(SearchFilter::class, properties: [
