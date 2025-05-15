@@ -31,7 +31,7 @@ export default function GlobalError({
                 Something went wrong!
               </h1>
               <p className="text-slate-500 dark:text-slate-400 mb-6">
-                We've encountered an unexpected error. Our team has been
+                We&apos;ve encountered an unexpected error. Our team has been
                 notified.
               </p>
               {error.digest && (

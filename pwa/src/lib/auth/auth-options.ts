@@ -45,9 +45,8 @@ export const authOptions: NextAuthOptions = {
             image: payload.avatar,
             accessToken: authData.access_token,
             refreshToken: authData.refresh_token,
-            /** store expires_in in user's object as timestamp (ms) after calculation */
+            // store expires_in in user's object as timestamp (ms) after calculation
             expiresAt: Date.now() + authData.expires_in * 1000, // ms
-            // accessTokenExpires: new Date(payload.exp as number).toISOString(),
           };
 
           /** Return a user object that will be stored in the JWT */
@@ -81,7 +80,6 @@ export const authOptions: NextAuthOptions = {
 
       // Return previous token if the access token has not expired yet
       if (token.expiresAt && Date.now() < token.expiresAt) {
-        // logger("info", "async jwt - token not expired");
         return token;
       }
 
@@ -100,14 +98,6 @@ export const authOptions: NextAuthOptions = {
       }
 
       session.accessToken = token.accessToken;
-      /**
-       * session.expires:
-       * - will be set to new Date(Date.now() + maxAge * 1000)
-       * - not stored in the database but calculated on each request.
-       * - default format: '2025-03-23T16:23:04.098Z'
-       */
-      // session.expires = new Date(token.expiresAt as number).toISOString();
-
       return session;
     },
   },
