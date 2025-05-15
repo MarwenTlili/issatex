@@ -22,8 +22,7 @@ declare module "next-auth" {
     image?: string;
     accessToken?: string;
     refreshToken?: string;
-    expiresAt?: number; // now + expires_in
-    // accessTokenExpires?: string;
+    expiresAt?: number; // (ms) = now (ms) + expires_in (sec) * 1000
   }
 }
 
@@ -42,32 +41,3 @@ declare module "next-auth/jwt" {
     };
   }
 }
-
-/** next-auth/src/core/types.ts */
-// export interface DefaultSession {
-//   user?: {
-//     name?: string | null
-//     email?: string | null
-//     image?: string | null
-//   }
-//   expires: ISODateString
-// }
-
-// export interface DefaultUser {
-//   id: string;
-//   name?: string;
-//   email?: string;
-//   image?: string;
-// }
-
-// export interface User extends DefaultUser {}
-
-/** next-auth/src/jwt/types.ts */
-// export interface DefaultJWT extends Record<string, unknown> {
-//   name?: string | null
-//   email?: string | null
-//   picture?: string | null
-//   sub?: string
-// }
-
-// export interface JWT extends Record<string, unknown>, DefaultJWT {}

@@ -5,7 +5,6 @@ import type React from "react";
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { logger } from "@/lib/utils/Logger";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -19,7 +18,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { LockIcon, UserIcon, LogInIcon } from "lucide-react";
 
-export default function LoginPage() {
+const LoginForm = () => {
   const router = useRouter();
 
   const [username, setUsername] = useState("");
@@ -49,14 +48,13 @@ export default function LoginPage() {
       }
     } catch (error) {
       setError("An error occurred during sign in");
-      logger("error", "An error occurred during sign in", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+    <div className="flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
           <div className="rounded-full bg-primary/10 p-4">
@@ -144,8 +142,11 @@ export default function LoginPage() {
 
           <CardFooter className="flex flex-col space-y-2">
             <div className="text-center text-sm text-muted-foreground">
-              <span>Don't have an account? </span>
-              <a href="#" className="font-medium text-primary hover:underline">
+              <span>Don&apos;t have an account? </span>
+              <a
+                href="/register"
+                className="font-medium text-primary hover:underline"
+              >
                 Sign up
               </a>
             </div>
@@ -159,4 +160,6 @@ export default function LoginPage() {
       </div>
     </div>
   );
-}
+};
+
+export default LoginForm;

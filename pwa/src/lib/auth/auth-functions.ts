@@ -85,7 +85,7 @@ export async function refreshTokens(token: JWT): Promise<JWT> {
       ...token,
       accessToken: refreshedTokens.access_token,
       refreshToken: refreshedTokens.refresh_token ?? token.refresh_token,
-      expiresAt: Math.floor(Date.now() / 1000) + refreshedTokens.expires_in,
+      expiresAt: Date.now() + refreshedTokens.expires_in * 1000,
       error: undefined,
     };
   } catch (error) {

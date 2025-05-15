@@ -11,7 +11,7 @@ export default function MainLayout({
   return (
     <Providers>
       <Header />
-      <main>{children}</main>
+      <main className="min-h-screen">{children}</main>
       <Footer />
     </Providers>
   );

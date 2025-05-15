@@ -1,25 +1,17 @@
-"use client";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
-import dynamic from "next/dynamic";
+import AdminClientWrapper from "@/components/admin/admin-client-wrapper";
+import { authOptions } from "@/lib/auth/auth-options";
 
-// load the admin client-side (on client component only)
-const Admin = dynamic(() => import("@/components/admin/Admin"), {
-  ssr: false,
-});
+export default async function AdminPage() {
+  const session = await getServerSession(authOptions);
+  const roles = session?.user.roles;
 
-const AdminPage = () => (
-  <>
-    <Admin />
-    <style jsx global>
-      {`
-        body {
-          margin: 0;
-          padding: 0;
-          font-family: sans-serif;
-        }
-      `}
-    </style>
-  </>
-);
+  // Verify user is authenticated and has ADMIN role
+  if (!session?.user || !roles?.includes("ROLE_ADMIN")) {
+    redirect("/login");
+  }
 
-export default AdminPage;
+  return <AdminClientWrapper />;
+}
