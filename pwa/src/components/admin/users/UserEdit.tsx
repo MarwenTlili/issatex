@@ -43,8 +43,7 @@ import {
 import { getSession } from "next-auth/react";
 import { ENTRYPOINT } from "@/config/entrypoint";
 import { useFormContext } from "react-hook-form";
-import { useMutation } from "@tanstack/react-query";
-import { httpClient } from "../data-provider";
+import { User } from "@/types/resources";
 
 // Constants
 const ROLE_CHOICES = [
@@ -92,7 +91,7 @@ const UserEditToolbar = (props: any) => (
  * User Title component to display the username being edited
  */
 const UserTitle = () => {
-  const record = useRecordContext();
+  const record = useRecordContext<User>();
   return record ? (
     <Typography variant="h5">Edit {record.username}</Typography>
   ) : null;
@@ -167,7 +166,7 @@ const AvatarInput = ({
   source: string;
   onAvatarChange: (state: AvatarState) => void;
 }) => {
-  const record = useRecordContext();
+  const record = useRecordContext<User>();
   const [preview, setPreview] = useState<string | undefined>();
   const [avatarAction, setAvatarAction] = useState<AvatarAction>("keep");
   const { resetField } = useFormContext();
@@ -176,7 +175,7 @@ const AvatarInput = ({
   const { field } = useInput({ source });
 
   // Get the current avatar URL if it exists
-  const avatarUrl = record?.avatar?.contentUrl || null;
+  const avatarUrl = record?.avatar?.contentUrl;
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
@@ -209,7 +208,6 @@ const AvatarInput = ({
     setPreview(undefined);
 
     // Update the form field value to mark the form as dirty
-    // field.onChange({ target: { value: `avatar_deleted_${Date.now()}` } });
     field.onChange("delete");
 
     // Set avatar action to delete
@@ -350,7 +348,7 @@ export const UserEdit = () => {
   };
 
   // Handle form submission with avatar upload/deletion and user update
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: Partial<User>) => {
     setIsSubmitting(true);
     setError(null);
 
@@ -381,7 +379,10 @@ export const UserEdit = () => {
       }
 
       // Step 3: Update user
-      await updateUser(values.id, userData);
+      if (!values["@id"]) {
+        throw new Error("User ID is missing");
+      }
+      await updateUser(values["@id"], userData);
 
       // Step 4: Show success notification and redirect
       notify("User updated successfully", { type: "success" });
