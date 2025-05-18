@@ -2,64 +2,7 @@
 
 ## How To
 
-### Project Structure
-
-```
-issatex
-|   +-- src
-|   |   +-- app
-|   |   |   +-- (admin)                    # Protected routes (e.g: admin, analytics, settings, ...)
-|   |   |   |   +-- admin
-|   |   |   |   |   +-- page.tsx
-|   |   |   |   +-- layout.tsx
-|   |   |   +-- (main)                     # Public routes (e.g: login, register, ...)
-|   |   |   |   +-- login
-|   |   |   |   |   +-- page.tsx
-|   |   |   |   +-- layout.tsx
-|   |   |   |   +-- page.tsx
-|   |   |   +-- api
-|   |   |   |   +-- auth
-|   |   |   |   |   +-- [...nextauth]
-|   |   |   |   |   |   +-- auth-functions.ts
-|   |   |   |   |   |   +-- options.ts
-|   |   |   |   |   |   +-- route.ts
-|   |   |   +-- global-error.tsx
-|   |   |   +-- layout.tsx
-|   |   |   +-- page.tsx
-|   |   |   +-- not-found.tsx
-|   |   +-- components
-|   |   |   +-- admin
-|   |   |   +-- ui                         # Reusable UI components (e.g: Navbar.tsx, Buttons.tsx, Modals.tsx, ...)
-|   |   |   +-- footer.tsx
-|   |   |   +-- navbar.tsx
-|   |   |   +-- providers.tsx              # SessionProvider, QueryClientProvider
-|   |   +-- config
-|   |   |   +-- entrypoint.ts
-|   |   +-- hooks
-|   |   |   +-- useAuthProvider.ts         # auth provider hook for admin
-|   |   |   +-- useDataProvider.ts         # data provider hook for admin
-|   |   +-- lib                            # eg: helpers.ts, axios.ts, auth.ts (JWT, session), ...
-|   |   |   +-- utils
-|   |   |   |   +-- auth.ts
-|   |   |   |   +-- logger.ts
-|   |   |   +-- utils.ts
-|   |   +-- styles
-|   |   |   +-- globals.css
-|   |   +-- types                          # eg: auth.ts, user.ts, ...
-|   |   |   +-- index.ts
-|   |   |   +-- next-auth.d.ts
-|   |   +-- middleware.ts                  # Only one `middleware.ts` file is supported per project
-|   +-- public                         # images, fonts, favicon.ico
-+-- .env.local                      # Local environment variables
-+-- .env.development                # Development environment variables
-+-- .env.production                 # Production environment variables
-+-- next.config.mjs                 # Next.js configuration
-+-- tailwind.config.ts              # TailwindCSS configuration
-+-- tsconfig.json                   # TypeScript configuration
-+-- README.md                       # Project documentation
-```
-
-## PNPM
+### PNPM
 
 ```bash
 pnpm ls -g
@@ -70,7 +13,7 @@ pnpm list --depth=1
 pnpm run build
 ```
 
-## React Admin
+### React Admin
 
 ```bash
 # Add php to trusted hosts in project/.env
@@ -90,9 +33,9 @@ pnpm create @api-platform/client --resource presence -g next
 pnpm add rdf-canonize
 ```
 
-## ShadCN
+### ShadCN
 
-### Step 1: Install shadcn/ui CLI
+#### Step 1: Install shadcn/ui CLI
 
 First, install the shadcn/ui CLI tool:
 
@@ -101,7 +44,7 @@ First, install the shadcn/ui CLI tool:
 pnpm add -g shadcn-ui
 ```
 
-### Step 2: Initialize shadcn/ui in your project
+#### Step 2: Initialize shadcn/ui in your project
 
 Run the init command to set up shadcn/ui in your project:
 
@@ -123,7 +66,7 @@ Configure the import alias for utils: › @/lib/utils
 Are you using React Server Components? › yes
 ```
 
-### Step 3: Install required components
+#### Step 3: Install required components
 
 eg:
 
@@ -131,7 +74,7 @@ eg:
 pnpm dlx shadcn@latest add button input checkbox card alert
 ```
 
-### Step 4: Install additional dependencies
+#### Step 4: Install additional dependencies
 
 ```bash
 pnpm add lucide-react
@@ -139,7 +82,7 @@ pnpm add tailwindcss-animate
 pnpm add clsx tailwind-merge
 ```
 
-### Step 5: Set up the theme provider
+#### Step 5: Set up the theme provider
 
 components/theme-provider.tsx
 
@@ -155,7 +98,7 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 }
 ```
 
-### Step 6: Update your layout file
+#### Step 6: Update your layout file
 
 app/layout.tsx
 
@@ -188,7 +131,7 @@ export default function RootLayout({
 }
 ```
 
-### Step 7: Create the utils file
+#### Step 7: Create the utils file
 
 lib/utils.ts
 
@@ -201,7 +144,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 ```
 
-### Step 8: Update your tailwind.config.js
+#### Step 8: Update your tailwind.config.js
 
 Make sure your tailwind.config.ts is properly configured. It should look something like this:
 
@@ -288,7 +231,7 @@ const config: Config = {
 export default config;
 ```
 
-### Step 9: Update your globals.css
+#### Step 9: Update your globals.css
 
 app/globals.css
 
