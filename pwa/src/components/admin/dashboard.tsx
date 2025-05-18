@@ -47,8 +47,11 @@ export const Dashboard = () => {
             <CardTitle>Session Info</CardTitle>
           </CardHeader>
           <CardContent>
+            <p>Session expires: </p>
             <p>
-              Session expires: {new Date(session?.expires || "").toISOString()}
+              {new Date(session?.expires || "").toLocaleDateString()}
+              {", "}
+              {new Date(session?.expires || "").toLocaleTimeString()}
             </p>
           </CardContent>
         </Card>
