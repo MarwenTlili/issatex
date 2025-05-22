@@ -3,6 +3,7 @@
 namespace App\DataFixtures;
 
 use App\Entity\Client;
+use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -19,7 +20,6 @@ class ClientFixtures extends Fixture implements DependentFixtureInterface, Fixtu
             $client = new Client();
             $company = $this->faker->unique()->word();
             $client->setNom($company)
-                ->setEmail(strtolower(str_replace(" ", ".", $company)) . "@exemple.com")
                 ->setAdresse($this->faker->address())
                 ->setPrivilegie($i % 2 === 0)
                 ->setAccount($this->getReference("USER_$i"));
