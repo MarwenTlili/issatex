@@ -124,7 +124,7 @@ export const UserList = () => {
         >
           <TextField
             source="ref"
-            label="ID"
+            label="Ref"
             sx={{ fontFamily: "monospace", color: "#64748b" }}
           />
           <FunctionField
