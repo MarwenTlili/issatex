@@ -22,9 +22,6 @@ class Client {
     #[ORM\Column(length: 255, unique: true)]
     private ?string $nom = null;
 
-    #[ORM\Column(length: 255, unique: true)]
-    private ?string $email = null;
-
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $adresse = null;
 
@@ -72,16 +69,6 @@ class Client {
 
     public function setNom(string $nom): static {
         $this->nom = $nom;
-
-        return $this;
-    }
-
-    public function getEmail(): ?string {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): static {
-        $this->email = $email;
 
         return $this;
     }
