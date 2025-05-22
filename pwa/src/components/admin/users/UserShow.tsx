@@ -132,7 +132,7 @@ export const UserShow = () => (
           <Divider sx={{ my: 2 }} />
           <Box sx={{ mt: 2 }}>
             <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              User ID
+              User Ref
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
               <Badge sx={{ color: "primary.main", mr: 1 }} />
