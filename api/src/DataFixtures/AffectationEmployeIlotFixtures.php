@@ -4,7 +4,6 @@ namespace App\DataFixtures;
 
 use App\Entity\AffectationEmployeIlot;
 use App\Entity\Employe;
-use App\Entity\Ilot;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -25,21 +24,11 @@ class AffectationEmployeIlotFixtures extends Fixture implements DependentFixture
             $i++;
         }
 
-        /** @var Ilot[] */
-        $ilots = [];
-        $j = 0;
-        while ($this->hasReference("ILOT_$j")) {
-            array_push($ilots, $this->getReference("ILOT_$j"));
-            $j++;
-        }
-
-        $numIlots = count($ilots);
-
         foreach ($employes as $key => $employe) {
             $affectation = new AffectationEmployeIlot();
             $affectation->setResponsable($key === 0 || $key === 6)
                 ->setEmploye($employe)
-                ->setIlot($ilots[$key % $numIlots]);  // round-robin
+                ->setIlot($key < 6 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"));
 
             $manager->persist($affectation);
         }
