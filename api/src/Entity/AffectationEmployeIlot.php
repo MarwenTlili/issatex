@@ -2,12 +2,15 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AffectationEmployeIlotRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AffectationEmployeIlotRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiFilter(SearchFilter::class, properties: ["employe" => "exact", "ilot" => "exact"])]
 class AffectationEmployeIlot {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]

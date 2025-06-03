@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\PlanningRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -19,6 +22,23 @@ use Symfony\Component\Validator\Constraints as Assert;
 )]
 #[ORM\Entity(repositoryClass: PlanningRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiFilter(
+    SearchFilter::class,
+    properties: [
+        "ref" => "ipartial",
+        "ordreFabrication" => "exact",
+        "ilot" => "exact",
+        "dateCreation" => "exact",
+        "dateDebut" => "exact",
+        "dateFin" => "exact",
+    ]
+)]
+#[ApiFilter(
+    OrderFilter::class,
+    properties: [
+        "dateCreation" => "DESC"
+    ]
+)]
 class Planning {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]

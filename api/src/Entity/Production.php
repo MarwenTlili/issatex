@@ -2,6 +2,9 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Enum\TailleArticle;
 use App\Repository\ProductionRepository;
@@ -12,6 +15,8 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: ProductionRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiFilter(SearchFilter::class, properties: ["planning" => "exact", "tailleArticle" => "exact"])]
+#[ApiFilter(OrderFilter::class, properties: ["dateProduction" => "DESC"])]
 class Production {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]

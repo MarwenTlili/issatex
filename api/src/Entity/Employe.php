@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\EmployeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -10,6 +12,15 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: EmployeRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiFilter(
+    SearchFilter::class,
+    properties: [
+        "ref" => "ipartial",
+        "poste" => "exact",
+        "nom" => "ipartial",
+        "prenom" => "ipartial"
+    ]
+)]
 class Employe {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]

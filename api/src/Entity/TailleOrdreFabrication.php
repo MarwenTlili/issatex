@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Enum\TailleArticle;
 use App\Repository\TailleOrdreFabricationRepository;
@@ -10,6 +12,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TailleOrdreFabricationRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiFilter(SearchFilter::class, properties: ["ordreFabrication" => "exact"])]
 class TailleOrdreFabrication {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
