@@ -24,19 +24,12 @@ import { useMediaQuery } from "@mui/material";
 import AvatarField from "./AvatarField";
 
 const listFilters = [
-  <SearchInput
-    key={"search"}
-    source="id"
-    placeholder="Search by ID..."
-    alwaysOn
-  />,
+  <SearchInput key="search" source="ref" alwaysOn />,
   <TextInput id="text-input-email" key={"email"} source="email" />,
   <TextInput id="text-input-username" key={"username"} source="username" />,
 ];
 
 const ListActions = () => {
-  const isSmall = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
-
   return (
     <TopToolbar>
       <FilterButton />

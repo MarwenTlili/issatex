@@ -2,6 +2,10 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Enum\StatutPresence;
 use App\Repository\PresenceRepository;
@@ -10,6 +14,16 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PresenceRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiFilter(
+    SearchFilter::class,
+    properties: [
+        "employe" => "exact",
+        "production" => "exact",
+        "statut" => "exact"
+    ]
+)]
+#[ApiFilter(DateFilter::class, properties: ['datePresence'])]
+#[ApiFilter(OrderFilter::class, properties: ["datePresence" => "DESC"])]
 class Presence {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]

@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\MachineRepository;
 use Doctrine\DBAL\Types\Types;
@@ -10,6 +12,14 @@ use App\Enum\StatutMachine;
 
 #[ORM\Entity(repositoryClass: MachineRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiFilter(
+    SearchFilter::class,
+    properties: [
+        "ilot" => "exact",
+        "ref" => "ipartial",
+        "statut" => "exact",
+    ]
+)]
 class Machine {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
