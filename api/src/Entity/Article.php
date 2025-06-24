@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
@@ -10,16 +11,34 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
-#[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiResource(
+    mercure: true,
+    paginationClientItemsPerPage: true,
+    operations: [
+        new Post(),
+        new Get(),
+        new GetCollection(),
+        new Patch(),
+        new Delete()
+    ]
+)]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
         "ref" => "ipartial",
+        "designation" => "ipartial",
         "client" => "exact",
     ]
 )]
+#[ApiFilter(OrderFilter::class, properties: ["ref", "designation"])]
 class Article {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
@@ -30,9 +49,11 @@ class Article {
     private ?string $ref = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Assert\NotBlank]
     private ?string $designation = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[Assert\NotBlank]
     private ?string $composition = null;
 
     #[ORM\ManyToOne(inversedBy: 'articles')]

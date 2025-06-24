@@ -18,6 +18,7 @@ import {
   UserPlus,
   FactoryIcon,
   LayoutDashboard,
+  Shirt,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Session } from "next-auth";
@@ -41,7 +42,12 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
 
   const navItems = [
     { name: "Home", href: "/", icon: <Home className="h-5 w-5" /> },
-    { name: "About", href: "/about", icon: <Info className="h-5 w-5" /> },
+    {
+      name: "Articles",
+      href: "/articles",
+      icon: <Shirt className="h-5 w-5" />,
+    },
+    { name: "À propos", href: "/about", icon: <Info className="h-5 w-5" /> },
     { name: "Contact", href: "/contact", icon: <Mail className="h-5 w-5" /> },
   ];
 
@@ -219,11 +225,10 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
                         <Separator className="mx-2 w-auto" />
                         <button
                           onClick={() => {
-                            // signOut();
                             signOut({ redirect: false }).then(() => {
-                              router.push("/login"); // or "/"
+                              router.push("/login");
                             });
-                          }} // { callbackUrl: pathname }
+                          }}
                           className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           <LogOut className="mr-3 h-5 w-5 text-gray-400" />

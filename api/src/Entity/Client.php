@@ -17,6 +17,7 @@ use Doctrine\ORM\Mapping as ORM;
     properties: [
         "ref" => "ipartial",
         "privilegie" => "exact",
+        "account" => "exact"
     ]
 )]
 class Client {
