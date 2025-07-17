@@ -33,6 +33,7 @@ import { ENTRYPOINT } from "@/config/entrypoint";
 
 const roleChoices = [
   { id: "ROLE_ADMIN", name: "Admin" },
+  { id: "ROLE_CLIENT", name: "Client" },
   { id: "ROLE_SECRETARY", name: "Secrétaire" },
   { id: "ROLE_WAREHOUSEMAN", name: "Magasinier" },
   { id: "ROLE_USER", name: "User (par défaut)" },
