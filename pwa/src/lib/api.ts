@@ -9,6 +9,16 @@ import {
 } from "@/types/resources/Article";
 import { Client } from "@/types/resources/Client";
 import { ApiCollection } from "@/types/resources";
+import {
+  CreateOrdreFabricationData,
+  OrdreFabrication,
+  OrdreFabricationFilters,
+  UpdateOrdreFabricationData,
+} from "@/types/resources/OrdreFabrication";
+import {
+  TailleArticle,
+  TailleOrdreFabrication,
+} from "@/types/resources/TailleOrdreFabrication";
 
 // Fetch resources using JWT token
 async function fetchWithAuth(
@@ -118,4 +128,170 @@ export const articleApi = {
     apiRequest<void>(`/api/articles/${id}`, {
       method: "DELETE",
     }),
+};
+
+// Ordre Fabrication functions
+export const ordreFabricationsApi = {
+  getAllByClientId: async (
+    clientId: number,
+    filters: OrdreFabricationFilters = {}
+  ) => {
+    const params = new URLSearchParams({
+      client: clientId.toString(),
+      ...(filters.ref && { ref: filters.ref }),
+      ...(filters.statut && { statut: filters.statut }),
+      ...(filters.urgent !== undefined && {
+        urgent: filters.urgent.toString(),
+      }),
+      ...(filters.page && { page: filters.page.toString() }),
+      ...(filters.itemsPerPage && {
+        itemsPerPage: filters.itemsPerPage.toString(),
+      }),
+    });
+
+    // Add ordering parameters
+    if (filters.order) {
+      Object.entries(filters.order).forEach(([field, direction]) => {
+        params.append(`order[${field}]`, direction);
+      });
+    }
+
+    return apiRequest<ApiCollection<OrdreFabrication>>(
+      `/api/ordre_fabrications?${params.toString()}`
+    );
+  },
+
+  getById: async (id: number) => {
+    return apiRequest<OrdreFabrication>(`/api/ordre_fabrications/${id}`);
+  },
+
+  create: async (data: CreateOrdreFabricationData, clientIri: string) => {
+    // First create the OrdreFabrication without tailleOFs
+    const { tailleOFs, ...ordreFabricationData } = data;
+
+    const ordreFabrication = await apiRequest<OrdreFabrication>(
+      "/api/ordre_fabrications",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          ...ordreFabricationData,
+          dateCreation: new Date().toISOString(),
+          statut: "Cree",
+          lance: false,
+          client: clientIri,
+        }),
+      }
+    );
+
+    // Then create each TailleOrdreFabrication
+    const tailleOFPromises = tailleOFs.map((tailleOF) =>
+      tailleOrdreFabricationsApi.create({
+        ...tailleOF,
+        ordreFabrication: ordreFabrication["@id"],
+      })
+    );
+
+    await Promise.all(tailleOFPromises);
+
+    return ordreFabrication;
+  },
+
+  update: async (data: UpdateOrdreFabricationData, clientIri: string) => {
+    const { id, tailleOFs, ...updateData } = data;
+
+    // Update the OrdreFabrication
+    const ordreFabrication = await apiRequest<OrdreFabrication>(
+      `/api/ordre_fabrications/${id}`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/merge-patch+json" },
+        body: JSON.stringify(updateData),
+      }
+    );
+
+    if (tailleOFs) {
+      // Get existing TailleOrdreFabrication
+      const existingTailleOFs =
+        await tailleOrdreFabricationsApi.getByOrdreFabrication(id);
+
+      // Delete existing TailleOrdreFabrication
+      await Promise.all(
+        existingTailleOFs.member.map((tof) =>
+          tailleOrdreFabricationsApi.delete(tof.id)
+        )
+      );
+
+      // Create new TailleOrdreFabrication
+      const tailleOFPromises = tailleOFs.map((tailleOF) =>
+        tailleOrdreFabricationsApi.create({
+          ...tailleOF,
+          ordreFabrication: ordreFabrication["@id"],
+        })
+      );
+
+      await Promise.all(tailleOFPromises);
+    }
+
+    return ordreFabrication;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    // First delete associated TailleOrdreFabrication
+    const tailleOFs = await tailleOrdreFabricationsApi.getByOrdreFabrication(
+      id
+    );
+    await Promise.all(
+      tailleOFs.member.map((tof) => tailleOrdreFabricationsApi.delete(tof.id))
+    );
+
+    // Then delete the OrdreFabrication
+    await apiRequest<void>(`/api/ordre_fabrications/${id}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+// Ordre Taille Fabrication functions
+export const tailleOrdreFabricationsApi = {
+  getByOrdreFabrication: async (ordreFabricationId: number) => {
+    return apiRequest<ApiCollection<TailleOrdreFabrication>>(
+      `/api/taille_ordre_fabrications?ordreFabrication=${ordreFabricationId}`
+    );
+  },
+
+  create: async (data: {
+    tailleArticle: TailleArticle;
+    quantite: number;
+    ordreFabrication: string;
+  }) => {
+    return apiRequest<TailleOrdreFabrication>(
+      "/api/taille_ordre_fabrications",
+      {
+        method: "POST",
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  update: async (
+    id: number,
+    data: {
+      tailleArticle: TailleArticle;
+      quantite: number;
+    }
+  ) => {
+    return apiRequest<TailleOrdreFabrication>(
+      `/api/taille_ordre_fabrications/${id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(data),
+      }
+    );
+  },
+
+  delete: async (id: number) => {
+    await apiRequest<void>(`/api/taille_ordre_fabrications/${id}`, {
+      method: "DELETE",
+    });
+  },
 };
