@@ -19,6 +19,7 @@ import {
   FactoryIcon,
   LayoutDashboard,
   Shirt,
+  Layers,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Session } from "next-auth";
@@ -46,6 +47,11 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
       name: "Articles",
       href: "/articles",
       icon: <Shirt className="h-5 w-5" />,
+    },
+    {
+      name: "Ordres de fabrication",
+      href: "/client/ordre-fabrications",
+      icon: <Layers className="h-5 w-5" />,
     },
     { name: "À propos", href: "/about", icon: <Info className="h-5 w-5" /> },
     { name: "Contact", href: "/contact", icon: <Mail className="h-5 w-5" /> },
