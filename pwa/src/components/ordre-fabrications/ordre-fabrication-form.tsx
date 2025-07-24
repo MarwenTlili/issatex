@@ -266,7 +266,7 @@ export function OrdreFabricationForm({ id }: OrdreFabricationFormProps) {
       } else {
         await createOrdreFabrication.mutateAsync(formDataForAPI);
       }
-      router.push(`/ordre-fabrications`);
+      router.push(`/client/ordre-fabrications`);
     } catch (error) {
       console.error("Form submission error:", error);
     }
@@ -532,7 +532,7 @@ export function OrdreFabricationForm({ id }: OrdreFabricationFormProps) {
               asChild
               className="w-full sm:w-auto bg-transparent"
             >
-              <Link href={"/ordre-fabrications"}>
+              <Link href={"/client/ordre-fabrications"}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Annuler
               </Link>
             </Button>

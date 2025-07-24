@@ -253,7 +253,7 @@ export const OrdreFabricationsTableContent = memo(
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
                         <Link
-                          href={`/ordre-fabrications/${of.id}`}
+                          href={`/client/ordre-fabrications/${of.id}`}
                           className="flex items-center"
                         >
                           <Eye className="mr-2 h-4 w-4" />
@@ -262,7 +262,7 @@ export const OrdreFabricationsTableContent = memo(
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link
-                          href={`/ordre-fabrications/${of.id}/edit`}
+                          href={`/client/ordre-fabrications/${of.id}/edit`}
                           className="flex items-center"
                         >
                           <Edit className="mr-2 h-4 w-4" />
