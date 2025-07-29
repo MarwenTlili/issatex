@@ -4,8 +4,8 @@ namespace App\Enum;
 
 enum StatutOF: string {
   case CREE = 'Cree';
+  case PLANIFIE = 'Planifiee';
   case EN_COURS = 'En_cours';
   case TERMINE = 'Terminee';
-  case ANNULE = 'Annule';
-  case EN_ATTENTE = 'En_attente';
+  case ANNULE = 'Annulee';
 }
