@@ -15,15 +15,18 @@ import {
   FilterButton,
   useRecordContext,
   SearchInput,
+  FunctionField,
+  DeleteButton,
 } from "react-admin";
-import { Chip, Box } from "@mui/material";
+import { Chip, Box, ChipProps } from "@mui/material";
+import { StatutOF } from "@/types/resources/OrdreFabrication";
 
 const statutChoices = [
   { id: "CREE", name: "Créé" },
+  { id: "PLANIFIE", name: "Planifié" },
   { id: "EN_COURS", name: "En cours" },
   { id: "TERMINE", name: "Terminé" },
   { id: "ANNULE", name: "Annulé" },
-  { id: "EN_ATTENTE", name: "En attente" },
 ];
 
 const filters = [
@@ -53,39 +56,39 @@ const ListActions = () => (
   </TopToolbar>
 );
 
-const StatutField = () => {
+const StatutField = (props: any) => {
   const record = useRecordContext();
   if (!record) return null;
 
-  const getStatutColor = (statut: string) => {
+  const getStatutColor = (statut: StatutOF): ChipProps["color"] => {
     switch (statut) {
-      case "CREE":
+      case "Cree":
         return "default";
-      case "EN_COURS":
+      case "Planifiee":
+        return "info";
+      case "En_cours":
         return "primary";
-      case "TERMINE":
+      case "Terminee":
         return "success";
-      case "ANNULE":
+      case "Annule":
         return "error";
-      case "EN_ATTENTE":
-        return "warning";
       default:
         return "default";
     }
   };
 
-  const getStatutLabel = (statut: string) => {
+  const getStatutLabel = (statut: StatutOF): string => {
     switch (statut) {
-      case "CREE":
-        return "Créé";
-      case "EN_COURS":
+      case "Cree":
+        return "Créée";
+      case "Planifiee":
+        return "Planifiée";
+      case "En_cours":
         return "En cours";
-      case "TERMINE":
-        return "Terminé";
-      case "ANNULE":
-        return "Annulé";
-      case "EN_ATTENTE":
-        return "En attente";
+      case "Terminee":
+        return "Terminée";
+      case "Annule":
+        return "Annulée";
       default:
         return statut;
     }
@@ -101,35 +104,29 @@ const StatutField = () => {
   );
 };
 
-const UrgentField = () => {
-  const record = useRecordContext();
-  if (!record) return null;
-
-  return record.urgent ? (
-    <Chip label="URGENT" color="error" size="small" variant="outlined" />
-  ) : null;
-};
-
-const LanceField = () => {
-  const record = useRecordContext();
-  if (!record) return null;
-
-  return record.lance ? (
-    <Chip label="PLANIFIER" color="success" size="small" variant="filled" />
-  ) : (
-    <Chip label="NON PLANIFIER" color="default" size="small" variant="outlined" />
-  );
-};
-
-const PriorityField = () => {
+const PriorityField = (props: any) => {
   const record = useRecordContext();
   if (!record) return null;
 
   return (
     <Box display="flex" gap={0.5} flexDirection="column">
-      <UrgentField />
-      <LanceField />
+      {record.urgent && (
+        <Chip label="URGENT" color="warning" size="small" variant="filled" />
+      )}
     </Box>
+  );
+};
+
+const LanceField = (props: any) => {
+  const record = useRecordContext();
+  if (!record || record.statut === "Terminee") return null;
+  return (
+    <Chip
+      label={record.lance ? "LANCÉE" : "NON LANCÉE"}
+      color={record.lance ? "primary" : "default"}
+      size="small"
+      variant={record.lance ? "filled" : "outlined"}
+    />
   );
 };
 
@@ -166,7 +163,7 @@ export const OrdreFabricationList = () => (
         label="Prix unitaire"
         options={{ style: "currency", currency: "EUR" }}
       />
-      {/* <FunctionField
+      <FunctionField
         label="Valeur totale"
         render={(record: any) =>
           new Intl.NumberFormat("fr-FR", {
@@ -176,9 +173,11 @@ export const OrdreFabricationList = () => (
             record.quantiteTotale * Number.parseFloat(record.prixUnitaire)
           )
         }
-      /> */}
-      <StatutField />
-      <PriorityField />
+      />
+      <StatutField label="Statut" />
+      <LanceField label="En Production"/>
+      <PriorityField label="Priorité" />
+      <DeleteButton mutationMode="pessimistic" />
     </Datagrid>
   </List>
 );
