@@ -41,7 +41,7 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
       onConfirm: () => {
         deleteArticle.mutateAsync(id);
         setOpenConfirmDialog(false);
-        router.push("/articles");
+        router.push("/client/articles");
       },
     });
     setOpenConfirmDialog(true);
@@ -74,7 +74,7 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
           </div>
           <div className="flex justify-center mt-4">
             <Button asChild className="w-full sm:w-auto">
-              <Link href="/articles">
+              <Link href="/client/articles">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux articles
               </Link>
             </Button>
@@ -128,13 +128,13 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 sm:p-6">
         <Button variant="outline" asChild className="w-full sm:w-auto">
-          <Link href="/articles">
+          <Link href="/client/articles">
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux articles
           </Link>
         </Button>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link href={`/articles/${id}/edit`}>
+            <Link href={`/client/articles/${id}/edit`}>
               <Edit className="mr-2 h-4 w-4" /> Modifier
             </Link>
           </Button>

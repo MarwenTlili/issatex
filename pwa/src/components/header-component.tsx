@@ -45,7 +45,7 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
     { name: "Home", href: "/", icon: <Home className="h-5 w-5" /> },
     {
       name: "Articles",
-      href: "/articles",
+      href: "/client/articles",
       icon: <Shirt className="h-5 w-5" />,
     },
     {

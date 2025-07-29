@@ -135,7 +135,7 @@ export function ArticleForm({ articleId }: ArticleFormProps) {
             asChild
             className="w-full sm:w-auto"
           >
-            <Link href={"/articles"}>
+            <Link href={"/client/articles"}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux articles
             </Link>
           </Button>
