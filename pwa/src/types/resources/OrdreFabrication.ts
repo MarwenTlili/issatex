@@ -1,7 +1,7 @@
 import { Item } from "./item";
 import { TailleOrdreFabricationData } from "./TailleOrdreFabrication";
 
-type StatutOF = "Cree" | "En Cours" | "Terminee" | "Annule" | "En Attente";
+export type StatutOF = "Cree" | "Planifiee" | "En_cours" | "Terminee" | "Annule";
 
 export interface OrdreFabrication extends Item {
   id: number;
