@@ -6,7 +6,13 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
 use App\Repository\PlanningRepository;
+use App\State\PlanningStateProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -21,7 +27,17 @@ use Symfony\Component\Validator\Constraints as Assert;
     ]
 )]
 #[ORM\Entity(repositoryClass: PlanningRepository::class)]
-#[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiResource(
+    paginationClientItemsPerPage: true,
+    processor: PlanningStateProcessor::class,
+    operations: [
+        new Post(),
+        new GetCollection(),
+        new Get(),
+        new Patch(),
+        new Delete()
+    ]
+)]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
