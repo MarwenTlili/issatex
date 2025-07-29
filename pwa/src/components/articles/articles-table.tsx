@@ -100,7 +100,7 @@ export function ArticlesTable() {
             List des Articles
           </CardTitle>
           <Button asChild className="w-full sm:w-auto">
-            <Link href="/articles/new">
+            <Link href="/client/articles/new">
               <Plus className="mr-2 h-4 w-4" /> Ajout Article
             </Link>
           </Button>

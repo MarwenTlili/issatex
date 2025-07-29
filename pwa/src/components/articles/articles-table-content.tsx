@@ -122,12 +122,12 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
                       <Button variant="outline" size="icon" asChild>
-                        <Link href={`/articles/${article.id}`}>
+                        <Link href={`/client/articles/${article.id}`}>
                           <BookOpen className="h-4 w-4" />
                         </Link>
                       </Button>
                       <Button variant="outline" size="icon" asChild>
-                        <Link href={`/articles/${article.id}/edit`}>
+                        <Link href={`/client/articles/${article.id}/edit`}>
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -183,7 +183,7 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link
-                        href={`/articles/${article.id}`}
+                        href={`/client/articles/${article.id}`}
                         className="flex items-center"
                       >
                         <BookOpen className="mr-2 h-4 w-4" />
@@ -192,7 +192,7 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        href={`/articles/${article.id}/edit`}
+                        href={`/client/articles/${article.id}/edit`}
                         className="flex items-center"
                       >
                         <Edit className="mr-2 h-4 w-4" />
