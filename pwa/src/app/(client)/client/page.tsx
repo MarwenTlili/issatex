@@ -1,6 +1,8 @@
-import { authOptions } from "@/lib/auth/auth-options";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
+
+import { authOptions } from "@/lib/auth/auth-options";
+import ClientDashboard from "@/components/dashboards/client-dashboard";
 
 export default async function ClientPage() {
   const session = await getServerSession(authOptions);
@@ -11,5 +13,9 @@ export default async function ClientPage() {
     redirect("/login");
   }
 
-  return <>Client Page</>;
+  return (
+    <>
+      <ClientDashboard />
+    </>
+  );
 }
