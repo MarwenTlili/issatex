@@ -3,8 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,16 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertCircle, ArrowLeft, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useArticles } from "@/hooks/use-articles";
 import {
@@ -34,66 +24,23 @@ import {
   useOrdreFabrication,
 } from "@/hooks/use-ordre-fabrications";
 import { useTailleOrdreFabrications } from "@/hooks/use-taille-ordre-fabrications";
+import { TAILLE_ARTICLE_OPTIONS, TailleArticle } from "@/types/resources/TailleOrdreFabrication";
 
 interface OrdreFabricationFormProps {
-  id?: number;
+  ordreFabricationId?: number;
 }
 
-const TAILLE_OPTIONS = ["M", "L", "XL"] as const;
-
-// Helper function to validate numeric strings
-const numericStringSchema = (fieldName: string, minValue = 0) =>
-  z.string().refine((val) => {
-    if (val === "") return false; // Empty string is invalid
-    const num = Number.parseFloat(val);
-    return !isNaN(num) && num >= minValue;
-  }, `${fieldName} doit être supérieur ou égal à ${minValue}`);
-
-// Zod schema for validation
-const ordreFabricationSchema = z.object({
-  article: z.string().min(1, "L'article est requis"),
-  dateCloture: z
-    .string()
-    .min(1, "Date de cloture est requis")
-    .refine((date) => {
-      const clotureDate = new Date(date);
-      const currentDate = new Date();
-      currentDate.setHours(0, 0, 0, 0);
-      return clotureDate > currentDate;
-    }, "La date de cloture de date doit être à l'avenir"),
-  urgent: z.boolean(),
-  prixUnitaire: z
-    .string()
-    .min(1, "Le prix unitaire est obligatoire")
-    .refine((val) => {
-      const num = Number.parseFloat(val);
-      return !isNaN(num) && num > 0;
-    }, "Le prix unitaire doit être supérieur à 0"),
-  tempsUnitaire: numericStringSchema("Le temps unitaire", 1),
-  tailleOFs: z
-    .array(
-      z.object({
-        tailleArticle: z.enum(TAILLE_OPTIONS),
-        quantite: numericStringSchema("La quantité", 0),
-      })
-    )
-    .min(1, "Au moins une configuration de taille est requise")
-    .refine(
-      (tailleOFs) =>
-        tailleOFs.some((taille) => {
-          const qty = Number.parseFloat(taille.quantite);
-          return !isNaN(qty) && qty > 0;
-        }),
-      "Au moins une taille doit avoir une quantité supérieure à 0"
-    ),
-});
-
-type OrdreFabricationFormData = z.infer<typeof ordreFabricationSchema>;
-
-const formatDateForInput = (dateString: string): string => {
-  if (!dateString) return "";
-  return dateString.split("T")[0];
-};
+interface FormData {
+  dateCloture: string;
+  urgent: boolean;
+  prixUnitaire: string;
+  tempsUnitaire: number;
+  article: string;
+  tailleOFs: Array<{
+    tailleArticle: TailleArticle;
+    quantite: number;
+  }>;
+}
 
 const getTomorrowDate = (): string => {
   const tomorrow = new Date();
@@ -101,399 +48,430 @@ const getTomorrowDate = (): string => {
   return tomorrow.toISOString().split("T")[0];
 };
 
-const getDefaultValues = (): OrdreFabricationFormData => ({
-  article: "",
-  dateCloture: "",
-  urgent: false,
-  prixUnitaire: "",
-  tempsUnitaire: "",
-  tailleOFs: [],
-});
+const formatDateForInput = (dateString: string): string => {
+  if (!dateString) return "";
+  return dateString.split("T")[0];
+};
 
-export function OrdreFabricationForm({ id }: OrdreFabricationFormProps) {
-  const isEdit = !!id;
+export function OrdreFabricationForm({
+  ordreFabricationId,
+}: OrdreFabricationFormProps) {
+  const isEdit = !!ordreFabricationId;
   const router = useRouter();
+
+  // React Hook Form setup
+  const form = useForm<FormData>({
+    defaultValues: {
+      dateCloture: "",
+      urgent: false,
+      prixUnitaire: "",
+      tempsUnitaire: 0,
+      article: "",
+      tailleOFs: [],
+    },
+    mode: "onChange",
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "tailleOFs",
+  });
+
+  // React Query hooks with optimized configuration
   const { data: articlesResponse } = useArticles({
     itemsPerPage: 100,
     order: { ref: "desc" },
   });
 
-  // Force refetch when ID changes by adding refetchOnMount and refetchOnWindowFocus
   const {
     data: ordreFabrication,
-    isLoading: isLoadingOrdre,
-    refetch: refetchOrdre,
-  } = useOrdreFabrication(id);
+    isLoading: isLoadingOF,
+    isSuccess: isSuccessOF,
+  } = useOrdreFabrication(ordreFabricationId!, {
+    enabled: !!ordreFabricationId,
+    staleTime: 10 * 60 * 1000,
+  });
 
   const {
     data: tailleOFsResponse,
     isLoading: isLoadingTailles,
-    refetch: refetchTailles,
-  } = useTailleOrdreFabrications(id);
+    isSuccess: isSuccessTailles,
+  } = useTailleOrdreFabrications(ordreFabricationId, {
+    enabled: !!ordreFabricationId,
+    staleTime: 10 * 60 * 1000,
+  });
 
   const createOrdreFabrication = useCreateOrdreFabrication();
   const updateOrdreFabrication = useUpdateOrdreFabrication();
 
-  const form = useForm<OrdreFabricationFormData>({
-    resolver: zodResolver(ordreFabricationSchema),
-    defaultValues: getDefaultValues(),
-    mode: "onChange",
-  });
-
-  const { fields, append, remove, replace } = useFieldArray({
-    control: form.control,
-    name: "tailleOFs",
-  });
-
-  const watchedTailleOFs = form.watch("tailleOFs");
-  const quantiteTotale =
-    watchedTailleOFs?.reduce((sum, taille) => {
-      const qty = Number.parseFloat(taille?.quantite || "0");
-      return sum + (isNaN(qty) ? 0 : qty);
-    }, 0) || 0;
-
-  const [lastLoadedId, setLastLoadedId] = useState<number | undefined>(
-    undefined
-  );
-
-  // Force refetch when ID changes
+  // Single useEffect to populate form data when editing
   useEffect(() => {
-    if (id && id !== lastLoadedId) {
-      // Force refetch both queries
-      if (refetchOrdre) refetchOrdre();
-      if (refetchTailles) refetchTailles();
-      // Reset form to default values immediately
-      form.reset(getDefaultValues());
-      setLastLoadedId(id);
-    }
-  }, [id, lastLoadedId, refetchOrdre, refetchTailles, form]);
+    if (
+      isEdit &&
+      isSuccessOF &&
+      isSuccessTailles &&
+      ordreFabrication &&
+      tailleOFsResponse
+    ) {
+      console.log("Populating form with data:", ordreFabrication.article);
 
-  // Initialize form when data loads
-  useEffect(() => {
-    if (!isEdit) {
-      // Create mode
-      form.reset(getDefaultValues());
-      return;
-    }
-
-    // Edit mode - only proceed if we have data for the current ID
-    if (id && ordreFabrication && tailleOFsResponse && id === lastLoadedId) {
       const tailleOFs = tailleOFsResponse.member.map((tof) => ({
-        tailleArticle: tof.tailleArticle as "M" | "L" | "XL",
-        quantite: tof.quantite.toString(), // Convert to string
+        tailleArticle: tof.tailleArticle,
+        quantite: tof.quantite,
       }));
 
-      const formData: OrdreFabricationFormData = {
-        article: ordreFabrication.article || "",
+      form.reset({
         dateCloture: formatDateForInput(ordreFabrication.dateCloture || ""),
-        urgent: ordreFabrication.urgent || false,
-        prixUnitaire: (ordreFabrication.prixUnitaire || 0).toString(),
-        tempsUnitaire: (ordreFabrication.tempsUnitaire || "").toString(), // Convert to string
+        urgent: ordreFabrication.urgent,
+        prixUnitaire: ordreFabrication.prixUnitaire,
+        tempsUnitaire: ordreFabrication.tempsUnitaire,
+        article: ordreFabrication.article,
         tailleOFs,
-      };
-
-      // Add a small delay to ensure all components are ready
-      setTimeout(() => {
-        // Reset form with new data
-        form.reset(formData);
-        // Also update field array explicitly
-        replace(tailleOFs);
-        // Force update the article field specifically
-        form.setValue("article", ordreFabrication.article || "", {
-          shouldValidate: true,
-        });
-      }, 50);
+      });
     }
   }, [
     isEdit,
-    id,
+    isSuccessOF,
+    isSuccessTailles,
     ordreFabrication,
     tailleOFsResponse,
-    lastLoadedId,
     form,
-    replace,
   ]);
 
-  const isSaveOrEditLoading =
+  // Watch tailleOFs to calculate total quantity
+  const watchedTailleOFs = form.watch("tailleOFs");
+  const totalQuantity =
+    watchedTailleOFs?.reduce(
+      (sum, taille) => sum + (taille.quantite || 0),
+      0
+    ) || 0;
+
+  const isLoading =
     createOrdreFabrication.isLoading || updateOrdreFabrication.isLoading;
+  const isDataLoading = isEdit && (isLoadingOF || isLoadingTailles);
 
-  // Show loading when:
-  // 1. In edit mode and data is loading
-  // 2. In edit mode and we don't have data yet
-  // 3. ID changed but data hasn't loaded yet
-  const isDataLoading =
-    (isEdit && (isLoadingOrdre || isLoadingTailles)) ||
-    (isEdit && (!ordreFabrication || !tailleOFsResponse)) ||
-    (isEdit && id !== lastLoadedId) ||
-    !articlesResponse;
-
-  if (isDataLoading) {
-    return (
-      <Card className="mx-4 sm:mx-0 max-w-4xl">
-        <CardContent className="p-4 sm:p-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-            <span className="ml-2">
-              {isEdit
-                ? `Loading data for ordre fabrication ${id}...`
-                : "Initializing form..."}
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const onSubmit = async (data: OrdreFabricationFormData) => {
+  const onSubmit = async (data: FormData) => {
     try {
       const formDataForAPI = {
         ...data,
+        quantiteTotale: totalQuantity,
         dateCloture: data.dateCloture || null,
-        quantiteTotale,
-        // Convert string values back to numbers for API
-        tempsUnitaire: Number.parseFloat(data.tempsUnitaire),
-        tailleOFs: data.tailleOFs.map((taille) => ({
-          ...taille,
-          quantite: Number.parseFloat(taille.quantite),
-        })),
       };
 
-      if (isEdit && id) {
+      if (isEdit && ordreFabricationId) {
         await updateOrdreFabrication.mutateAsync({
-          id: id,
+          id: ordreFabricationId,
           ...formDataForAPI,
         });
       } else {
         await createOrdreFabrication.mutateAsync(formDataForAPI);
       }
-      router.push(`/client/ordre-fabrications`);
+
+      router.push("/ordre-fabrications");
     } catch (error) {
       console.error("Form submission error:", error);
     }
   };
 
+  // Fixed function to get available sizes for a specific field
+  const getAvailableSizes = (currentIndex: number): TailleArticle[] => {
+    const currentFormValues = form.getValues("tailleOFs");
+    const usedSizes = currentFormValues
+      .map((item, index) =>
+        index !== currentIndex ? item.tailleArticle : null
+      )
+      .filter((size): size is TailleArticle => size !== null);
+
+    return TAILLE_ARTICLE_OPTIONS.filter((size) => !usedSizes.includes(size));
+  };
+
   const addTailleOF = () => {
-    const usedSizes = fields.map((field) => field.tailleArticle);
-    const availableSizes = TAILLE_OPTIONS.filter(
+    const currentFormValues = form.getValues("tailleOFs");
+    const usedSizes = currentFormValues.map((item) => item.tailleArticle);
+    const availableSizes = TAILLE_ARTICLE_OPTIONS.filter(
       (size) => !usedSizes.includes(size)
     );
 
     if (availableSizes.length > 0) {
       append({
         tailleArticle: availableSizes[0],
-        quantite: "", // Changed from 0 to empty string
+        quantite: 0,
       });
     }
   };
 
-  const getAvailableSizes = (currentIndex: number) => {
-    const usedSizes = fields
-      .filter((_, index) => index !== currentIndex)
-      .map((field) => field.tailleArticle)
-      .filter(Boolean);
-
-    return TAILLE_OPTIONS.filter((size) => !usedSizes.includes(size));
+  // Handle size change with proper form update
+  const handleSizeChange = (index: number, newSize: "M" | "L" | "XL") => {
+    form.setValue(`tailleOFs.${index}.tailleArticle`, newSize, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
   };
 
   const articles = articlesResponse?.member || [];
 
+  // Show loading state for edit mode
+  if (isDataLoading) {
+    return (
+      <Card className="mx-4 sm:mx-0 max-w-4xl">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex items-center justify-center py-8">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+            <span className="ml-2">Loading form data...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="mx-4 sm:mx-0 max-w-4xl">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
-          <CardContent className="p-4 sm:p-6 space-y-6">
-            {/* Article Selection */}
-            <FormField
-              control={form.control}
-              name="article"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm sm:text-base">
-                    Article à fabriquer *
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an article" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {articles?.map((article) => (
-                        <SelectItem key={article.id} value={article["@id"]}>
-                          {article.ref} - {article.designation}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+      <CardHeader>
+        <CardTitle className="text-xl sm:text-2xl">
+          {isEdit ? "Edit Ordre Fabrication" : "Create New Ordre Fabrication"}
+        </CardTitle>
+      </CardHeader>
 
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="dateCloture"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm sm:text-base">
-                      Date de cloture *
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        min={getTomorrowDate()}
-                        className="text-sm sm:text-base"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="urgent"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2 pt-6">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="text-sm sm:text-base">
-                      Urgent
-                    </FormLabel>
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="prixUnitaire"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm sm:text-base">
-                      Prix unitaire (€) *
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0.01"
-                        placeholder="0.00"
-                        className="text-sm sm:text-base"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="tempsUnitaire"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm sm:text-base">
-                      Temps unitaire (cmn) *
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        min="1"
-                        placeholder="0"
-                        className="text-sm sm:text-base"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            {/* Size Configurations */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm sm:text-base font-medium">
-                  Configuration des Quantités/Tailles *
-                </Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addTailleOF}
-                  disabled={fields.length >= TAILLE_OPTIONS.length}
-                >
-                  <Plus className="h-4 w-4" />
-                  Ajout
-                </Button>
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+        <CardContent className="p-4 sm:p-6 space-y-6">
+          {/* Article Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="article" className="text-sm sm:text-base">
+              Article *
+            </Label>
+            <Select
+              value={form.watch("article")}
+              onValueChange={(value) =>
+                form.setValue("article", value, { shouldValidate: true })
+              }
+            >
+              <SelectTrigger
+                id="article"
+                className={
+                  form.formState.errors.article ? "border-red-500" : ""
+                }
+              >
+                <SelectValue placeholder="Select an article" />
+              </SelectTrigger>
+              <SelectContent>
+                {articles.map((article) => (
+                  <SelectItem key={article.id} value={article["@id"]}>
+                    {article.ref} - {article.designation}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {form.formState.errors.article && (
+              <div className="flex items-center gap-1 text-sm text-red-600">
+                <AlertCircle className="h-4 w-4" />
+                {form.formState.errors.article.message}
               </div>
+            )}
+          </div>
 
-              {fields.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
-                  Aucune configuration de taille n'a été ajoutée. <br />
-                  Cliquez sur "Ajout" pour commencer.
+          {/* Basic Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="dateCloture" className="text-sm sm:text-base">
+                Date de cloture *
+              </Label>
+              <Input
+                id="dateCloture"
+                type="date"
+                min={getTomorrowDate()}
+                {...form.register("dateCloture", {
+                  required: "Date de cloture est requis",
+                  validate: (value) => {
+                    if (!value) return "Date de cloture est requis";
+                    const clotureDate = new Date(value);
+                    const currentDate = new Date();
+                    currentDate.setHours(0, 0, 0, 0);
+                    if (clotureDate <= currentDate) {
+                      return "La date de cloture doit être à l'avenir";
+                    }
+                    return true;
+                  },
+                })}
+                className={`text-sm sm:text-base ${
+                  form.formState.errors.dateCloture ? "border-red-500" : ""
+                }`}
+              />
+              {form.formState.errors.dateCloture && (
+                <div className="flex items-center gap-1 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  {form.formState.errors.dateCloture.message}
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  {fields.map((field, index) => (
+              )}
+            </div>
+
+            <div className="flex items-center space-x-2 pt-6">
+              <Checkbox
+                id="urgent"
+                checked={form.watch("urgent")}
+                onCheckedChange={(checked) =>
+                  form.setValue("urgent", !!checked)
+                }
+              />
+              <Label htmlFor="urgent" className="text-sm sm:text-base">
+                Urgent
+              </Label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="prixUnitaire" className="text-sm sm:text-base">
+                Prix unitaire (€) *
+              </Label>
+              <Input
+                id="prixUnitaire"
+                type="number"
+                step="0.01"
+                min="0.01"
+                placeholder="0.00"
+                {...form.register("prixUnitaire", {
+                  required: "Le prix unitaire est obligatoire",
+                  validate: (value) => {
+                    const num = Number.parseFloat(value);
+                    if (isNaN(num) || num <= 0) {
+                      return "Le prix unitaire doit être supérieur à 0";
+                    }
+                    return true;
+                  },
+                })}
+                className={`text-sm sm:text-base ${
+                  form.formState.errors.prixUnitaire ? "border-red-500" : ""
+                }`}
+              />
+              {form.formState.errors.prixUnitaire && (
+                <div className="flex items-center gap-1 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  {form.formState.errors.prixUnitaire.message}
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="tempsUnitaire" className="text-sm sm:text-base">
+                Temps unitaire (cmn) *
+              </Label>
+              <Input
+                id="tempsUnitaire"
+                type="number"
+                min="1"
+                placeholder="0"
+                {...form.register("tempsUnitaire", {
+                  required: "Le temps unitaire est obligatoire",
+                  valueAsNumber: true,
+                  validate: (value) => {
+                    if (!value || value <= 0) {
+                      return "Le temps unitaire doit être supérieur à 0";
+                    }
+                    return true;
+                  },
+                })}
+                className={`text-sm sm:text-base ${
+                  form.formState.errors.tempsUnitaire ? "border-red-500" : ""
+                }`}
+              />
+              {form.formState.errors.tempsUnitaire && (
+                <div className="flex items-center gap-1 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4" />
+                  {form.formState.errors.tempsUnitaire.message}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Size Configurations - FIXED */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm sm:text-base font-medium">
+                Configuration des tailles *
+              </Label>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={addTailleOF}
+                disabled={fields.length >= TAILLE_ARTICLE_OPTIONS.length}
+              >
+                <Plus className="mr-2 h-4 w-4" /> Ajouter
+              </Button>
+            </div>
+
+            {fields.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                Aucune configuration de taille. <br />
+                Cliquez sur "Ajouter" pour commencer.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {fields.map((field, index) => {
+                  const availableSizes = getAvailableSizes(index);
+                  const currentSize = form.watch(
+                    `tailleOFs.${index}.tailleArticle`
+                  );
+
+                  return (
                     <div
                       key={field.id}
                       className="flex gap-4 items-end p-4 border rounded-lg"
                     >
-                      <FormField
-                        control={form.control}
-                        name={`tailleOFs.${index}.tailleArticle`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel className="text-sm">Size</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {getAvailableSizes(index).map((size) => (
-                                  <SelectItem key={size} value={size}>
-                                    {size}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </FormItem>
+                      <div className="flex-1">
+                        <Label className="text-sm">Taille</Label>
+                        <Select
+                          value={currentSize}
+                          onValueChange={(value) =>
+                            handleSizeChange(index, value as "M" | "L" | "XL")
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sélectionner une taille" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {/* Always show the currently selected size */}
+                            {currentSize &&
+                              !availableSizes.includes(currentSize) && (
+                                <SelectItem value={currentSize}>
+                                  {currentSize}
+                                </SelectItem>
+                              )}
+                            {/* Show available sizes */}
+                            {availableSizes.map((size) => (
+                              <SelectItem key={size} value={size}>
+                                {size}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex-1">
+                        <Label className="text-sm">Quantité</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          {...form.register(`tailleOFs.${index}.quantite`, {
+                            valueAsNumber: true,
+                            min: {
+                              value: 0,
+                              message:
+                                "La quantité doit être supérieure ou égale à 0",
+                            },
+                          })}
+                        />
+                        {form.formState.errors.tailleOFs?.[index]?.quantite && (
+                          <div className="flex items-center gap-1 text-sm text-red-600 mt-1">
+                            <AlertCircle className="h-3 w-3" />
+                            {
+                              form.formState.errors.tailleOFs[index]?.quantite
+                                ?.message
+                            }
+                          </div>
                         )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name={`tailleOFs.${index}.quantite`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormLabel className="text-sm">Quantité</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="0"
-                                placeholder="0"
-                                {...field}
-                              />
-                            </FormControl>
-                          </FormItem>
-                        )}
-                      />
-
+                      </div>
                       <Button
                         type="button"
                         variant="outline"
@@ -503,60 +481,60 @@ export function OrdreFabricationForm({ id }: OrdreFabricationFormProps) {
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
-                  ))}
-                </div>
-              )}
-
-              {form.formState.errors.tailleOFs && (
-                <p className="text-sm text-red-600">
-                  {form.formState.errors.tailleOFs.message}
-                </p>
-              )}
-            </div>
-
-            {/* Total Quantity Display */}
-            <div className="rounded-lg p-4 bg-muted/50">
-              <div className="flex justify-between items-center">
-                <span className="font-medium">Quantité totale:</span>
-                <span className="text-lg font-bold">
-                  {quantiteTotale.toLocaleString()}
-                </span>
+                  );
+                })}
               </div>
+            )}
+
+            {form.formState.errors.tailleOFs && (
+              <div className="flex items-center gap-1 text-sm text-red-600">
+                <AlertCircle className="h-4 w-4" />
+                Au moins une configuration de taille est requise
+              </div>
+            )}
+          </div>
+
+          {/* Total Quantity Display */}
+          <div className="rounded-lg p-4 bg-muted/50">
+            <div className="flex justify-between items-center">
+              <span className="font-medium">Quantité totale:</span>
+              <span className="text-lg font-bold">
+                {totalQuantity.toLocaleString()}
+              </span>
             </div>
-          </CardContent>
+          </div>
+        </CardContent>
 
-          <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 sm:p-6">
-            <Button
-              type="button"
-              variant="outline"
-              asChild
-              className="w-full sm:w-auto bg-transparent"
-            >
-              <Link href={"/client/ordre-fabrications"}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Annuler
-              </Link>
-            </Button>
-
-            <Button
-              type="submit"
-              disabled={
-                isSaveOrEditLoading ||
-                !form.formState.isValid ||
-                watchedTailleOFs.length === 0 ||
-                quantiteTotale === 0 ||
-                !form.formState.isDirty // disable if no changes
+        <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 sm:p-6">
+          <Button
+            type="button"
+            variant="outline"
+            asChild
+            className="w-full sm:w-auto bg-transparent"
+          >
+            <Link
+              href={
+                isEdit && ordreFabricationId
+                  ? `/ordre-fabrications/${ordreFabricationId}`
+                  : "/ordre-fabrications"
               }
-              className="w-full sm:w-auto"
             >
-              {isSaveOrEditLoading
-                ? "Saving..."
-                : isEdit
-                ? "Mettre à jour"
-                : "Créer"}
-            </Button>
-          </CardFooter>
-        </form>
-      </Form>
+              <ArrowLeft className="mr-2 h-4 w-4" /> Annuler
+            </Link>
+          </Button>
+          <Button
+            type="submit"
+            disabled={isLoading || !form.formState.isValid}
+            className="w-full sm:w-auto"
+          >
+            {isLoading
+              ? "Enregistrement..."
+              : isEdit
+              ? "Mettre à jour"
+              : "Créer l'ordre de fabrication"}
+          </Button>
+        </CardFooter>
+      </form>
     </Card>
   );
 }
