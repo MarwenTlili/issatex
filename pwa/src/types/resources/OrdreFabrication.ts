@@ -1,7 +1,18 @@
+import { Article } from "./Article";
+import { Client } from "./Client";
 import { Item } from "./item";
-import { TailleOrdreFabricationData } from "./TailleOrdreFabrication";
+import {
+  TailleArticleEnum,
+  TailleOrdreFabrication,
+  TailleOrdreFabricationData,
+} from "./TailleOrdreFabrication";
 
-export type StatutOF = "Cree" | "Planifiee" | "En_cours" | "Terminee" | "Annule";
+export type StatutOF =
+  | "Cree"
+  | "Planifiee"
+  | "En_cours"
+  | "Terminee"
+  | "Annule";
 
 export interface OrdreFabrication extends Item {
   id: number;
@@ -44,4 +55,14 @@ export interface CreateOrdreFabricationData {
 export interface UpdateOrdreFabricationData
   extends Partial<CreateOrdreFabricationData> {
   id: number;
+}
+
+export interface OrderContext {
+  client: Client;
+  ordreFabrication: OrdreFabrication;
+  article: Article;
+  taillesCommande: TailleOrdreFabrication[];
+  workingDays: number;
+  dailyTargets: { [key in TailleArticleEnum]?: number };
+  currentProgress: { [key in TailleArticleEnum]?: number };
 }

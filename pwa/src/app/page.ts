@@ -10,6 +10,8 @@ export default async function Home() {
     redirect("/admin");
   } else if (roles?.includes("ROLE_CLIENT")) {
     redirect("/client");
+  } else if (roles?.includes("ROLE_SECRETARY")) {
+    redirect("/secretaire");
   } else {
     redirect("/login");
   }

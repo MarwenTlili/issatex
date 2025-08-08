@@ -38,6 +38,15 @@ export const useArticle = (id: number) => {
   });
 };
 
+export const useArticleByURI = (uri: string) => {
+  const id = uri.split("/").pop();
+  return useQuery({
+    queryKey: ["article", id],
+    queryFn: () => articleApi.getByURI(uri),
+    enabled: !!uri,
+  });
+};
+
 export const useCreateArticle = () => {
   const queryClient = useQueryClient();
   const { data: currentClient } = useCurrentClient();
@@ -57,7 +66,7 @@ export const useCreateArticle = () => {
   });
 };
 
-export function useUpdateArticle() {
+export const useUpdateArticle = () => {
   const queryClient = useQueryClient();
   const { data: client } = useCurrentClient();
 
@@ -73,7 +82,7 @@ export function useUpdateArticle() {
       });
     },
   });
-}
+};
 
 export const useDeleteArticle = () => {
   const queryClient = useQueryClient();

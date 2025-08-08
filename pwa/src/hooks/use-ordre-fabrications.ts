@@ -45,6 +45,21 @@ export const useOrdreFabrication = (
   });
 };
 
+export const useOrdreFabricationByURI = (
+  uri?: string,
+  options?: { enabled?: boolean; staleTime?: number }
+) => {
+  return useQuery({
+    queryKey: ["ordre-fabrication", uri],
+    queryFn: () => {
+      if (!uri) throw new Error("Cannot fetch ordre fabrication without URI!");
+      return ordreFabricationsApi.getByURI(uri);
+    },
+    enabled: !!uri && options?.enabled !== false,
+    staleTime: options?.staleTime || 5 * 60 * 1000, // 5 minutes default
+  });
+};
+
 export const useCreateOrdreFabrication = () => {
   const queryClient = useQueryClient();
   const { data: client, error: clientFetchError } = useCurrentClient();
@@ -79,7 +94,7 @@ export const useCreateOrdreFabrication = () => {
   });
 };
 
-export function useUpdateOrdreFabrication() {
+export const useUpdateOrdreFabrication = () => {
   const queryClient = useQueryClient();
   const { data: client } = useCurrentClient();
 
@@ -88,7 +103,7 @@ export function useUpdateOrdreFabrication() {
       if (!client?.["@id"]) {
         throw new Error("No client found");
       }
-      return ordreFabricationsApi.update(data, client?.["@id"]);
+      return ordreFabricationsApi.update(data);
     },
     onSuccess: (updatedOrdreFabrication) => {
       queryClient.invalidateQueries({
@@ -110,7 +125,7 @@ export function useUpdateOrdreFabrication() {
       });
     },
   });
-}
+};
 
 export const useDeleteOrdreFabrication = () => {
   const queryClient = useQueryClient();

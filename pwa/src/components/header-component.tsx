@@ -11,18 +11,14 @@ import {
   X,
   Settings,
   LogOut,
-  Home,
-  Info,
-  Mail,
   LogIn,
   UserPlus,
   FactoryIcon,
-  Shirt,
-  Layers,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Session } from "next-auth";
 import Image from "next/image";
+import { getNavigationItems } from "@/config/navigation";
 
 type SessionStatus = "authenticated" | "unauthenticated";
 
@@ -38,21 +34,8 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
   const pathname = usePathname();
   const router = useRouter();
 
-  const navItems = [
-    { name: "Home", href: "/", icon: <Home className="h-5 w-5" /> },
-    {
-      name: "Articles",
-      href: "/client/articles",
-      icon: <Shirt className="h-5 w-5" />,
-    },
-    {
-      name: "Ordres de fabrication",
-      href: "/client/ordre-fabrications",
-      icon: <Layers className="h-5 w-5" />,
-    },
-    { name: "À propos", href: "/about", icon: <Info className="h-5 w-5" /> },
-    { name: "Contact", href: "/contact", icon: <Mail className="h-5 w-5" /> },
-  ];
+  const userRoles = session?.user.roles || [];
+  const navItems = getNavigationItems(userRoles);
 
   // Handle scroll effect for navbar
   useEffect(() => {
@@ -116,20 +99,25 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-6">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-md text-md font-medium transition-colors ${
-                    pathname === item.href
-                      ? "text-blue-600 dark:text-blue-400"
-                      : "text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
-                  }`}
-                >
-                  <span className="hidden lg:block">{item.name}</span>
-                  <span className="block lg:hidden">{item.icon}</span>
-                </Link>
-              ))}
+              {navItems.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-md text-md font-medium transition-colors ${
+                      pathname === item.href
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-gray-700 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400"
+                    }`}
+                  >
+                    <span className="hidden lg:block">{item.name}</span>
+                    <span className="block lg:hidden">
+                      <IconComponent className="h-5 w-5" />
+                    </span>
+                  </Link>
+                );
+              })}
             </div>
 
             {/* Right Side - Auth Section - Fixed width container */}
@@ -284,21 +272,24 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
           aria-hidden={!menuOpen}
         >
           <div className="px-2 pt-2 pb-3 space-y-1">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium ${
-                  pathname === item.href
-                    ? "bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-blue-400"
-                    : "text-gray-700 hover:bg-gray-50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-blue-400"
-                }`}
-                onClick={() => setMenuOpen(false)}
-              >
-                {item.icon}
-                <span>{item.name}</span>
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium ${
+                    pathname === item.href
+                      ? "bg-blue-50 text-blue-600 dark:bg-gray-800 dark:text-blue-400"
+                      : "text-gray-700 hover:bg-gray-50 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-blue-400"
+                  }`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <IconComponent className="h-5 w-5" />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </nav>

@@ -47,7 +47,7 @@ async function fetchWithAuth(
 }
 
 // Generic fetch function
-async function apiRequest<T>(
+export async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
@@ -70,7 +70,9 @@ export const clientApi = {
   getByAccountId: (accountId: string) =>
     apiRequest<ApiCollection<Client>>(`/api/clients?account=${accountId}`),
 
-  getById: (id: number): Promise<Client> => apiRequest(`/api/clients/${id}`),
+  getById: (id: number) => apiRequest(`/api/clients/${id}`),
+
+  getByURI: (uri: string) => apiRequest<Client>(uri),
 };
 
 // Article API functions
@@ -105,6 +107,8 @@ export const articleApi = {
   },
 
   getById: (id: number) => apiRequest<Article>(`/api/articles/${id}`),
+
+  getByURI: (uri: string) => apiRequest<Article>(uri),
 
   create: (data: CreateArticleData & { clientId: number }) =>
     apiRequest<Article>("/api/articles", {
@@ -165,7 +169,11 @@ export const ordreFabricationsApi = {
     return apiRequest<OrdreFabrication>(`/api/ordre_fabrications/${id}`);
   },
 
-  create: async (data: CreateOrdreFabricationData, clientIri: string) => {
+  getByURI: async (uri: string) => {
+    return apiRequest<OrdreFabrication>(uri);
+  },
+
+  create: async (data: CreateOrdreFabricationData, clientUri: string) => {
     // First create the OrdreFabrication without tailleOFs
     const { tailleOFs, ...ordreFabricationData } = data;
 
@@ -178,7 +186,7 @@ export const ordreFabricationsApi = {
           dateCreation: new Date().toISOString(),
           statut: "Cree",
           lance: false,
-          client: clientIri,
+          client: clientUri,
         }),
       }
     );
@@ -196,7 +204,7 @@ export const ordreFabricationsApi = {
     return ordreFabrication;
   },
 
-  update: async (data: UpdateOrdreFabricationData, clientIri: string) => {
+  update: async (data: UpdateOrdreFabricationData) => {
     const { id, tailleOFs, ...updateData } = data;
 
     // Update the OrdreFabrication
@@ -254,6 +262,13 @@ export const ordreFabricationsApi = {
 // Ordre Taille Fabrication functions
 export const tailleOrdreFabricationsApi = {
   getByOrdreFabrication: async (ordreFabricationId: number) => {
+    return apiRequest<ApiCollection<TailleOrdreFabrication>>(
+      `/api/taille_ordre_fabrications?ordreFabrication=${ordreFabricationId}`
+    );
+  },
+
+  getByOrdreFabricationURI: (uri: string) => {
+    const ordreFabricationId = uri.split("/").pop();
     return apiRequest<ApiCollection<TailleOrdreFabrication>>(
       `/api/taille_ordre_fabrications?ordreFabrication=${ordreFabricationId}`
     );

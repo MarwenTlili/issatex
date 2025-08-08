@@ -6,6 +6,7 @@ import { NextResponse } from "next/server";
 const roleAccess: Record<string, string[]> = {
   "/admin": ["ROLE_ADMIN"],
   "/client": ["ROLE_CLIENT"],
+  "/secretaire": ["ROLE_SECRETARY"],
 };
 
 export default withAuth(
@@ -40,5 +41,5 @@ export default withAuth(
 
 export const config = {
   // ✅ Protected routes
-  matcher: ["/admin/:path*", "/client/:path*"],
+  matcher: ["/admin/:path*", "/client/:path*", "/secretaire/:path*"],
 };
