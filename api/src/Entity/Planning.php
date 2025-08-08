@@ -23,7 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
     name: "planning",
     options: [
         "check" => "date_debut < date_fin",
-        "check" => "date_debut > date_creation"
+        "check" => "date_debut >= date_creation"
     ]
 )]
 #[ORM\Entity(repositoryClass: PlanningRepository::class)]
@@ -36,7 +36,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Get(),
         new Patch(),
         new Delete()
-    ]
+    ],
+    order: ['dateCreation' => 'DESC']   // default order
 )]
 #[ApiFilter(
     SearchFilter::class,
@@ -49,6 +50,7 @@ use Symfony\Component\Validator\Constraints as Assert;
         "dateFin" => "exact",
     ]
 )]
+// ?order[property]=<DESC|ASC>
 #[ApiFilter(
     OrderFilter::class,
     properties: [
@@ -67,7 +69,7 @@ class Planning {
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $dateCreation = null;
 
-    #[Assert\GreaterThan(propertyPath: "date_creation", message: "La date de debut doit être postérieure à la date de création.")]
+    #[Assert\GreaterThanOrEqual(propertyPath: "date_creation", message: "La date de debut doit être postérieure à la date de création.")]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $dateDebut = null;
 

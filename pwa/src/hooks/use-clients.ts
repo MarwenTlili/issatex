@@ -26,3 +26,12 @@ export const useCurrentClient = () => {
     staleTime: 5 * 60 * 1000, // 5 minutes - client data doesn't change often
   });
 };
+
+export const useClientByUri = (uri: string) => {
+  const id = uri.split("/").pop();
+  return useQuery({
+    queryKey: ["client", id],
+    queryFn: () => clientApi.getByURI(uri),
+    enabled: !!uri,
+  });
+};

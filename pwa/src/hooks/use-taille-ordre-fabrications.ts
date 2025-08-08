@@ -6,24 +6,34 @@ import {
 } from "@/types/resources/TailleOrdreFabrication";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export function useTailleOrdreFabrications(
-  id?: number,
+export const useTailleOrdreFabrications = (
+  ordreFabricationId?: number,
   options?: { enabled?: boolean; staleTime?: number }
-) {
+) => {
   return useQuery<ApiCollection<TailleOrdreFabrication>, Error>({
-    queryKey: ["taille-ordre-fabrications", id],
+    queryKey: ["taille-ordre-fabrications", ordreFabricationId],
     queryFn: () => {
-      if (!id) {
+      if (!ordreFabricationId) {
         throw new Error("No ordre fabrication ID provided");
       }
-      return tailleOrdreFabricationsApi.getByOrdreFabrication(id);
+      return tailleOrdreFabricationsApi.getByOrdreFabrication(
+        ordreFabricationId
+      );
     },
-    enabled: !!id && options?.enabled !== false,
+    enabled: !!ordreFabricationId && options?.enabled !== false,
     staleTime: options?.staleTime || 5 * 60 * 1000, // 5 minutes default
   });
-}
+};
 
-export function useCreateTailleOrdreFabrication() {
+export const useTaillesByOrdreFabricationURI = (uri: string) => {
+  return useQuery({
+    queryKey: ["tailles-ordre-fabrication", uri],
+    queryFn: () => tailleOrdreFabricationsApi.getByOrdreFabricationURI(uri),
+    enabled: !!uri,
+  });
+};
+
+export const useCreateTailleOrdreFabrication = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -43,9 +53,9 @@ export function useCreateTailleOrdreFabrication() {
       });
     },
   });
-}
+};
 
-export function useUpdateTailleOrdreFabrication() {
+export const useUpdateTailleOrdreFabrication = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
@@ -65,9 +75,9 @@ export function useUpdateTailleOrdreFabrication() {
       });
     },
   });
-}
+};
 
-export function useDeleteTailleOrdreFabrication() {
+export const useDeleteTailleOrdreFabrication = () => {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, number>({
@@ -78,4 +88,4 @@ export function useDeleteTailleOrdreFabrication() {
       });
     },
   });
-}
+};

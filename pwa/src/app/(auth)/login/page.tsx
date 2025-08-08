@@ -12,6 +12,8 @@ export default async function LoginPage() {
     redirect("/admin");
   } else if (roles?.includes("ROLE_CLIENT")) {
     redirect("/client");
+  } else if (roles?.includes("ROLE_SECRETARY")) {
+    redirect("/secretaire");
   }
 
   return (
