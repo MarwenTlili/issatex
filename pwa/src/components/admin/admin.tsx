@@ -41,6 +41,7 @@ import {
   MachineShow,
 } from "./machines";
 import PlanningCreate from "./plannings/PlanningCreate";
+import PlanningEdit from "./plannings/PlanningEdit";
 
 export default function Admin() {
   const { data: session, status } = useSession();
@@ -172,6 +173,7 @@ export default function Admin() {
         list={PlanningList}
         show={PlanningShow}
         create={PlanningCreate}
+        edit={PlanningEdit}
         icon={DateRange}
         options={{ label: "Plannings" }}
       />
