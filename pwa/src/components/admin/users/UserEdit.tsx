@@ -43,7 +43,7 @@ import {
 import { getSession } from "next-auth/react";
 import { ENTRYPOINT } from "@/config/entrypoint";
 import { useFormContext } from "react-hook-form";
-import { User } from "@/types/resources";
+import { User } from "@/types/resources/User";
 
 // Constants
 const ROLE_CHOICES = [

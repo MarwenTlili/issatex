@@ -31,9 +31,15 @@ import {
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Production, ProductionFormData } from "@/types/resources/Production";
-import { TailleArticle, TailleArticleEnum } from "@/types/resources/TailleOrdreFabrication";
+import {
+  TailleArticle,
+  TailleArticleEnum,
+} from "@/types/resources/TailleOrdreFabrication";
 import { useTaillesByOrdreFabricationURI } from "@/hooks/use-taille-ordre-fabrications";
-import { useCreateProduction, useUpdateProduction } from "@/hooks/use-productions";
+import {
+  useCreateProduction,
+  useUpdateProduction,
+} from "@/hooks/use-productions";
 import { OrderContextPanel } from "./order-context-panel";
 
 interface EnhancedProductionFormProps {
@@ -64,7 +70,8 @@ export function EnhancedProductionForm({
   });
 
   const ordreFabricationId = ordreFabricationUri.split("/").pop() || "";
-  const { data: taillesData } = useTaillesByOrdreFabricationURI(ordreFabricationId);
+  const { data: taillesData } =
+    useTaillesByOrdreFabricationURI(ordreFabricationId);
 
   const createMutation = useCreateProduction();
   const updateMutation = useUpdateProduction();
@@ -72,7 +79,7 @@ export function EnhancedProductionForm({
   useEffect(() => {
     if (production) {
       console.log("production.tailleArticle: ", production.tailleArticle);
-      
+
       setFormData({
         dateProduction: production.dateProduction.split("T")[0],
         tailleArticle: production.tailleArticle,
@@ -143,7 +150,7 @@ export function EnhancedProductionForm({
     } catch (error) {
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de l'enregistrement.",
+        description: "Une erreur est survenue lors de l&apos;enregistrement.",
         variant: "destructive",
       });
     }
@@ -168,7 +175,7 @@ export function EnhancedProductionForm({
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
-            Parfait ! Cette quantité correspond exactement à l'objectif
+            Parfait ! Cette quantité correspond exactement à l&apos;objectif
             quotidien.
           </AlertDescription>
         </Alert>
@@ -178,7 +185,7 @@ export function EnhancedProductionForm({
         <Alert className="border-orange-200 bg-orange-50">
           <AlertTriangle className="h-4 w-4 text-orange-600" />
           <AlertDescription className="text-orange-800">
-            Cette quantité dépasse l'objectif quotidien de{" "}
+            Cette quantité dépasse l&apos;objectif quotidien de{" "}
             {dailyTarget - formData.quantiteTotale} articles.
           </AlertDescription>
         </Alert>
@@ -189,7 +196,7 @@ export function EnhancedProductionForm({
           <Target className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">
             Il manque {dailyTarget - formData.quantiteTotale} articles pour
-            atteindre l'objectif quotidien.
+            atteindre l&apos;objectif quotidien.
           </AlertDescription>
         </Alert>
       );
@@ -369,7 +376,7 @@ export function EnhancedProductionForm({
                       }));
                     }}
                   >
-                    Utiliser l'objectif quotidien ({dailyTarget})
+                    Utiliser l&apos;objectif quotidien ({dailyTarget})
                   </Button>
                 </div>
               )}

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useArticles, useDeleteArticle } from "@/hooks/use-articles";
-import { ArticleFilters } from "@/types/resources/Article";
+import { ArticlesFilters } from "@/types/resources/Article";
 import { ArticlesTableContent } from "./articles-table-content";
 import { ArticlesTableFilters } from "./articles-table-filters";
 import { ArticlesTablePagination } from "./articles-table-pagination";
@@ -14,7 +14,7 @@ import { Plus } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export function ArticlesTable() {
-  const [filters, setFilters] = useState<ArticleFilters>({
+  const [filters, setFilters] = useState<ArticlesFilters>({
     page: 1,
     itemsPerPage: 5,
     order: { ref: "desc" },
@@ -31,7 +31,7 @@ export function ArticlesTable() {
   const { data: articlesCollection, isLoading, error } = useArticles(filters);
 
   const handleFilterChange = useCallback(
-    (newFilters: Partial<ArticleFilters>) => {
+    (newFilters: Partial<ArticlesFilters>) => {
       setFilters((prev) => ({
         ...prev,
         ...newFilters,

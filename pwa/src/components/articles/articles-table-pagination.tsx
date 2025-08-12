@@ -4,11 +4,11 @@ import { memo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { ArticleFilters } from "@/types/resources/Article";
+import { ArticlesFilters } from "@/types/resources/Article";
 
 interface ArticlesTablePaginationProps {
   totalItems: number;
-  filters: ArticleFilters;
+  filters: ArticlesFilters;
   onPageChange: (page: number) => void;
 }
 

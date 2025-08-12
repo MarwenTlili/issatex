@@ -1,4 +1,4 @@
-import { Item } from "./item";
+import { Item } from "./Item";
 
 export interface Article extends Item {
   id?: number;
@@ -18,7 +18,7 @@ export interface UpdateArticleData extends CreateArticleData {
   id: number;
 }
 
-export interface ArticleFilters {
+export interface ArticlesFilters {
   ref?: string;
   page?: number;
   itemsPerPage?: number;

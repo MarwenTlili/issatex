@@ -1,6 +1,6 @@
 import { Article } from "./Article";
 import { Client } from "./Client";
-import { Item } from "./item";
+import { Item } from "./Item";
 import {
   TailleArticleEnum,
   TailleOrdreFabrication,
@@ -57,7 +57,7 @@ export interface UpdateOrdreFabricationData
   id: number;
 }
 
-export interface OrderContext {
+export interface OrdreFabricationContext {
   client: Client;
   ordreFabrication: OrdreFabrication;
   article: Article;

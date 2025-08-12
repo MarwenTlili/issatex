@@ -57,7 +57,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
   const handleDelete = async () => {
     if (
       window.confirm(
-        "Êtes-vous sûr de vouloir supprimer l'ordre de fabrication?"
+        "Êtes-vous sûr de vouloir supprimer l&apos;ordre de fabrication?"
       )
     ) {
       deleteOrdreFabrication.mutate(id, {
@@ -73,7 +73,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
       <Card className="mx-4 sm:mx-0">
         <CardContent className="p-4 sm:p-6">
           <div className="text-center">
-            Chargement des détails de l'ordre fabrication ...
+            Chargement des détails de l&apos;ordre fabrication ...
           </div>
         </CardContent>
       </Card>
@@ -230,7 +230,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
               </div>
             ) : (
               <p className="text-sm sm:text-base text-muted-foreground">
-                Aucune information sur la taille n'est disponible
+                Aucune information sur la taille n&apos;est disponible
               </p>
             )}
           </div>

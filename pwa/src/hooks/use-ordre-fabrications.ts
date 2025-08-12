@@ -7,8 +7,8 @@ import {
 import { useCurrentClient } from "./use-clients";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ordreFabricationsApi } from "@/lib/api";
-import { ApiCollection } from "@/types/resources";
+import { ApiCollection } from "@/types/resources/ApiCollection";
+import { ordresFabricationApi } from "@/lib/api/ordres-fabrication-api";
 
 export const useOrdreFabrications = (filters: OrdreFabricationFilters = {}) => {
   const { data: currentClient, error } = useCurrentClient();
@@ -24,7 +24,7 @@ export const useOrdreFabrications = (filters: OrdreFabricationFilters = {}) => {
         throw new Error("No client found");
       }
 
-      return ordreFabricationsApi.getAllByClientId(currentClient.id, filters);
+      return ordresFabricationApi.getAllByClientId(currentClient.id, filters);
     },
     enabled: !!currentClient?.id,
   });
@@ -38,7 +38,7 @@ export const useOrdreFabrication = (
     queryKey: ["ordre-fabrication"],
     queryFn: () => {
       if (!id) throw new Error("Cannot fetch ordre fabrication without id!");
-      return ordreFabricationsApi.getById(id);
+      return ordresFabricationApi.getById(id);
     },
     enabled: !!id && options?.enabled !== false,
     staleTime: options?.staleTime || 5 * 60 * 1000, // 5 minutes default
@@ -53,7 +53,7 @@ export const useOrdreFabricationByURI = (
     queryKey: ["ordre-fabrication", uri],
     queryFn: () => {
       if (!uri) throw new Error("Cannot fetch ordre fabrication without URI!");
-      return ordreFabricationsApi.getByURI(uri);
+      return ordresFabricationApi.getByURI(uri);
     },
     enabled: !!uri && options?.enabled !== false,
     staleTime: options?.staleTime || 5 * 60 * 1000, // 5 minutes default
@@ -75,7 +75,7 @@ export const useCreateOrdreFabrication = () => {
       if (!client?.["@id"]) {
         throw new Error("No client found");
       }
-      return ordreFabricationsApi.create(data, client?.["@id"]);
+      return ordresFabricationApi.create(data, client?.["@id"]);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -103,7 +103,7 @@ export const useUpdateOrdreFabrication = () => {
       if (!client?.["@id"]) {
         throw new Error("No client found");
       }
-      return ordreFabricationsApi.update(data);
+      return ordresFabricationApi.update(data);
     },
     onSuccess: (updatedOrdreFabrication) => {
       queryClient.invalidateQueries({
@@ -131,7 +131,7 @@ export const useDeleteOrdreFabrication = () => {
   const queryClient = useQueryClient();
   const { data: client } = useCurrentClient();
   return useMutation<void, Error, number>({
-    mutationFn: (id: number) => ordreFabricationsApi.delete(id),
+    mutationFn: (id: number) => ordresFabricationApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["ordre-fabrications", client?.id],

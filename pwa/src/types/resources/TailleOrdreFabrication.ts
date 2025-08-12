@@ -1,4 +1,4 @@
-import { Item } from "./item";
+import { Item } from "./Item";
 
 // ===== SIZE DEFINITIONS =====
 // Option 1: Type alias (recommended for simple string unions)
@@ -17,25 +17,6 @@ export const TAILLE_ARTICLE_OPTIONS: readonly TailleArticle[] = [
   "L",
   "XL",
 ] as const;
-
-// Alternative using enum
-export const TAILLE_ARTICLE_ENUM_OPTIONS = Object.values(
-  TailleArticleEnum
-) as TailleArticle[];
-
-// Utility functions for size operations
-export const isTailleArticle = (value: string): value is TailleArticle => {
-  return TAILLE_ARTICLE_OPTIONS.includes(value as TailleArticle);
-};
-
-export const getTailleArticleLabel = (taille: TailleArticle): string => {
-  const labels: Record<TailleArticle, string> = {
-    M: "Medium",
-    L: "Large",
-    XL: "Extra Large",
-  };
-  return labels[taille];
-};
 // ===========================
 
 export interface TailleOrdreFabrication extends Item {

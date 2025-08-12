@@ -28,13 +28,13 @@ import {
   MoreHorizontal,
   BookOpen,
 } from "lucide-react";
-import { Article, ArticleFilters } from "@/types/resources/Article";
-import { ApiCollection } from "@/types/resources";
+import { Article, ArticlesFilters } from "@/types/resources/Article";
+import { ApiCollection } from "@/types/resources/ApiCollection";
 
 interface ArticlesTableContentProps {
   articlesCollection: ApiCollection<Article> | undefined;
   isLoading: boolean;
-  filters: ArticleFilters;
+  filters: ArticlesFilters;
   onSort: (field: "ref" | "designation") => void;
   onDelete: (id: number) => void;
   deleteLoading: boolean;
@@ -109,7 +109,9 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
             ) : (
               articles.map((article) => (
                 <TableRow key={article.id}>
-                  <TableCell className="font-medium whitespace-nowrap">{article.ref}</TableCell>
+                  <TableCell className="font-medium whitespace-nowrap">
+                    {article.ref}
+                  </TableCell>
                   <TableCell>{article.designation}</TableCell>
                   <TableCell className="max-w-xs truncate">
                     {article.composition}
@@ -165,10 +167,16 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs whitespace-nowrap">
+                    <Badge
+                      variant="outline"
+                      className="text-xs whitespace-nowrap"
+                    >
                       {article.ref}
                     </Badge>
-                    <Badge variant="secondary" className="text-xs whitespace-nowrap">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs whitespace-nowrap"
+                    >
                       {article.ordreFabrications?.length} orders
                     </Badge>
                   </div>

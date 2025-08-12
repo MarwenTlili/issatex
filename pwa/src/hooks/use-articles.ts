@@ -1,16 +1,15 @@
-import { articleApi } from "@/lib/api";
-
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCurrentClient } from "./use-clients";
 import {
   Article,
-  ArticleFilters,
+  ArticlesFilters,
   CreateArticleData,
   UpdateArticleData,
 } from "@/types/resources/Article";
 import { toast } from "sonner";
+import { articlesApi } from "@/lib/api/articles-api";
 
-export const useArticles = (filters: ArticleFilters = {}) => {
+export const useArticles = (filters: ArticlesFilters = {}) => {
   const { data: currentClient, error } = useCurrentClient();
   if (error) {
     toast.error("Can't fetch client informations", {
@@ -24,7 +23,7 @@ export const useArticles = (filters: ArticleFilters = {}) => {
         throw new Error("No client found");
       }
 
-      return articleApi.getAllByClientId(currentClient.id, filters);
+      return articlesApi.getAllByClientId(currentClient.id, filters);
     },
     enabled: !!currentClient?.id,
   });
@@ -33,7 +32,7 @@ export const useArticles = (filters: ArticleFilters = {}) => {
 export const useArticle = (id: number) => {
   return useQuery({
     queryKey: ["articles", id],
-    queryFn: () => articleApi.getById(id),
+    queryFn: () => articlesApi.getById(id),
     enabled: !!id,
   });
 };
@@ -42,7 +41,7 @@ export const useArticleByURI = (uri: string) => {
   const id = uri.split("/").pop();
   return useQuery({
     queryKey: ["article", id],
-    queryFn: () => articleApi.getByURI(uri),
+    queryFn: () => articlesApi.getByURI(uri),
     enabled: !!uri,
   });
 };
@@ -55,7 +54,7 @@ export const useCreateArticle = () => {
       if (!currentClient?.id) {
         throw new Error("No client found");
       }
-      return articleApi.create({ ...data, clientId: currentClient.id });
+      return articlesApi.create({ ...data, clientId: currentClient.id });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["articles"] });
@@ -70,8 +69,8 @@ export const useUpdateArticle = () => {
   const queryClient = useQueryClient();
   const { data: client } = useCurrentClient();
 
-  return useMutation<Article, Error, UpdateArticleData>({
-    mutationFn: (data) => articleApi.update(data),
+  return useMutation({
+    mutationFn: (data: UpdateArticleData) => articlesApi.update(data),
     onSuccess: (updatedArticle) => {
       queryClient.invalidateQueries({ queryKey: ["articles", client?.id] });
       queryClient.invalidateQueries({
@@ -87,7 +86,7 @@ export const useUpdateArticle = () => {
 export const useDeleteArticle = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: number) => articleApi.delete(id),
+    mutationFn: (id: number) => articlesApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["articles"] });
       toast.success("Article deleted successfully", {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertCircle, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { AlertCircle, ArrowLeft, Plus, Trash2, Info } from "lucide-react";
 import Link from "next/link";
 import { useArticles } from "@/hooks/use-articles";
 import {
@@ -24,10 +30,13 @@ import {
   useOrdreFabrication,
 } from "@/hooks/use-ordre-fabrications";
 import { useTailleOrdreFabrications } from "@/hooks/use-taille-ordre-fabrications";
-import { TAILLE_ARTICLE_OPTIONS, TailleArticle } from "@/types/resources/TailleOrdreFabrication";
+import {
+  TAILLE_ARTICLE_OPTIONS,
+  type TailleArticle,
+} from "@/types/resources/TailleOrdreFabrication";
 
 interface OrdreFabricationFormProps {
-  ordreFabricationId?: number;
+  id?: number;
 }
 
 interface FormData {
@@ -53,10 +62,8 @@ const formatDateForInput = (dateString: string): string => {
   return dateString.split("T")[0];
 };
 
-export function OrdreFabricationForm({
-  ordreFabricationId,
-}: OrdreFabricationFormProps) {
-  const isEdit = !!ordreFabricationId;
+export function OrdreFabricationForm({ id }: OrdreFabricationFormProps) {
+  const isEdit = !!id;
   const router = useRouter();
 
   // React Hook Form setup
@@ -87,8 +94,8 @@ export function OrdreFabricationForm({
     data: ordreFabrication,
     isLoading: isLoadingOF,
     isSuccess: isSuccessOF,
-  } = useOrdreFabrication(ordreFabricationId!, {
-    enabled: !!ordreFabricationId,
+  } = useOrdreFabrication(id!, {
+    enabled: !!id,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -96,8 +103,8 @@ export function OrdreFabricationForm({
     data: tailleOFsResponse,
     isLoading: isLoadingTailles,
     isSuccess: isSuccessTailles,
-  } = useTailleOrdreFabrications(ordreFabricationId, {
-    enabled: !!ordreFabricationId,
+  } = useTailleOrdreFabrications(id, {
+    enabled: !!id,
     staleTime: 10 * 60 * 1000,
   });
 
@@ -113,8 +120,6 @@ export function OrdreFabricationForm({
       ordreFabrication &&
       tailleOFsResponse
     ) {
-      console.log("Populating form with data:", ordreFabrication.article);
-
       const tailleOFs = tailleOFsResponse.member.map((tof) => ({
         tailleArticle: tof.tailleArticle,
         quantite: tof.quantite,
@@ -138,7 +143,7 @@ export function OrdreFabricationForm({
     form,
   ]);
 
-  // Watch tailleOFs to calculate total quantity
+  // Watch tailleOFs to calculate total quantity and check if form should be disabled
   const watchedTailleOFs = form.watch("tailleOFs");
   const totalQuantity =
     watchedTailleOFs?.reduce(
@@ -146,11 +151,40 @@ export function OrdreFabricationForm({
       0
     ) || 0;
 
+  // Check if form should be disabled
+  const hasTailleOFs = watchedTailleOFs && watchedTailleOFs.length > 0;
+  const hasValidTailleOFs =
+    hasTailleOFs && watchedTailleOFs.some((taille) => taille.quantite > 0);
+
   const isLoading =
     createOrdreFabrication.isLoading || updateOrdreFabrication.isLoading;
   const isDataLoading = isEdit && (isLoadingOF || isLoadingTailles);
 
+  // Enhanced form validation
+  const isFormValid =
+    form.formState.isValid && hasTailleOFs && hasValidTailleOFs;
+
   const onSubmit = async (data: FormData) => {
+    // Additional validation before submission
+    if (!data.tailleOFs || data.tailleOFs.length === 0) {
+      form.setError("tailleOFs", {
+        type: "required",
+        message: "Au moins une configuration de taille est requise",
+      });
+      return;
+    }
+
+    const hasValidQuantities = data.tailleOFs.some(
+      (taille) => taille.quantite > 0
+    );
+    if (!hasValidQuantities) {
+      form.setError("tailleOFs", {
+        type: "required",
+        message: "Au moins une taille doit avoir une quantité supérieure à 0",
+      });
+      return;
+    }
+
     try {
       const formDataForAPI = {
         ...data,
@@ -158,16 +192,15 @@ export function OrdreFabricationForm({
         dateCloture: data.dateCloture || null,
       };
 
-      if (isEdit && ordreFabricationId) {
+      if (isEdit && id) {
         await updateOrdreFabrication.mutateAsync({
-          id: ordreFabricationId,
+          id: id,
           ...formDataForAPI,
         });
       } else {
         await createOrdreFabrication.mutateAsync(formDataForAPI);
       }
-
-      router.push("/ordre-fabrications");
+      router.push("/client/ordre-fabrications");
     } catch (error) {
       console.error("Form submission error:", error);
     }
@@ -232,7 +265,6 @@ export function OrdreFabricationForm({
           {isEdit ? "Edit Ordre Fabrication" : "Create New Ordre Fabrication"}
         </CardTitle>
       </CardHeader>
-
       <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
         <CardContent className="p-4 sm:p-6 space-y-6">
           {/* Article Selection */}
@@ -288,7 +320,7 @@ export function OrdreFabricationForm({
                     const currentDate = new Date();
                     currentDate.setHours(0, 0, 0, 0);
                     if (clotureDate <= currentDate) {
-                      return "La date de cloture doit être à l'avenir";
+                      return "La date de cloture doit être à l&apos;avenir";
                     }
                     return true;
                   },
@@ -304,7 +336,6 @@ export function OrdreFabricationForm({
                 </div>
               )}
             </div>
-
             <div className="flex items-center space-x-2 pt-6">
               <Checkbox
                 id="urgent"
@@ -351,7 +382,6 @@ export function OrdreFabricationForm({
                 </div>
               )}
             </div>
-
             <div className="space-y-2">
               <Label htmlFor="tempsUnitaire" className="text-sm sm:text-base">
                 Temps unitaire (cmn) *
@@ -404,7 +434,7 @@ export function OrdreFabricationForm({
             {fields.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
                 Aucune configuration de taille. <br />
-                Cliquez sur "Ajouter" pour commencer.
+                Cliquez sur &quot;Ajouter&quot; pour commencer.
               </div>
             ) : (
               <div className="space-y-3">
@@ -489,7 +519,8 @@ export function OrdreFabricationForm({
             {form.formState.errors.tailleOFs && (
               <div className="flex items-center gap-1 text-sm text-red-600">
                 <AlertCircle className="h-4 w-4" />
-                Au moins une configuration de taille est requise
+                {form.formState.errors.tailleOFs.message ||
+                  "Au moins une configuration de taille est requise"}
               </div>
             )}
           </div>
@@ -514,9 +545,9 @@ export function OrdreFabricationForm({
           >
             <Link
               href={
-                isEdit && ordreFabricationId
-                  ? `/ordre-fabrications/${ordreFabricationId}`
-                  : "/ordre-fabrications"
+                isEdit && id
+                  ? `/client/ordre-fabrications/${id}`
+                  : "/client/ordre-fabrications"
               }
             >
               <ArrowLeft className="mr-2 h-4 w-4" /> Annuler
@@ -524,14 +555,14 @@ export function OrdreFabricationForm({
           </Button>
           <Button
             type="submit"
-            disabled={isLoading || !form.formState.isValid}
+            disabled={isLoading || !isFormValid}
             className="w-full sm:w-auto"
           >
             {isLoading
               ? "Enregistrement..."
               : isEdit
               ? "Mettre à jour"
-              : "Créer l'ordre de fabrication"}
+              : "Créer l&apos;ordre de fabrication"}
           </Button>
         </CardFooter>
       </form>

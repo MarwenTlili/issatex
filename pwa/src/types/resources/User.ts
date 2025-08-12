@@ -1,9 +1,7 @@
 import { Avatar } from "./Avatar";
+import { Item } from "./Item";
 
-export type User = {
-  "@context": string;
-  "@id": string;
-  "@type": string;
+export interface User extends Item {
   id: number | number;
   ref?: string;
   username?: string;
@@ -13,4 +11,4 @@ export type User = {
   createdAt?: string;
   updatedAt?: string;
   enabled?: boolean;
-};
+}

@@ -1,4 +1,4 @@
-import { clientApi } from "@/lib/api";
+import { clientsApi } from "@/lib/api/clients-api";
 import { Client } from "@/types/resources/Client";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -13,7 +13,7 @@ export const useCurrentClient = () => {
         throw new Error("No user session found");
       }
 
-      const clientsData = await clientApi.getByAccountId(session.user.id);
+      const clientsData = await clientsApi.getAllByAccountId(session.user.id);
 
       if (clientsData.member.length === 0) {
         throw new Error("No client found for this user");
@@ -31,7 +31,7 @@ export const useClientByUri = (uri: string) => {
   const id = uri.split("/").pop();
   return useQuery({
     queryKey: ["client", id],
-    queryFn: () => clientApi.getByURI(uri),
+    queryFn: () => clientsApi.getByURI(uri),
     enabled: !!uri,
   });
 };
