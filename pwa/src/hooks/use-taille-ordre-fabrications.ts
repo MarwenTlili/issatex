@@ -1,5 +1,5 @@
-import { tailleOrdreFabricationsApi } from "@/lib/api";
-import { ApiCollection } from "@/types/resources";
+import { taillesOrdreFabricationApi } from "@/lib/api/tailles-ordre-fabrication-api";
+import { ApiCollection } from "@/types/resources/ApiCollection";
 import {
   TailleArticle,
   TailleOrdreFabrication,
@@ -16,7 +16,7 @@ export const useTailleOrdreFabrications = (
       if (!ordreFabricationId) {
         throw new Error("No ordre fabrication ID provided");
       }
-      return tailleOrdreFabricationsApi.getByOrdreFabrication(
+      return taillesOrdreFabricationApi.getAllByOrdreFabricationId(
         ordreFabricationId
       );
     },
@@ -28,7 +28,7 @@ export const useTailleOrdreFabrications = (
 export const useTaillesByOrdreFabricationURI = (uri: string) => {
   return useQuery({
     queryKey: ["tailles-ordre-fabrication", uri],
-    queryFn: () => tailleOrdreFabricationsApi.getByOrdreFabricationURI(uri),
+    queryFn: () => taillesOrdreFabricationApi.getAllByOrdreFabricationURI(uri),
     enabled: !!uri,
   });
 };
@@ -45,7 +45,7 @@ export const useCreateTailleOrdreFabrication = () => {
       ordreFabrication: string;
     }
   >({
-    mutationFn: (data) => tailleOrdreFabricationsApi.create(data),
+    mutationFn: (data) => taillesOrdreFabricationApi.create(data),
     onSuccess: (_, variables) => {
       const ordreFabricationId = variables.ordreFabrication.split("/").pop();
       queryClient.invalidateQueries({
@@ -68,7 +68,7 @@ export const useUpdateTailleOrdreFabrication = () => {
     }
   >({
     mutationFn: ({ id, ...data }) =>
-      tailleOrdreFabricationsApi.update(id, data),
+      taillesOrdreFabricationApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["taille-ordre-fabrications"],
@@ -81,7 +81,7 @@ export const useDeleteTailleOrdreFabrication = () => {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, number>({
-    mutationFn: (id) => tailleOrdreFabricationsApi.delete(id),
+    mutationFn: (id) => taillesOrdreFabricationApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["taille-ordre-fabrications"],

@@ -5,7 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export const useProductions = (planningId: string) => {
   return useQuery({
     queryKey: ["productions"],
-    queryFn: () => productionsApi.getAllByPlanning(planningId),
+    queryFn: () => productionsApi.getAllByPlanningId(planningId),
   });
 };
 

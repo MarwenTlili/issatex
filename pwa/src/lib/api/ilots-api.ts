@@ -1,9 +1,13 @@
 import { Ilot } from "@/types/resources/Ilot";
-import { apiRequest } from "../api";
-import { ApiCollection } from "@/types/resources";
+import { apiRequest } from "./base";
+import { ApiCollection } from "@/types/resources/ApiCollection";
 
 export const ilotApi = {
-  getByURI: (id: string) => apiRequest<Ilot>(`${id}`),
+  getByURI(uri: string) {
+    return apiRequest<Ilot>(uri);
+  },
 
-  getAll: () => apiRequest<ApiCollection<Ilot>>(`/api/ilots`),
+  getAll() {
+    return apiRequest<ApiCollection<Ilot>>(`/api/ilots`);
+  },
 };

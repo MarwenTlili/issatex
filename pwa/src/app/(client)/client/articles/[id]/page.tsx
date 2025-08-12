@@ -13,7 +13,7 @@ export default async function ArticleDetailPage({
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-6">Détails de l'article</h1>
+      <h1 className="text-3xl font-bold mb-6">Détails de l&apos;article</h1>
       <ArticleDetails id={articleId} />
     </div>
   );

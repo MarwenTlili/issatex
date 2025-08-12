@@ -1,6 +1,5 @@
-export type Avatar = {
-  "@context": string;
-  "@id": string;
-  "@type": string;
+import { Item } from "./Item";
+
+export interface Avatar extends Item {
   contentUrl?: string;
-};
+}

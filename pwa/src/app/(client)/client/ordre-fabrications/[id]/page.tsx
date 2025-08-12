@@ -15,7 +15,7 @@ export default function OrdreFabricationPage({
     <div className="container mx-auto py-4 sm:py-8 px-0 sm:px-4">
       <div className="mb-6 sm:mb-8 px-4 sm:px-0">
         <h1 className="text-2xl sm:text-3xl font-bold">
-          Details de l'ordre de fabrication
+          Details de l&apos;ordre de fabrication
         </h1>
         <p className="text-muted-foreground mt-2 text-sm sm:text-base">
           Voir les informations détaillées sur cet ordre de fabrication

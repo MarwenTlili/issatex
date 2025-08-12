@@ -28,7 +28,7 @@ import { useClientByUri } from "@/hooks/use-clients";
 import { useArticleByURI } from "@/hooks/use-articles";
 import { useTaillesByOrdreFabricationURI } from "@/hooks/use-taille-ordre-fabrications";
 import { useProductions } from "@/hooks/use-productions";
-import { OrderContext } from "@/types/resources/OrdreFabrication";
+import { OrdreFabricationContext } from "@/types/resources/OrdreFabrication";
 import {
   TailleArticle,
   TailleArticleEnum,
@@ -80,7 +80,7 @@ export function OrderContextPanel({
   }, [dateDebut, dateFin]);
 
   // Calculate order context
-  const orderContext = useMemo((): OrderContext | null => {
+  const orderContext = useMemo((): OrdreFabricationContext | null => {
     if (!ordreFabricationData || !clientData || !articleData || !taillesData)
       return null;
 
@@ -158,7 +158,8 @@ export function OrderContextPanel({
         <CardContent className="p-6 text-center">
           <AlertCircle className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
           <p className="text-sm text-muted-foreground">
-            Impossible de charger les informations de l'ordre de fabrication
+            Impossible de charger les informations de l&apos;ordre de
+            fabrication
           </p>
         </CardContent>
       </Card>

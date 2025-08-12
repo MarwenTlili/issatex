@@ -1,5 +1,4 @@
-import { Item } from "./item";
-import { TailleArticle } from "./TailleOrdreFabrication";
+import { Item } from "./Item";
 
 export interface Production extends Item {
   id: number;

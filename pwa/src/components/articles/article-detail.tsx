@@ -52,7 +52,7 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
       <Card className="mx-4 sm:mx-0">
         <CardContent className="p-4 sm:p-6">
           <div className="text-center">
-            Chargement des détails de l'article...
+            Chargement des détails de l&apos;article...
           </div>
         </CardContent>
       </Card>

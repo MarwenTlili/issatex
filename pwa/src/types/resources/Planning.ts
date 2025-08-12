@@ -1,4 +1,4 @@
-import { Item } from "./item";
+import { Item } from "./Item";
 
 export interface Planning extends Item {
   id: number;

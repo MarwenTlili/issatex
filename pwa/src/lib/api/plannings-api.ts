@@ -1,15 +1,15 @@
-import { ApiCollection } from "@/types/resources";
-import { apiRequest } from "../api";
+import { ApiCollection } from "@/types/resources/ApiCollection";
+import { apiRequest } from "./base";
 import { Planning } from "@/types/resources/Planning";
 
 export const planningsApi = {
-  getAll: (page = 1, itemsPerPage = 10) =>
-    apiRequest<ApiCollection<Planning>>(
+  getAll(page = 1, itemsPerPage = 10) {
+    return apiRequest<ApiCollection<Planning>>(
       `/api/plannings?page=${page}&itemsPerPage=${itemsPerPage}`
-    ),
+    );
+  },
 
   getById: (id: number) => {
-    const planning = apiRequest<Planning>(`/api/plannings/${id}`);
-    return planning;
+    return apiRequest<Planning>(`/api/plannings/${id}`);
   },
 };

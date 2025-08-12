@@ -31,7 +31,7 @@ import {
   OrdreFabrication,
   OrdreFabricationFilters,
 } from "@/types/resources/OrdreFabrication";
-import { ApiCollection } from "@/types/resources";
+import { ApiCollection } from "@/types/resources/ApiCollection";
 
 interface OrdreFabricationsTableContentProps {
   ordreFabricationsResponse: ApiCollection<OrdreFabrication> | undefined;
@@ -133,7 +133,7 @@ export const OrdreFabricationsTableContent = memo(
                     <div className="flex items-center justify-center">
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
                       <span className="ml-2">
-                        Chargement de l'ordre de fabrication...
+                        Chargement de l&apos;ordre de fabrication...
                       </span>
                     </div>
                   </TableCell>

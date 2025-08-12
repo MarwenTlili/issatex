@@ -32,7 +32,7 @@ export default function ClientDashboard() {
     itemsPerPage: 5,
     order: { dateCreation: "desc" },
   });
-  
+
   if (status === "loading") {
     return (
       <div className="container mx-auto py-8 px-4">
@@ -145,7 +145,7 @@ export default function ClientDashboard() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Nombre total d'articles
+              Nombre total d&apos;articles
             </CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -238,7 +238,7 @@ export default function ClientDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BarChart3 className="h-5 w-5" />
-              Aperçu de l'état de l'ordre
+              Aperçu de l&apos;état de l&apos;ordre
             </CardTitle>
             <CardDescription>
               État actuel de vos commandes de fabrication

@@ -1,4 +1,4 @@
-import { Item } from "./item";
+import { Item } from "./Item";
 
 export interface Ilot extends Item {
   id: number;

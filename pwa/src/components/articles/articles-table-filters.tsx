@@ -12,11 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ArticleFilters } from "@/types/resources/Article";
+import { ArticlesFilters } from "@/types/resources/Article";
 
 interface ArticlesTableFiltersProps {
-  filters: ArticleFilters;
-  onFilterChange: (newFilters: Partial<ArticleFilters>) => void;
+  filters: ArticlesFilters;
+  onFilterChange: (newFilters: Partial<ArticlesFilters>) => void;
 }
 
 export const ArticlesTableFilters = memo(function ArticlesTableFilters({

@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ProductionForm } from "./production-form";
 import {
   Plus,
   Edit,
@@ -65,7 +64,7 @@ export function ProductionList({
     error,
   } = useProductions(planningId);
 
-  const productionIsExpired = new Date(dateFin) < new Date();
+  const productionIsExpired = new Date(dateFin) <= new Date();
 
   const deleteProduction = useDeleteProduction();
 
