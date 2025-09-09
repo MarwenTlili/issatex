@@ -1,13 +1,11 @@
 import { Ilot } from "@/types/resources/Ilot";
-import { apiRequest } from "./base";
-import { ApiCollection } from "@/types/resources/ApiCollection";
+import { ApiService } from "./base";
+import { API_ENDPOINTS } from "@/config/api";
 
-export const ilotApi = {
-  getByURI(uri: string) {
-    return apiRequest<Ilot>(uri);
-  },
+class IlotsApiService extends ApiService<Ilot> {
+  constructor() {
+    super(API_ENDPOINTS.ILOTS);
+  }
+}
 
-  getAll() {
-    return apiRequest<ApiCollection<Ilot>>(`/api/ilots`);
-  },
-};
+export const ilotsApiService = new IlotsApiService();

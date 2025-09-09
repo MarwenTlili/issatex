@@ -1,13 +1,13 @@
 import type { NextAuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { AUTH_URL, NEXTAUTH_SECRET } from "@/config/entrypoint";
 import { apiFetch, refreshTokens } from "./auth-functions";
 import { JWT } from "next-auth/jwt";
 import { logger } from "@/lib/utils/Logger";
 import { JwtAuthData, JwtPayload } from "@/types/index";
 
 import { parseJwt } from "@/lib/utils";
+import { AUTH_URL, NEXTAUTH_SECRET } from "@/config/api";
 
 export const authOptions: NextAuthOptions = {
   secret: NEXTAUTH_SECRET,

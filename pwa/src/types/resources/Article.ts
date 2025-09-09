@@ -1,4 +1,6 @@
+import { BaseFilters } from "@/types/common/BaseFilters";
 import { Item } from "./Item";
+import { boolean } from "zod";
 
 export interface Article extends Item {
   id?: number;
@@ -10,19 +12,18 @@ export interface Article extends Item {
 }
 
 export interface CreateArticleData {
-  designation?: string;
-  composition?: string;
+  designation: string;
+  composition: string;
+  client?: string;
 }
 
-export interface UpdateArticleData extends CreateArticleData {
+export interface UpdateArticleData extends Partial<CreateArticleData> {
   id: number;
 }
 
-export interface ArticlesFilters {
+export interface ArticlesFilters extends BaseFilters {
   ref?: string;
-  page?: number;
-  itemsPerPage?: number;
-  order?: {
-    [key: string]: "asc" | "desc";
-  };
+  designation?: string;
+  withoutOrdreFabrication?: boolean;
+  currentArticle?: string;
 }

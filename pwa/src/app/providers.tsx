@@ -3,6 +3,7 @@
 import { type ReactNode, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
+import { CACHE_CONFIG } from "@/config/cache";
 
 // Base providers
 export default function Providers({ children }: { children: ReactNode }) {
@@ -11,10 +12,11 @@ export default function Providers({ children }: { children: ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 0, // Consider data immediately stale
-            refetchOnWindowFocus: false, // Prevent refetch on window focus
+            staleTime: CACHE_CONFIG.STALE_TIME,
+            refetchOnWindowFocus: false,
             refetchOnMount: "always",
             cacheTime: 0,
+            retry: false,
           },
         },
       })

@@ -1,137 +1,235 @@
 import { getSession } from "next-auth/react";
-import { ENTRYPOINT } from "@/config/entrypoint";
+import { ApiCollection } from "@/types/resources/ApiCollection";
+import { ENTRYPOINT } from "@/config/api";
 
 /**
- * Represents an HTTP error returned by the API.
- *
- * Extends the native `Error` object to include HTTP status code and status text.
+ * Request configuration interface
  */
-export class ApiError extends Error {
-  /**
-   * Creates a new ApiError instance.
-   *
-   * @param {number} status - The HTTP status code.
-   * @param {string} statusText - The HTTP status text.
-   * @param {string} [message] - Optional custom error message.
-   */
-  constructor(
-    public status: number,
-    public statusText: string,
-    message?: string
-  ) {
-    super(message || `API Error: ${status} ${statusText}`);
-    this.name = "ApiError";
-  }
+interface RequestConfig extends RequestInit {
+  timeout?: number;
+  retries?: number;
 }
 
 /**
- * Performs a `fetch` request with JWT-based authentication.
- *
- * Retrieves the session using `getSession` and attaches the `Authorization` header
- * with a Bearer token. If no session or access token is found, it throws an `ApiError`.
- *
- * @async
- * @param {string} url - The URL to request.
- * @param {RequestInit} [options={}] - Additional fetch options.
- * @throws {ApiError} If the user is unauthorized or the response is not OK.
- * @returns {Promise<Response>} The fetch API `Response` object.
- *
- * @example
- * const response = await fetchWithAuth("/api/users");
- * const data = await response.json();
+ * Creates a fetch request with timeout support
+ */
+const fetchWithTimeout = async (
+  url: string,
+  options: RequestConfig = {}
+): Promise<Response> => {
+  const { timeout = 30000, ...fetchOptions } = options;
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...fetchOptions,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Request timeout");
+    }
+    throw error;
+  }
+};
+
+/**
+ * Performs a fetch request with JWT-based authentication and enhanced error handling
  */
 export async function fetchWithAuth(
   url: string,
-  options: RequestInit = {}
+  options: RequestConfig = {}
 ): Promise<Response> {
   const session = await getSession();
 
   if (!session?.accessToken) {
-    throw new ApiError(401, "Unauthorized", "No valid session found");
+    throw {
+      status: 401,
+      title: "Non authentifié",
+      detail: "Aucun token valide trouvé",
+    };
   }
 
   const headers = new Headers(options.headers);
 
-  if (!headers.has("Content-Type")) {
+  if (
+    !headers.has("Content-Type") &&
+    options.body &&
+    typeof options.body === "string"
+  ) {
     headers.set("Content-Type", "application/json");
   }
 
   headers.set("Authorization", `Bearer ${session.accessToken}`);
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetchWithTimeout(url, {
+      ...options,
+      headers,
+    });
+    // console.log(await response.json());
 
-  if (!response.ok) {
-    throw new ApiError(response.status, response.statusText);
+    return response;
+  } catch (err) {
+    // Network-level errors
+    throw {
+      networkError: true,
+      title: "Erreur réseau",
+      detail: (err as Error).message,
+    };
   }
-
-  return response;
 }
 
 /**
- * Sends an authenticated request to the API and parses the JSON response.
- *
- * Uses `fetchWithAuth` to ensure a valid session and JWT token.
- * If the response status is `204 No Content`, returns `undefined`.
- *
- * @async
- * @template T - The expected type of the JSON response body.
- * @param {string} endpoint - API endpoint (relative to `ENTRYPOINT`).
- * @param {RequestInit} [options={}] - Additional fetch options.
- * @throws {ApiError} If the request fails or the response is not OK.
- * @returns {Promise<T>} Parsed JSON data from the response.
- *
- * @example
- * interface User { id: number; name: string; }
- * const users = await apiRequest<User[]>("/users");
+ * Sends an authenticated request to the API and parses the JSON response
  */
 export async function apiRequest<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestConfig = {}
 ): Promise<T> {
-  const response = await fetchWithAuth(`${ENTRYPOINT}${endpoint}`, options);
+  const url = `${ENTRYPOINT}${endpoint}`;
 
-  if (response.status === 204) {
-    return undefined as unknown as T;
+  let response;
+  try {
+    response = await fetchWithAuth(url, options);
+  } catch (err) {
+    throw err;
   }
 
-  return response.json();
+  // No content
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+
+  try {
+    // Handle JSON
+    if (
+      contentType.includes("application/json") ||
+      contentType.includes("application/ld+json") ||
+      contentType.includes("application/problem+json")
+    ) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw {
+          status: response.status,
+          title: data.title ?? "Erreur API",
+          detail: data.detail ?? JSON.stringify(data),
+          violations: data.violations,
+          type: data.type,
+        };
+      }
+
+      return data as T;
+    }
+
+    // Fallback for text / html
+    const text = await response.text();
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        title: "Erreur API",
+        detail: text || `HTTP ${response.status}`,
+      };
+    }
+
+    return text as unknown as T;
+  } catch (err) {
+    throw {
+      status: response?.status ?? 0,
+      title: "Réponse invalide",
+      detail: (err as Error).message,
+    };
+  }
 }
 
 /**
- * Builds a URL query string from a given parameters object.
- *
- * This function takes an object of key-value pairs and converts it into a URL-encoded query string.
- * - Skips parameters that are `undefined`, `null`, or an empty string.
- * - Converts all values to strings before appending them.
- * - Handles nested objects by generating keys in the form `parent[child]`.
- * - Arrays are appended as repeated keys (default `URLSearchParams` behavior).
- *
- * @param {Record<string, any>} params - The object containing query parameters.
- * @returns {string} The encoded query string, without the leading `?`.
- * @example
- * buildQueryParams({ order: { createdAt: "desc" } });
- * // "order[createdAt]=desc"
+ * Builds a URL query string from parameters object with improved type safety
  */
-export function buildQueryParams(params: Record<string, any>): string {
+export function buildQueryParams(params: Record<string, unknown>): string {
   const searchParams = new URLSearchParams();
 
-  Object.entries(params).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && value !== "") {
-      if (typeof value === "object" && !Array.isArray(value)) {
-        // Handle nested objects like order parameters
-        Object.entries(value).forEach(([nestedKey, nestedValue]) => {
+  const addParam = (key: string, value: unknown): void => {
+    if (value === undefined || value === null || value === "") {
+      return;
+    }
+
+    if (typeof value === "object" && !Array.isArray(value)) {
+      // Handle nested objects
+      Object.entries(value as Record<string, unknown>).forEach(
+        ([nestedKey, nestedValue]) => {
           if (nestedValue !== undefined && nestedValue !== null) {
             searchParams.append(`${key}[${nestedKey}]`, String(nestedValue));
           }
-        });
-      } else {
-        searchParams.append(key, String(value));
-      }
+        }
+      );
+    } else if (Array.isArray(value)) {
+      // Handle arrays
+      value.forEach((item) => {
+        if (item !== undefined && item !== null) {
+          searchParams.append(key, String(item));
+        }
+      });
+    } else {
+      searchParams.append(key, String(value));
     }
+  };
+
+  Object.entries(params).forEach(([key, value]) => {
+    addParam(key, value);
   });
 
   return searchParams.toString();
+}
+
+/**
+ * Generic API service class for CRUD operations
+ */
+export class ApiService<T, CreateT = Partial<T>, UpdateT = Partial<T>> {
+  constructor(private readonly endpoint: string) {}
+
+  async getAll(
+    params: Record<string, unknown> = {}
+  ): Promise<ApiCollection<T>> {
+    const queryString = buildQueryParams(params);
+    const url = queryString ? `${this.endpoint}?${queryString}` : this.endpoint;
+    return apiRequest<ApiCollection<T>>(url);
+  }
+
+  async getOne(identifier: string | number): Promise<T> {
+    const url =
+      typeof identifier === "string"
+        ? identifier
+        : `${this.endpoint}/${identifier}`;
+    return apiRequest<T>(url);
+  }
+
+  async create(data: CreateT): Promise<T> {
+    return apiRequest<T>(this.endpoint, {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  }
+
+  async update(id: string | number, data: UpdateT): Promise<T> {
+    return apiRequest<T>(`${this.endpoint}/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/merge-patch+json" },
+      body: JSON.stringify(data),
+    });
+  }
+
+  async delete(id: string | number): Promise<void> {
+    return apiRequest<void>(`${this.endpoint}/${id}`, {
+      method: "DELETE",
+    });
+  }
 }

@@ -1,4 +1,6 @@
-import { clientsApi } from "@/lib/api/clients-api";
+import { QUERY_KEYS } from "@/config/cache";
+import { clientsApiService } from "@/lib/api/clients-api";
+import { ApiError, handleApiError } from "@/lib/api/handle-api-error";
 import { Client } from "@/types/resources/Client";
 import { useQuery } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
@@ -7,13 +9,15 @@ export const useCurrentClient = () => {
   const { data: session, status } = useSession();
 
   return useQuery({
-    queryKey: ["current-client", session?.user?.id],
+    queryKey: [QUERY_KEYS.CURRENT_CLIENT, session?.user?.id],
     queryFn: async (): Promise<Client | null> => {
       if (!session?.user?.id) {
-        throw new Error("No user session found");
+        throw new Error("Aucune session trouvé");
       }
 
-      const clientsData = await clientsApi.getAllByAccountId(session.user.id);
+      const clientsData = await clientsApiService.getAllByAccountId(
+        session.user.id
+      );
 
       if (clientsData.member.length === 0) {
         throw new Error("No client found for this user");
@@ -23,15 +27,14 @@ export const useCurrentClient = () => {
       return clientsData.member[0];
     },
     enabled: status === "authenticated" && !!session?.user?.id,
-    staleTime: 5 * 60 * 1000, // 5 minutes - client data doesn't change often
+    onError: (err) => handleApiError(err as ApiError),
   });
 };
 
-export const useClientByUri = (uri: string) => {
-  const id = uri.split("/").pop();
+export const useClientByURI = (uri?: string) => {
   return useQuery({
-    queryKey: ["client", id],
-    queryFn: () => clientsApi.getByURI(uri),
+    queryKey: ["client", uri],
+    queryFn: () => clientsApiService.getByURI(uri!),
     enabled: !!uri,
   });
 };

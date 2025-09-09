@@ -1,95 +1,71 @@
-import {
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import type {
   CreateOrdreFabricationData,
   OrdreFabrication,
   OrdreFabricationFilters,
   UpdateOrdreFabricationData,
 } from "@/types/resources/OrdreFabrication";
-import { useCurrentClient } from "./use-clients";
-import { toast } from "sonner";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ApiCollection } from "@/types/resources/ApiCollection";
 import { ordresFabricationApi } from "@/lib/api/ordres-fabrication-api";
+import { useCurrentClient } from "./use-clients";
+import { ApiError, handleApiError } from "@/lib/api/handle-api-error";
+import { QUERY_KEYS } from "@/config/cache";
+import { MESSAGES } from "@/config/app";
 
 export const useOrdreFabrications = (filters: OrdreFabricationFilters = {}) => {
-  const { data: currentClient, error } = useCurrentClient();
-  if (error) {
-    toast.error("Can't fetch client informations", {
-      description: "Error while fetching current client data",
-    });
-  }
-  return useQuery<ApiCollection<OrdreFabrication>, Error>({
-    queryKey: ["ordre-fabrications", currentClient?.id, filters],
-    queryFn: () => {
-      if (!currentClient?.id) {
-        throw new Error("No client found");
-      }
+  const { data: currentClient } = useCurrentClient();
 
+  return useQuery({
+    queryKey: [QUERY_KEYS.ORDRE_FABRICATIONS, currentClient?.id, filters],
+    queryFn: async () => {
+      if (!currentClient?.id) {
+        throw new Error("Aucun client trouvé");
+      }
       return ordresFabricationApi.getAllByClientId(currentClient.id, filters);
     },
     enabled: !!currentClient?.id,
+    onError: (err) => handleApiError(err as ApiError),
   });
 };
 
-export const useOrdreFabrication = (
-  id?: number,
-  options?: { enabled?: boolean; staleTime?: number }
-) => {
+export const useOrdreFabrication = (identifier?: string | number) => {
   return useQuery({
-    queryKey: ["ordre-fabrication"],
-    queryFn: () => {
-      if (!id) throw new Error("Cannot fetch ordre fabrication without id!");
-      return ordresFabricationApi.getById(id);
-    },
-    enabled: !!id && options?.enabled !== false,
-    staleTime: options?.staleTime || 5 * 60 * 1000, // 5 minutes default
-  });
-};
-
-export const useOrdreFabricationByURI = (
-  uri?: string,
-  options?: { enabled?: boolean; staleTime?: number }
-) => {
-  return useQuery({
-    queryKey: ["ordre-fabrication", uri],
-    queryFn: () => {
-      if (!uri) throw new Error("Cannot fetch ordre fabrication without URI!");
-      return ordresFabricationApi.getByURI(uri);
-    },
-    enabled: !!uri && options?.enabled !== false,
-    staleTime: options?.staleTime || 5 * 60 * 1000, // 5 minutes default
+    queryKey: [QUERY_KEYS.ORDRE_FABRICATION, `${identifier}`],
+    queryFn: () => ordresFabricationApi.getOne(identifier!),
+    enabled: !!identifier,
+    // refetchOnMount: "always",
+    onError: (err) => handleApiError(err as ApiError),
   });
 };
 
 export const useCreateOrdreFabrication = () => {
   const queryClient = useQueryClient();
-  const { data: client, error: clientFetchError } = useCurrentClient();
-
-  if (clientFetchError) {
-    toast.error("Can't fetch client informations", {
-      description: "Error while fetching current client data",
-    });
-  }
+  const { data: currentClient } = useCurrentClient();
 
   return useMutation<OrdreFabrication, Error, CreateOrdreFabricationData>({
-    mutationFn: (data: CreateOrdreFabricationData) => {
-      if (!client?.["@id"]) {
-        throw new Error("No client found");
+    mutationFn: async (data: CreateOrdreFabricationData) => {
+      if (!currentClient?.["@id"]) {
+        throw new Error("Aucun client trouvé");
       }
-      return ordresFabricationApi.create(data, client?.["@id"]);
+      return ordresFabricationApi.create({
+        ...data,
+        client: currentClient["@id"],
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["ordre-fabrications", client?.id],
+        queryKey: [QUERY_KEYS.ORDRE_FABRICATIONS, currentClient?.id],
       });
-      toast.success("Mnufacturing order created successfully", {
+      toast.success(MESSAGES.SUCCESS.ORDRE_FABRICATION_CREATED, {
         description:
-          "The new manufacturing order has been added to your collection.",
+          "Le nouvel ordre de fabrication a été ajouté à votre collection.",
       });
     },
     onError: (error) => {
-      toast.error("Error", {
-        description: error.message,
+      const formErrors = handleApiError(error as ApiError, {
+        showToast: false,
       });
+      return formErrors;
     },
   });
 };
@@ -99,30 +75,30 @@ export const useUpdateOrdreFabrication = () => {
   const { data: client } = useCurrentClient();
 
   return useMutation<OrdreFabrication, Error, UpdateOrdreFabricationData>({
-    mutationFn: (data: UpdateOrdreFabricationData) => {
-      if (!client?.["@id"]) {
-        throw new Error("No client found");
-      }
-      return ordresFabricationApi.update(data);
-    },
+    mutationFn: async (data: UpdateOrdreFabricationData) =>
+      ordresFabricationApi.update(data.id, data),
     onSuccess: (updatedOrdreFabrication) => {
       queryClient.invalidateQueries({
-        queryKey: ["ordre-fabrications", client?.id],
+        queryKey: [QUERY_KEYS.ORDRE_FABRICATIONS, client?.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["ordre-fabrication", updatedOrdreFabrication.id],
+        queryKey: [QUERY_KEYS.ORDRE_FABRICATION, updatedOrdreFabrication.id],
       });
       queryClient.invalidateQueries({
-        queryKey: ["taille-ordre-fabrications", updatedOrdreFabrication.id],
+        queryKey: [
+          QUERY_KEYS.TAILLES_ORDRE_FABRICATION,
+          updatedOrdreFabrication.id,
+        ],
       });
-      toast.success("Manufacturing order updated successfully", {
-        description: "Your changes have been saved.",
+      toast.success(MESSAGES.SUCCESS.ORDRE_FABRICATION_UPDATED, {
+        description: "Vos modifications ont été enregistrées.",
       });
     },
     onError: (error) => {
-      toast.error("Error", {
-        description: error.message,
+      const formErrors = handleApiError(error as ApiError, {
+        showToast: false,
       });
+      return formErrors;
     },
   });
 };
@@ -130,21 +106,21 @@ export const useUpdateOrdreFabrication = () => {
 export const useDeleteOrdreFabrication = () => {
   const queryClient = useQueryClient();
   const { data: client } = useCurrentClient();
+
   return useMutation<void, Error, number>({
     mutationFn: (id: number) => ordresFabricationApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["ordre-fabrications", client?.id],
+        queryKey: [QUERY_KEYS.ORDRE_FABRICATIONS, client?.id],
       });
-      toast.success("Manufacturing order deleted successfully", {
+      toast.success(MESSAGES.SUCCESS.ORDRE_FABRICATION_DELETED, {
         description:
-          "The manufacturing order has been removed from your collection.",
+          "L'ordre de fabrication a été supprimé de votre collection.",
       });
     },
-    onError: (error) => {
-      toast.error("Error", {
-        description: error.message,
-      });
-    },
+    onError: (error) =>
+      handleApiError(error as ApiError, {
+        customMessage: "Impossible de supprimer cet Ordre de fabrication.",
+      }),
   });
 };

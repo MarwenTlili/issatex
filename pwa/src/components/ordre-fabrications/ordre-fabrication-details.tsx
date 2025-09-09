@@ -25,7 +25,12 @@ import {
   Euro,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useTailleOrdreFabrications } from "@/hooks/use-taille-ordre-fabrications";
+import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications";
+import { useArticle } from "@/hooks/use-articles";
+import { useState } from "react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { APP_ROUTES, MESSAGES } from "@/config/app";
+import { isApiError } from "@/lib/api/handle-api-error";
 
 interface OrdreFabricationDetailsProps {
   id: number;
@@ -51,21 +56,39 @@ const getStatusColor = (statut: string) => {
 export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
   const router = useRouter();
   const { data: ordreFabrication, isLoading, error } = useOrdreFabrication(id);
-  const { data: tailleOFsResponse } = useTailleOrdreFabrications(id);
+  const { data: tailleOFsResponse } = useTaillesByOrdreFabrication(id);
   const deleteOrdreFabrication = useDeleteOrdreFabrication();
+  const { data: article } = useArticle(ordreFabrication?.article);
+  const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
+  const [dialogData, setDialogData] = useState<{
+    title: string;
+    description?: string;
+    onConfirm: () => void;
+    actionLabel?: string;
+  } | null>(null);
 
   const handleDelete = async () => {
-    if (
-      window.confirm(
-        "Êtes-vous sûr de vouloir supprimer l&apos;ordre de fabrication?"
-      )
-    ) {
-      deleteOrdreFabrication.mutate(id, {
-        onSuccess: () => {
-          router.push("/client/ordre-fabrications");
-        },
-      });
-    }
+    setDialogData({
+      title: MESSAGES.ACTION.DELETE,
+      description: `${MESSAGES.DIALOG.ORDRE_FABRICATION_DELETE} ${ordreFabrication?.ref}`,
+      actionLabel: MESSAGES.ACTION.DELETE,
+      onConfirm: async () => {
+        try {
+          await deleteOrdreFabrication.mutateAsync(id);
+          setOpenConfirmDialog(false);
+          router.push(APP_ROUTES.CLIENT.ORDRE_FABRICATIONS);
+        } catch (error) {
+          if (
+            isApiError(error) &&
+            ((error.status && error.status >= 500) || !error.status)
+          ) {
+            throw new Error(error.title || error.detail || "Server error");
+          }
+          setOpenConfirmDialog(false);
+        }
+      },
+    });
+    setOpenConfirmDialog(true);
   };
 
   if (isLoading) {
@@ -201,8 +224,8 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
         <div>
           <h3 className="text-base sm:text-lg font-medium mb-2">Article</h3>
           <div className="bg-muted/50 rounded-lg p-3 sm:p-4">
-            <Badge variant="outline">
-              {ordreFabrication.article.split("/").pop()}
+            <Badge className="text-md">
+              {`${article?.ref} - ${article?.designation}`}
             </Badge>
           </div>
         </div>
@@ -222,7 +245,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
                         Size {tailleOF.tailleArticle}
                       </Badge>
                       <span className="font-medium">
-                        {tailleOF.quantite.toLocaleString()}
+                        {`Qté: ${tailleOF.quantite.toLocaleString()}`}
                       </span>
                     </div>
                   </div>
@@ -272,6 +295,16 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
           </Button>
         </div>
       </CardFooter>
+      {openConfirmDialog && dialogData && (
+        <ConfirmDialog
+          open={openConfirmDialog}
+          onOpenChange={setOpenConfirmDialog}
+          title={dialogData.title}
+          description={dialogData.description}
+          actionLabel={dialogData.actionLabel}
+          onConfirm={dialogData.onConfirm}
+        />
+      )}
     </Card>
   );
 }

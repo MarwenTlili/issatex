@@ -23,15 +23,14 @@ import {
   Clock,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useOrdreFabricationByURI } from "@/hooks/use-ordre-fabrications";
-import { useClientByUri } from "@/hooks/use-clients";
-import { useArticleByURI } from "@/hooks/use-articles";
-import { useTaillesByOrdreFabricationURI } from "@/hooks/use-taille-ordre-fabrications";
+import { useOrdreFabrication } from "@/hooks/use-ordre-fabrications";
+import { useClientByURI } from "@/hooks/use-clients";
+import { useArticle } from "@/hooks/use-articles";
+import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications";
 import { useProductions } from "@/hooks/use-productions";
 import { OrdreFabricationContext } from "@/types/resources/OrdreFabrication";
 import {
   TailleArticle,
-  TailleArticleEnum,
 } from "@/types/resources/TailleOrdreFabrication";
 
 interface OrderContextPanelProps {
@@ -50,15 +49,15 @@ export function OrderContextPanel({
   const ordreFabricationId = ordreFabricationUri.split("/").pop() || "";
 
   const { data: ordreFabricationData, isLoading: loadingOrdre } =
-    useOrdreFabricationByURI(ordreFabricationUri);
-  const { data: clientData, isLoading: loadingClient } = useClientByUri(
+    useOrdreFabrication(ordreFabricationUri);
+  const { data: clientData, isLoading: loadingClient } = useClientByURI(
     ordreFabricationData?.client || ""
   );
-  const { data: articleData, isLoading: loadingArticle } = useArticleByURI(
+  const { data: articleData, isLoading: loadingArticle } = useArticle(
     ordreFabricationData?.article || ""
   );
   const { data: taillesData, isLoading: loadingTailles } =
-    useTaillesByOrdreFabricationURI(ordreFabricationId);
+    useTaillesByOrdreFabrication(ordreFabricationId);
   const { data: productionsData } = useProductions(planningId);
 
   // Calculate working days (excluding weekends)
@@ -88,7 +87,7 @@ export function OrderContextPanel({
     const productions = productionsData?.["member"] || [];
 
     // Calculate daily targets
-    const dailyTargets: { [key in TailleArticleEnum]?: number } = {};
+    const dailyTargets: { [key in TailleArticle]?: number } = {};
     taillesCommande.forEach((taille) => {
       dailyTargets[taille.tailleArticle] = Math.ceil(
         taille.quantite / workingDays
@@ -96,9 +95,9 @@ export function OrderContextPanel({
     });
 
     // Calculate current progress
-    const currentProgress: Partial<Record<TailleArticleEnum, number>> = {};
+    const currentProgress: Partial<Record<TailleArticle, number>> = {};
     productions.forEach((production) => {
-      const taille = production.tailleArticle as TailleArticleEnum;
+      const taille = production.tailleArticle as TailleArticle;
       if (!currentProgress[taille]) {
         currentProgress[taille] = 0;
       }

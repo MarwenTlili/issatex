@@ -1,39 +1,43 @@
-import {
+import { ApiService, apiRequest, buildQueryParams } from "./base";
+import { API_ENDPOINTS } from "@/config/api";
+import { taillesOrdreFabricationApi } from "./tailles-ordre-fabrication-api";
+import type {
   CreateOrdreFabricationData,
   OrdreFabrication,
   OrdreFabricationFilters,
   UpdateOrdreFabricationData,
 } from "@/types/resources/OrdreFabrication";
-import { apiRequest, buildQueryParams } from "./base";
-import { ApiCollection } from "@/types/resources/ApiCollection";
-import { taillesOrdreFabricationApi } from "./tailles-ordre-fabrication-api";
+import type { ApiCollection } from "@/types/resources/ApiCollection";
 
-export const ordresFabricationApi = {
-  getAllByClientId(clientId: number, filters: OrdreFabricationFilters = {}) {
+class OrdresFabricationApiService extends ApiService<
+  OrdreFabrication,
+  CreateOrdreFabricationData,
+  UpdateOrdreFabricationData
+> {
+  constructor() {
+    super(API_ENDPOINTS.ORDRE_FABRICATIONS);
+  }
+
+  async getAllByClientId(
+    clientId: number,
+    filters: OrdreFabricationFilters = {}
+  ): Promise<ApiCollection<OrdreFabrication>> {
     const params = buildQueryParams({
       client: clientId,
       ...filters,
     });
 
     return apiRequest<ApiCollection<OrdreFabrication>>(
-      `/api/ordre_fabrications?${params}`
+      `${API_ENDPOINTS.ORDRE_FABRICATIONS}?${params}`
     );
-  },
+  }
 
-  getById(id: number) {
-    return apiRequest<OrdreFabrication>(`/api/ordre_fabrications/${id}`);
-  },
-
-  getByURI(uri: string) {
-    return apiRequest<OrdreFabrication>(uri);
-  },
-
-  async create(data: CreateOrdreFabricationData, clientUri: string) {
+  async create(data: CreateOrdreFabricationData): Promise<OrdreFabrication> {
     // First create the OrdreFabrication without tailleOFs
-    const { tailleOFs, ...ordreFabricationData } = data;
+    const { tailleOFs, client, ...ordreFabricationData } = data;
 
     const ordreFabrication = await apiRequest<OrdreFabrication>(
-      "/api/ordre_fabrications",
+      API_ENDPOINTS.ORDRE_FABRICATIONS,
       {
         method: "POST",
         body: JSON.stringify({
@@ -41,7 +45,7 @@ export const ordresFabricationApi = {
           dateCreation: new Date().toISOString(),
           statut: "Cree",
           lance: false,
-          client: clientUri,
+          client: client,
         }),
       }
     );
@@ -59,14 +63,17 @@ export const ordresFabricationApi = {
     }
 
     return ordreFabrication;
-  },
+  }
 
-  async update(data: UpdateOrdreFabricationData): Promise<OrdreFabrication> {
-    const { id, tailleOFs, ...updateData } = data;
+  async update(
+    id: number,
+    data: UpdateOrdreFabricationData
+  ): Promise<OrdreFabrication> {
+    const { tailleOFs, ...updateData } = data;
 
     // Update the main order
     const ordreFabrication = await apiRequest<OrdreFabrication>(
-      `/api/ordre_fabrications/${id}`,
+      `${API_ENDPOINTS.ORDRE_FABRICATIONS}/${id}`,
       {
         method: "PATCH",
         headers: { "Content-Type": "application/merge-patch+json" },
@@ -77,7 +84,7 @@ export const ordresFabricationApi = {
     // Update size configurations if provided
     if (tailleOFs) {
       const existingTailleOFs =
-        await taillesOrdreFabricationApi.getAllByOrdreFabricationId(id);
+        await taillesOrdreFabricationApi.getAllByOrdreFabrication(id);
 
       // Delete existing configurations
       await Promise.all(
@@ -100,20 +107,7 @@ export const ordresFabricationApi = {
     }
 
     return ordreFabrication;
-  },
+  }
+}
 
-  async delete(id: number): Promise<void> {
-    // First delete associated TailleOrdreFabrication
-    const tailleOFs = await taillesOrdreFabricationApi.getAllByOrdreFabricationId(
-      id
-    );
-    await Promise.all(
-      tailleOFs.member.map((tof) => taillesOrdreFabricationApi.delete(tof.id))
-    );
-
-    // Then delete the OrdreFabrication
-    await apiRequest<void>(`/api/ordre_fabrications/${id}`, {
-      method: "DELETE",
-    });
-  },
-};
+export const ordresFabricationApi = new OrdresFabricationApiService();

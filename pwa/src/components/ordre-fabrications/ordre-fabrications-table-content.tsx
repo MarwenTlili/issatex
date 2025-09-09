@@ -38,7 +38,7 @@ interface OrdreFabricationsTableContentProps {
   isLoading: boolean;
   filters: OrdreFabricationFilters;
   onSort: (field: "ref" | "dateCreation" | "statut") => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: number, ref: string) => void;
   deleteLoading: boolean;
 }
 
@@ -188,9 +188,11 @@ export const OrdreFabricationsTableContent = memo(
                               </Link>
                             </Button>
                             <Button
-                              variant="outline"
+                              variant="destructive"
                               size="icon"
-                              onClick={() => of.id && onDelete(of.id)}
+                              onClick={() =>
+                                of.id && of.ref && onDelete(of.id, of.ref)
+                              }
                               disabled={deleteLoading}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -270,7 +272,9 @@ export const OrdreFabricationsTableContent = memo(
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        onClick={() => of.id && onDelete(of.id)}
+                        onClick={() =>
+                          of.id && of.ref && onDelete(of.id, of.ref)
+                        }
                         disabled={deleteLoading}
                         className="text-red-600 focus:text-red-600"
                       >

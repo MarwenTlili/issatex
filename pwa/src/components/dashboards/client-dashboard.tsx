@@ -1,5 +1,8 @@
 "use client";
 
+import type React from "react";
+
+import { useMemo } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import {
@@ -11,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import {
   Package,
   Factory,
@@ -23,22 +27,119 @@ import {
 import { useArticles } from "@/hooks/use-articles";
 import { useOrdreFabrications } from "@/hooks/use-ordre-fabrications";
 import { useCurrentClient } from "@/hooks/use-clients";
+import { formatDate } from "@/lib/utils/date";
+import { formatNumber } from "@/lib/utils/format";
+import { APP_ROUTES } from "@/config/app";
+
+interface QuickAction {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  href: string;
+  color: string;
+}
+
+const getStatusColor = (statut: string): string => {
+  switch (statut) {
+    case "Cree":
+      return "bg-blue-100 text-blue-800";
+    case "En_cours":
+      return "bg-yellow-100 text-yellow-800";
+    case "Terminee":
+      return "bg-green-100 text-green-800";
+    case "Annule":
+      return "bg-red-100 text-red-800";
+    case "Planifiee":
+      return "bg-purple-100 text-purple-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
 
 export default function ClientDashboard() {
   const { data: session, status } = useSession();
   const { data: client } = useCurrentClient();
-  const { data: articlesResponse } = useArticles({ itemsPerPage: 5 });
-  const { data: ordreFabricationsResponse } = useOrdreFabrications({
+  const { data: articlesResponse, isLoading: isLoadingArticles } = useArticles({
     itemsPerPage: 5,
-    order: { dateCreation: "desc" },
   });
+  const { data: ordreFabricationsResponse, isLoading: isLoadingOrdres } =
+    useOrdreFabrications({
+      itemsPerPage: 5,
+      order: { dateCreation: "desc" },
+    });
 
-  if (status === "loading") {
+  const quickActions: QuickAction[] = useMemo(
+    () => [
+      {
+        title: "Nouveau Article",
+        description: "Créer un nouvel article",
+        icon: <Package className="h-5 w-5" />,
+        href: APP_ROUTES.CLIENT.ARTICLE_NEW,
+        color: "bg-blue-500",
+      },
+      {
+        title: "Nouveau Ordre",
+        description: "Créer un nouvel ordre",
+        icon: <Factory className="h-5 w-5" />,
+        href: APP_ROUTES.CLIENT.ORDRE_FABRICATION_NEW,
+        color: "bg-green-500",
+      },
+      {
+        title: "Voir les articles",
+        description: "Gérer tous les articles",
+        icon: <Eye className="h-5 w-5" />,
+        href: APP_ROUTES.CLIENT.ARTICLES,
+        color: "bg-purple-500",
+      },
+      {
+        title: "Afficher les ordres",
+        description: "Gérer les ordres",
+        icon: <BarChart3 className="h-5 w-5" />,
+        href: APP_ROUTES.CLIENT.ORDRE_FABRICATIONS,
+        color: "bg-orange-500",
+      },
+    ],
+    []
+  );
+
+  const statistics = useMemo(() => {
+    const articles = articlesResponse?.member || [];
+    const ordreFabrications = ordreFabricationsResponse?.member || [];
+    const totalArticles = articlesResponse?.totalItems || 0;
+    const totalOrdreFabrications = ordreFabricationsResponse?.totalItems || 0;
+
+    const urgentOrders = ordreFabrications.filter((of) => of.urgent).length;
+    const completedOrders = ordreFabrications.filter(
+      (of) => of.statut === "Terminee"
+    ).length;
+    const inProgressOrders = ordreFabrications.filter(
+      (of) => of.statut === "En_cours"
+    ).length;
+    const plannedOrders = ordreFabrications.filter(
+      (of) => of.statut === "Planifiee"
+    ).length;
+    const createdOrders = ordreFabrications.filter(
+      (of) => of.statut === "Cree"
+    ).length;
+
+    return {
+      totalArticles,
+      totalOrdreFabrications,
+      urgentOrders,
+      completedOrders,
+      inProgressOrders,
+      plannedOrders,
+      createdOrders,
+      articles,
+      ordreFabrications,
+    };
+  }, [articlesResponse, ordreFabricationsResponse]);
+
+  if (status === "loading" || isLoadingArticles || isLoadingOrdres) {
     return (
       <div className="container mx-auto py-8 px-4">
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          <span className="ml-2">Chargement du tableau de bord ...</span>
+          <LoadingSpinner size="lg" text="Chargement du tableau de bord..." />
         </div>
       </div>
     );
@@ -49,83 +150,18 @@ export default function ClientDashboard() {
       <div className="container mx-auto py-8 px-4">
         <Card>
           <CardContent className="p-8 text-center">
-            <h2 className="text-2xl font-bold mb-4">Access Denied</h2>
+            <h2 className="text-2xl font-bold mb-4">Accès refusé</h2>
             <p className="text-muted-foreground mb-6">
-              Please sign in to access your dashboard.
+              Veuillez vous connecter pour accéder à votre tableau de bord.
             </p>
             <Button asChild>
-              <Link href="/login">Sign In</Link>
+              <Link href={APP_ROUTES.LOGIN}>Se connecter</Link>
             </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
-
-  const articles = articlesResponse?.member || [];
-  const ordreFabrications = ordreFabricationsResponse?.member || [];
-  const totalArticles = articlesResponse?.totalItems || 0;
-  const totalOrdreFabrications = ordreFabricationsResponse?.totalItems || 0;
-
-  // Calculate statistics
-  const urgentOrders = ordreFabrications.filter((of) => of.urgent).length;
-  const completedOrders = ordreFabrications.filter(
-    (of) => of.statut === "Terminee"
-  ).length;
-  const inProgressOrders = ordreFabrications.filter(
-    (of) => of.statut === "En_cours"
-  ).length;
-  const plannedOrders = ordreFabrications.filter(
-    (of) => of.statut === "Planifiee"
-  ).length;
-
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case "Cree":
-        return "bg-blue-100 text-blue-800";
-      case "En Cours":
-        return "bg-yellow-100 text-yellow-800";
-      case "Terminee":
-        return "bg-green-100 text-green-800";
-      case "Annule":
-        return "bg-red-100 text-red-800";
-      case "En Attente":
-        return "bg-gray-100 text-gray-800";
-      default:
-        return "bg-gray-100 text-gray-800";
-    }
-  };
-
-  const quickActions = [
-    {
-      title: "Nouveau Article",
-      description: "Créer un nouvel article",
-      icon: <Package className="h-5 w-5" />,
-      href: "/client/articles/new",
-      color: "bg-blue-500",
-    },
-    {
-      title: "Nouveau Ordre",
-      description: "Créer un nouvel ordre",
-      icon: <Factory className="h-5 w-5" />,
-      href: "/client/ordre-fabrications/new",
-      color: "bg-green-500",
-    },
-    {
-      title: "Voir les articles",
-      description: "Gérer tous les articles",
-      icon: <Eye className="h-5 w-5" />,
-      href: "/client/articles",
-      color: "bg-purple-500",
-    },
-    {
-      title: "Afficher les ordres",
-      description: "Gérer les ordres",
-      icon: <BarChart3 className="h-5 w-5" />,
-      href: "/client/ordre-fabrications",
-      color: "bg-orange-500",
-    },
-  ];
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -150,7 +186,9 @@ export default function ClientDashboard() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalArticles}</div>
+            <div className="text-2xl font-bold">
+              {formatNumber(statistics.totalArticles)}
+            </div>
             <p className="text-xs text-muted-foreground">
               Actif dans le catalogue
             </p>
@@ -165,7 +203,9 @@ export default function ClientDashboard() {
             <Factory className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalOrdreFabrications}</div>
+            <div className="text-2xl font-bold">
+              {formatNumber(statistics.totalOrdreFabrications)}
+            </div>
             <p className="text-xs text-muted-foreground">Total des ordres</p>
           </CardContent>
         </Card>
@@ -176,7 +216,9 @@ export default function ClientDashboard() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressOrders}</div>
+            <div className="text-2xl font-bold">
+              {formatNumber(statistics.inProgressOrders)}
+            </div>
             <p className="text-xs text-muted-foreground">Actuellement actif</p>
           </CardContent>
         </Card>
@@ -188,7 +230,7 @@ export default function ClientDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {urgentOrders}
+              {formatNumber(statistics.urgentOrders)}
             </div>
             <p className="text-xs text-muted-foreground">
               Nécessite une attention particulière
@@ -248,28 +290,25 @@ export default function ClientDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">
-                  {
-                    ordreFabrications.filter((of) => of.statut === "Cree")
-                      .length
-                  }
+                  {formatNumber(statistics.createdOrders)}
                 </div>
                 <div className="text-sm text-muted-foreground">Créé</div>
               </div>
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-yellow-600">
-                  {inProgressOrders}
+                  {formatNumber(statistics.inProgressOrders)}
                 </div>
                 <div className="text-sm text-muted-foreground">En cours</div>
               </div>
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-green-600">
-                  {completedOrders}
+                  {formatNumber(statistics.completedOrders)}
                 </div>
                 <div className="text-sm text-muted-foreground">Complété</div>
               </div>
               <div className="text-center p-4 border rounded-lg">
                 <div className="text-2xl font-bold text-gray-600">
-                  {plannedOrders}
+                  {formatNumber(statistics.plannedOrders)}
                 </div>
                 <div className="text-sm text-muted-foreground">Planifié</div>
               </div>
@@ -290,16 +329,16 @@ export default function ClientDashboard() {
               <CardDescription>Vos derniers articles</CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/client/articles">Tout voir</Link>
+              <Link href={APP_ROUTES.CLIENT.ARTICLES}>Tout voir</Link>
             </Button>
           </CardHeader>
           <CardContent>
-            {articles.length > 0 ? (
+            {statistics.articles.length > 0 ? (
               <div className="space-y-4">
-                {articles.slice(0, 5).map((article) => (
+                {statistics.articles.slice(0, 5).map((article) => (
                   <div
                     key={article.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div>
                       <div className="font-medium">{article.designation}</div>
@@ -308,7 +347,8 @@ export default function ClientDashboard() {
                       </div>
                     </div>
                     <Badge variant="outline">
-                      {article.ordreFabrications?.length} ordres
+                      {formatNumber(article.ordreFabrications?.length || 0)}{" "}
+                      ordres
                     </Badge>
                   </div>
                 ))}
@@ -323,7 +363,7 @@ export default function ClientDashboard() {
                   asChild
                   className="mt-2 bg-transparent"
                 >
-                  <Link href="/client/articles/new">
+                  <Link href={APP_ROUTES.CLIENT.ARTICLE_NEW}>
                     Créez votre premier article
                   </Link>
                 </Button>
@@ -343,16 +383,16 @@ export default function ClientDashboard() {
               <CardDescription>Dernières ordres de fabrication</CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/client/ordre-fabrications">Tout voir</Link>
+              <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATIONS}>Tout voir</Link>
             </Button>
           </CardHeader>
           <CardContent>
-            {ordreFabrications.length > 0 ? (
+            {statistics.ordreFabrications.length > 0 ? (
               <div className="space-y-4">
-                {ordreFabrications.slice(0, 5).map((of) => (
+                {statistics.ordreFabrications.slice(0, 5).map((of) => (
                   <div
                     key={of.id}
-                    className="flex items-center justify-between p-3 border rounded-lg"
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       {of.urgent && (
@@ -361,7 +401,7 @@ export default function ClientDashboard() {
                       <div>
                         <div className="font-medium">{of.ref}</div>
                         <div className="text-sm text-muted-foreground">
-                          {new Date(of.dateCreation).toLocaleDateString()}
+                          {formatDate(of.dateCreation)}
                         </div>
                       </div>
                     </div>
@@ -370,7 +410,7 @@ export default function ClientDashboard() {
                         {of.statut}
                       </Badge>
                       <div className="text-sm text-muted-foreground mt-1">
-                        Qté: {of.quantiteTotale.toLocaleString()}
+                        Qté: {formatNumber(of.quantiteTotale)}
                       </div>
                     </div>
                   </div>
@@ -386,7 +426,7 @@ export default function ClientDashboard() {
                   asChild
                   className="mt-2 bg-transparent"
                 >
-                  <Link href="/client/ordre-fabrications/new">
+                  <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_NEW}>
                     Créez votre premier ordre de fabrication
                   </Link>
                 </Button>

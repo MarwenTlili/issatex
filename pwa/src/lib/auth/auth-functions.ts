@@ -1,8 +1,8 @@
 import { JWT } from "next-auth/jwt";
 
-import { TOKEN_REFRESH_URL } from "@/config/entrypoint";
 import { JwtAuthData } from "@/types/index";
 import { logger } from "@/lib/utils/Logger";
+import { TOKEN_REFRESH_URL } from "@/config/api";
 
 /**
  * Fetch url with JWT Token bearer

@@ -11,7 +11,6 @@ import { createHydraDataProvider } from "./data-provider";
 import { createAuthProvider } from "./auth-provider";
 import { Dashboard } from "./dashboard";
 import LoginPage from "@/app/(auth)/login/page";
-import { ENTRYPOINT } from "@/config/entrypoint";
 import { UserCreate, UserEdit, UserList, UserShow } from "./users";
 import { ClientList, ClientShow, ClientCreate, ClientEdit } from "./clients";
 import {
@@ -42,6 +41,7 @@ import {
 } from "./machines";
 import PlanningCreate from "./plannings/PlanningCreate";
 import PlanningEdit from "./plannings/PlanningEdit";
+import { ENTRYPOINT } from "@/config/api";
 
 export default function Admin() {
   const { data: session, status } = useSession();

@@ -32,10 +32,10 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { Production, ProductionFormData } from "@/types/resources/Production";
 import {
+  TAILLE_ARTICLE_OPTIONS,
   TailleArticle,
-  TailleArticleEnum,
 } from "@/types/resources/TailleOrdreFabrication";
-import { useTaillesByOrdreFabricationURI } from "@/hooks/use-taille-ordre-fabrications";
+import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications";
 import {
   useCreateProduction,
   useUpdateProduction,
@@ -71,7 +71,7 @@ export function EnhancedProductionForm({
 
   const ordreFabricationId = ordreFabricationUri.split("/").pop() || "";
   const { data: taillesData } =
-    useTaillesByOrdreFabricationURI(ordreFabricationId);
+    useTaillesByOrdreFabrication(ordreFabricationId);
 
   const createMutation = useCreateProduction();
   const updateMutation = useUpdateProduction();
@@ -161,7 +161,7 @@ export function EnhancedProductionForm({
   // Get available sizes from order
   const availableSizes =
     taillesData?.["member"]?.map((t) => t.tailleArticle) ||
-    Object.values(TailleArticleEnum);
+    Object.values(TAILLE_ARTICLE_OPTIONS);
 
   const getSuggestionAlert = () => {
     if (!selectedSizeOrder || formData.quantiteTotale === 0) return null;

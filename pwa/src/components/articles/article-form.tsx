@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -12,17 +13,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { FormField } from "@/components/ui/form-field";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { ArrowLeft } from "lucide-react";
-import { CreateArticleData } from "@/types/resources/Article";
+import Link from "next/link";
 import {
+  useArticle,
   useCreateArticle,
   useUpdateArticle,
-  useArticle,
 } from "@/hooks/use-articles";
+import { articleSchema, type ArticleFormData } from "@/lib/validation/schemas";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  type ApiError,
+  handleApiError,
+  extractFormErrors,
+  isValidationError,
+  type FormErrors,
+} from "@/lib/api/handle-api-error";
+import { APP_ROUTES, MESSAGES } from "@/config/app";
 
 interface ArticleFormProps {
   articleId?: number;
@@ -31,124 +40,178 @@ interface ArticleFormProps {
 export function ArticleForm({ articleId }: ArticleFormProps) {
   const isEdit = !!articleId;
   const router = useRouter();
-  const { data: article } = useArticle(articleId!);
+  const [apiErrors, setApiErrors] = useState<FormErrors>({});
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    clearErrors,
+    formState: { errors, isSubmitting, isDirty },
+  } = useForm<ArticleFormData>({
+    resolver: zodResolver(articleSchema),
+    defaultValues: {
+      composition: "",
+      designation: "",
+    },
+  });
+
+  const { data: article, isLoading: isLoadingArticle } = useArticle(articleId);
+
   const createArticle = useCreateArticle();
   const updateArticle = useUpdateArticle();
 
-  const [formData, setFormData] = useState<CreateArticleData>({
-    designation: "",
-    composition: "",
-  });
-
-  // Update form data when article is loaded
   useEffect(() => {
-    if (article) {
-      setFormData({
-        designation: article.designation,
+    if (isEdit && article) {
+      reset({
         composition: article.composition,
+        designation: article.designation,
       });
     }
-  }, [article]);
+  }, [isEdit, article, reset]);
 
-  const isLoading = createArticle.isLoading || updateArticle.isLoading;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      if (isEdit && articleId) {
-        await updateArticle.mutateAsync({
-          id: articleId,
-          ...formData,
-        });
-        router.push(`/articles`);
-      } else {
-        await createArticle.mutateAsync({
-          ...formData,
-        });
-        router.push(`/articles`);
-      }
-    } catch (error) {
-      console.error("Form submission error:", error);
+  const handleInputChange = (fieldName: keyof ArticleFormData) => {
+    if (apiErrors[fieldName]) {
+      setApiErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+      clearErrors(fieldName);
     }
   };
 
-  const handleChange = (field: keyof CreateArticleData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const onSubmit = async (data: ArticleFormData) => {
+    try {
+      setApiErrors({});
+
+      if (isEdit && articleId) {
+        await updateArticle.mutateAsync({ id: articleId, ...data });
+      } else {
+        await createArticle.mutateAsync(data);
+      }
+      router.push(APP_ROUTES.CLIENT.ARTICLES);
+    } catch (error) {
+      const apiError = error as ApiError;
+
+      if (isValidationError(apiError)) {
+        const formErrors = extractFormErrors(apiError);
+        setApiErrors(formErrors);
+
+        // Set form errors for react-hook-form
+        Object.entries(formErrors).forEach(([field, message]) => {
+          setError(field as keyof ArticleFormData, {
+            type: "api",
+            message,
+          });
+        });
+      } else {
+        if ((apiError.status && apiError.status >= 500) || !apiError.status) {
+          // Server errors or network errors should trigger error boundary
+          throw new Error(apiError.title || apiError.detail || "Server error");
+        } else {
+          // Handle client errors (4xx) with toast
+          handleApiError(apiError, {
+            customMessage: isEdit
+              ? "Impossible de modifier l'article. Vérifiez vos données."
+              : "Impossible de créer l'article. Vérifiez vos données.",
+          });
+        }
+      }
+    }
   };
+
+  const isLoading =
+    isSubmitting || createArticle.isLoading || updateArticle.isLoading;
+
+  if (isEdit && isLoadingArticle) {
+    return (
+      <Card className="mx-4 sm:mx-0 max-w-2xl">
+        <CardContent className="p-6">
+          <LoadingSpinner text={MESSAGES.LOADING.ARTICLE} />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-xl sm:text-2xl">
-          {isEdit ? (
-            <div className="flex gap-2">
-              <div>Réference</div>
-              {article?.ref ? (
-                <Badge className="w-fit whitespace-nowrap">
-                  {article?.ref}
-                </Badge>
-              ) : (
-                ""
-              )}
-            </div>
-          ) : (
-            "Propriétés"
-          )}
+          {isEdit ? "Modifier l'article" : "Créer un nouvel article"}
         </CardTitle>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4 sm:space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="designation" className="text-sm sm:text-base">
-              Designation
-            </Label>
+
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <CardContent className="p-4 sm:p-6 space-y-6">
+          <FormField
+            label="Désignation"
+            htmlFor="designation"
+            error={errors.designation?.message || apiErrors.designation}
+            required
+          >
             <Input
               id="designation"
-              value={formData.designation}
-              onChange={(e) => handleChange("designation", e.target.value)}
-              placeholder="Article designation"
-              required
-              className="text-sm sm:text-base max-w-80"
+              {...register("designation", {
+                onChange: () => handleInputChange("designation"),
+              })}
+              placeholder="Entrez la désignation de l'article"
+              className={
+                errors.designation || apiErrors.designation
+                  ? "border-red-500 max-w-80"
+                  : "max-w-80"
+              }
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="composition" className="text-sm sm:text-base">
-              Composition
-            </Label>
+          </FormField>
+          <FormField
+            label="Composition"
+            htmlFor="composition"
+            error={errors.composition?.message || apiErrors.composition}
+            required
+            description="Description détaillée de l'article"
+          >
             <Textarea
               id="composition"
-              value={formData.composition}
-              onChange={(e) => handleChange("composition", e.target.value)}
-              placeholder="Article composition details..."
+              {...register("composition", {
+                onChange: () => handleInputChange("composition"),
+              })}
+              placeholder="Entrez la composition de l'article"
               rows={4}
-              required
-              className="text-sm sm:text-base min-h-[100px] sm:min-h-[120px]"
+              className={
+                errors.composition || apiErrors.composition
+                  ? "border-red-500"
+                  : ""
+              }
             />
-          </div>
+          </FormField>
         </CardContent>
+
         <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 sm:p-6">
           <Button
             type="button"
             variant="outline"
             asChild
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto bg-transparent"
           >
-            <Link href={"/client/articles"}>
-              <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux articles
+            <Link href={APP_ROUTES.CLIENT.ARTICLES}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Annuler
             </Link>
           </Button>
+
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || (!isDirty && isEdit)}
             className="w-full sm:w-auto"
           >
-            {isLoading
-              ? "Enregistrement ..."
-              : isEdit
-              ? "Modifier l'article"
-              : "Nouveau Article"}
+            {isLoading ? (
+              <LoadingSpinner size="sm" />
+            ) : isEdit ? (
+              "Mettre à jour"
+            ) : (
+              "Créer l'article"
+            )}
           </Button>
         </CardFooter>
       </form>

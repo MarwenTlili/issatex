@@ -9,6 +9,7 @@ use App\Enum\TailleArticle;
 use App\Repository\TailleOrdreFabricationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TailleOrdreFabricationRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
@@ -26,6 +27,7 @@ class TailleOrdreFabrication {
     private ?TailleArticle $tailleArticle;
 
     #[ORM\Column]
+    #[Assert\Positive()]
     private ?int $quantite = null;
 
     #[ORM\ManyToOne(inversedBy: 'taillesOrdreFabrication')]
