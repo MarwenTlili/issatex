@@ -1,19 +1,22 @@
 import { ApiCollection } from "@/types/resources/ApiCollection";
-import { apiRequest } from "./base";
+import { apiRequest, ApiService } from "./base";
 import { Client } from "@/types/resources/Client";
+import { API_ENDPOINTS } from "@/config/api";
 
-export const clientsApi = {
-  getAllByAccountId(accountId: string) {
+class ClientsApiService extends ApiService<Client> {
+  constructor() {
+    super(API_ENDPOINTS.CLIENTS);
+  }
+
+  getAllByAccountId(id: string) {
     return apiRequest<ApiCollection<Client>>(
-      `/api/clients?account=${accountId}`
+      `${API_ENDPOINTS.CLIENTS}?account=${id}`
     );
-  },
-
-  getById(id: number) {
-    return apiRequest(`/api/clients/${id}`);
-  },
+  }
 
   getByURI(uri: string) {
     return apiRequest<Client>(uri);
-  },
-};
+  }
+}
+
+export const clientsApiService = new ClientsApiService();

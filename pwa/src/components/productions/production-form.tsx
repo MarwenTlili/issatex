@@ -24,8 +24,14 @@ import {
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Production, ProductionFormData } from "@/types/resources/Production";
-import { useCreateProduction, useUpdateProduction } from "@/hooks/use-productions";
-import { TailleArticle, TailleArticleEnum } from "@/types/resources/TailleOrdreFabrication";
+import {
+  useCreateProduction,
+  useUpdateProduction,
+} from "@/hooks/use-productions";
+import {
+  TAILLE_ARTICLE_OPTIONS,
+  TailleArticle,
+} from "@/types/resources/TailleOrdreFabrication";
 
 interface ProductionFormProps {
   planningId: string;
@@ -42,7 +48,7 @@ export function ProductionForm({
 }: ProductionFormProps) {
   const [formData, setFormData] = useState<ProductionFormData>({
     dateProduction: new Date().toISOString().split("T")[0],
-    tailleArticle: TailleArticleEnum.M,
+    tailleArticle: TAILLE_ARTICLE_OPTIONS[0],
     quantitePremiereChoix: 0,
     quantiteDeuxiemeChoix: 0,
     quantiteTotale: 0,
@@ -147,7 +153,7 @@ export function ProductionForm({
                   <SelectValue placeholder="Sélectionner une taille" />
                 </SelectTrigger>
                 <SelectContent>
-                  {Object.values(TailleArticleEnum).map((taille) => (
+                  {TAILLE_ARTICLE_OPTIONS.map((taille) => (
                     <SelectItem key={taille} value={taille}>
                       {taille}
                     </SelectItem>

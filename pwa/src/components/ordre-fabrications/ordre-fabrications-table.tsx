@@ -13,6 +13,9 @@ import { OrdreFabricationFilters } from "@/types/resources/OrdreFabrication";
 import { OrdreFabricationsTableFilters } from "./ordre-fabrications-table-filters";
 import { OrdreFabricationsTableContent } from "./ordre-fabrications-table-content";
 import { OrdreFabricationsTablePagination } from "./ordre-fabrications-table-pagination";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { MESSAGES } from "@/config/app";
+import { isApiError } from "@/lib/api/handle-api-error";
 
 export function OrdreFabricationsTable() {
   const [filters, setFilters] = useState<OrdreFabricationFilters>({
@@ -27,6 +30,14 @@ export function OrdreFabricationsTable() {
     error,
   } = useOrdreFabrications(filters);
   const deleteOrdreFabrication = useDeleteOrdreFabrication();
+
+  const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
+  const [dialogData, setDialogData] = useState<{
+    title: string;
+    description?: string;
+    onConfirm: () => void;
+    actionLabel?: string;
+  } | null>(null);
 
   const handleFilterChange = useCallback(
     (newFilters: Partial<OrdreFabricationFilters>) => {
@@ -53,14 +64,27 @@ export function OrdreFabricationsTable() {
   }, []);
 
   const handleDelete = useCallback(
-    async (id: number) => {
-      if (
-        window.confirm(
-          "Are you sure you want to delete this ordre fabrication?"
-        )
-      ) {
-        deleteOrdreFabrication.mutate(id);
-      }
+    async (id: number, ref: string) => {
+      setDialogData({
+        title: MESSAGES.ACTION.DELETE,
+        description: `${MESSAGES.DIALOG.ORDRE_FABRICATION_DELETE} ${ref}`,
+        actionLabel: MESSAGES.ACTION.DELETE,
+        onConfirm: async () => {
+          try {
+            await deleteOrdreFabrication.mutateAsync(id);
+            setOpenConfirmDialog(false);
+          } catch (error) {
+            if (
+              isApiError(error) &&
+              ((error.status && error.status >= 500) || !error.status)
+            ) {
+              throw new Error(error.title || error.detail || "Server error");
+            }
+            setOpenConfirmDialog(false);
+          }
+        },
+      });
+      setOpenConfirmDialog(true);
     },
     [deleteOrdreFabrication]
   );
@@ -118,6 +142,16 @@ export function OrdreFabricationsTable() {
           onPageChange={handlePageChange}
         />
       </CardContent>
+      {openConfirmDialog && dialogData && (
+        <ConfirmDialog
+          open={openConfirmDialog}
+          onOpenChange={setOpenConfirmDialog}
+          title={dialogData.title}
+          description={dialogData.description}
+          actionLabel={dialogData.actionLabel}
+          onConfirm={dialogData.onConfirm}
+        />
+      )}
     </Card>
   );
 }

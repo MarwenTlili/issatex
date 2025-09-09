@@ -1,8 +1,9 @@
+import { BaseFilters } from "../common/BaseFilters";
 import { Article } from "./Article";
 import { Client } from "./Client";
 import { Item } from "./Item";
 import {
-  TailleArticleEnum,
+  TailleArticle,
   TailleOrdreFabrication,
   TailleOrdreFabricationData,
 } from "./TailleOrdreFabrication";
@@ -31,15 +32,10 @@ export interface OrdreFabrication extends Item {
   tailleOFs: string[];
 }
 
-export interface OrdreFabricationFilters {
+export interface OrdreFabricationFilters extends BaseFilters {
   ref?: string;
   statut?: string;
   urgent?: boolean;
-  page?: number;
-  itemsPerPage?: number;
-  order?: {
-    [key: string]: "asc" | "desc";
-  };
 }
 
 export interface CreateOrdreFabricationData {
@@ -50,6 +46,7 @@ export interface CreateOrdreFabricationData {
   tempsUnitaire: number;
   article: string;
   tailleOFs: TailleOrdreFabricationData[];
+  client?: string;
 }
 
 export interface UpdateOrdreFabricationData
@@ -63,6 +60,6 @@ export interface OrdreFabricationContext {
   article: Article;
   taillesCommande: TailleOrdreFabrication[];
   workingDays: number;
-  dailyTargets: { [key in TailleArticleEnum]?: number };
-  currentProgress: { [key in TailleArticleEnum]?: number };
+  dailyTargets: { [key in TailleArticle]?: number };
+  currentProgress: { [key in TailleArticle]?: number };
 }

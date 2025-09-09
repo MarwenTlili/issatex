@@ -16,6 +16,8 @@ import { ArrowLeft, Edit, Trash2 } from "lucide-react";
 import { useArticle, useDeleteArticle } from "@/hooks/use-articles";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { isApiError, getErrorMessage } from "@/lib/api/handle-api-error";
+import { APP_ROUTES, MESSAGES } from "@/config/app";
 
 interface ArticleDetailsProps {
   id: number;
@@ -35,13 +37,23 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
 
   const handleDelete = async () => {
     setDialogData({
-      title: `Delete article "${id}"?`,
-      description: "Are you sure you want to delete this article?",
-      actionLabel: "Delete",
-      onConfirm: () => {
-        deleteArticle.mutateAsync(id);
-        setOpenConfirmDialog(false);
-        router.push("/client/articles");
+      title: MESSAGES.ACTION.DELETE,
+      description: `${MESSAGES.DIALOG.ARTICLE_DELETE} ${article?.ref}`,
+      actionLabel: MESSAGES.ACTION.DELETE,
+      onConfirm: async () => {
+        try {
+          await deleteArticle.mutateAsync(id);
+          setOpenConfirmDialog(false);
+          router.push(APP_ROUTES.CLIENT.ARTICLES);
+        } catch (error) {
+          if (
+            isApiError(error) &&
+            ((error.status && error.status >= 500) || !error.status)
+          ) {
+            throw new Error(error.title || error.detail || "Server error");
+          }
+          setOpenConfirmDialog(false);
+        }
       },
     });
     setOpenConfirmDialog(true);
@@ -51,30 +63,33 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
     return (
       <Card className="mx-4 sm:mx-0">
         <CardContent className="p-4 sm:p-6">
-          <div className="text-center">
-            Chargement des détails de l&apos;article...
-          </div>
+          <div className="text-center">{MESSAGES.LOADING.ARTICLE}</div>
         </CardContent>
       </Card>
     );
   }
 
   if (error || !article) {
+    const message = isApiError(error)
+      ? getErrorMessage(error)
+      : (error as Error)?.message ?? "Erreur inconnue";
+
+    if (
+      isApiError(error) &&
+      ((error.status && error.status >= 500) || !error.status)
+    ) {
+      throw new Error(error.title || error.detail || "Server error");
+    }
+
     return (
       <Card className="mx-4 sm:mx-0">
         <CardContent className="p-4 sm:p-6">
           <div className="text-center text-red-600 text-sm sm:text-base">
-            {error
-              ? `Error loading article: ${
-                  error instanceof Error
-                    ? error.message
-                    : "Unknown error occurred"
-                }`
-              : "Article non trouvé"}
+            {message}
           </div>
           <div className="flex justify-center mt-4">
             <Button asChild className="w-full sm:w-auto">
-              <Link href="/client/articles">
+              <Link href={APP_ROUTES.CLIENT.ARTICLES}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux articles
               </Link>
             </Button>
@@ -120,20 +135,28 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
               </div>
             ) : (
               <p className="text-sm sm:text-base text-muted-foreground">
-                Aucune ordre de fabrication associée à cet article
+                {MESSAGES.ERROR.ORDRES_FABRICATION_FETCH_ERROR}
               </p>
             )}
           </div>
         </div>
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 sm:p-6">
-        <Button variant="outline" asChild className="w-full sm:w-auto">
+        <Button
+          variant="outline"
+          asChild
+          className="w-full sm:w-auto bg-transparent"
+        >
           <Link href="/client/articles">
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux articles
           </Link>
         </Button>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-          <Button variant="outline" asChild className="w-full sm:w-auto">
+          <Button
+            variant="outline"
+            asChild
+            className="w-full sm:w-auto bg-transparent"
+          >
             <Link href={`/client/articles/${id}/edit`}>
               <Edit className="mr-2 h-4 w-4" /> Modifier
             </Link>

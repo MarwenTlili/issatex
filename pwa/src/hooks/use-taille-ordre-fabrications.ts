@@ -1,3 +1,5 @@
+import { QUERY_KEYS } from "@/config/cache";
+import { ApiError, handleApiError } from "@/lib/api/handle-api-error";
 import { taillesOrdreFabricationApi } from "@/lib/api/tailles-ordre-fabrication-api";
 import { ApiCollection } from "@/types/resources/ApiCollection";
 import {
@@ -6,30 +8,17 @@ import {
 } from "@/types/resources/TailleOrdreFabrication";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-export const useTailleOrdreFabrications = (
-  ordreFabricationId?: number,
-  options?: { enabled?: boolean; staleTime?: number }
-) => {
+export const useTaillesByOrdreFabrication = (identifier?: string | number) => {
   return useQuery<ApiCollection<TailleOrdreFabrication>, Error>({
-    queryKey: ["taille-ordre-fabrications", ordreFabricationId],
+    queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION, `${identifier}`],
     queryFn: () => {
-      if (!ordreFabricationId) {
-        throw new Error("No ordre fabrication ID provided");
+      if (!identifier) {
+        throw new Error("Aucun ordre de fabrication avec cette ID");
       }
-      return taillesOrdreFabricationApi.getAllByOrdreFabricationId(
-        ordreFabricationId
-      );
+      return taillesOrdreFabricationApi.getAllByOrdreFabrication(identifier);
     },
-    enabled: !!ordreFabricationId && options?.enabled !== false,
-    staleTime: options?.staleTime || 5 * 60 * 1000, // 5 minutes default
-  });
-};
-
-export const useTaillesByOrdreFabricationURI = (uri: string) => {
-  return useQuery({
-    queryKey: ["tailles-ordre-fabrication", uri],
-    queryFn: () => taillesOrdreFabricationApi.getAllByOrdreFabricationURI(uri),
-    enabled: !!uri,
+    enabled: !!identifier,
+    onError: (err) => handleApiError(err as ApiError),
   });
 };
 
@@ -47,10 +36,16 @@ export const useCreateTailleOrdreFabrication = () => {
   >({
     mutationFn: (data) => taillesOrdreFabricationApi.create(data),
     onSuccess: (_, variables) => {
-      const ordreFabricationId = variables.ordreFabrication.split("/").pop();
+      const id = variables.ordreFabrication.split("/").pop();
       queryClient.invalidateQueries({
-        queryKey: ["taille-ordre-fabrications", Number(ordreFabricationId)],
+        queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION, `${id}`],
       });
+    },
+    onError: (error) => {
+      const formErrors = handleApiError(error as ApiError, {
+        showToast: false,
+      });
+      return formErrors;
     },
   });
 };
@@ -71,8 +66,14 @@ export const useUpdateTailleOrdreFabrication = () => {
       taillesOrdreFabricationApi.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["taille-ordre-fabrications"],
+        queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION],
       });
+    },
+    onError: (error) => {
+      const formErrors = handleApiError(error as ApiError, {
+        showToast: false,
+      });
+      return formErrors;
     },
   });
 };
@@ -84,8 +85,14 @@ export const useDeleteTailleOrdreFabrication = () => {
     mutationFn: (id) => taillesOrdreFabricationApi.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ["taille-ordre-fabrications"],
+        queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION],
       });
+    },
+    onError: (error) => {
+      const formErrors = handleApiError(error as ApiError, {
+        showToast: false,
+      });
+      return formErrors;
     },
   });
 };

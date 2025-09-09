@@ -29,7 +29,7 @@ import {
 } from "@mui/material";
 import { Person, PhotoCamera, History } from "@mui/icons-material";
 import { getSession } from "next-auth/react";
-import { ENTRYPOINT } from "@/config/entrypoint";
+import { ENTRYPOINT } from "@/config/api";
 
 const roleChoices = [
   { id: "ROLE_ADMIN", name: "Admin" },

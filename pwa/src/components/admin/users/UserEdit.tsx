@@ -41,7 +41,7 @@ import {
   Delete,
 } from "@mui/icons-material";
 import { getSession } from "next-auth/react";
-import { ENTRYPOINT } from "@/config/entrypoint";
+import { ENTRYPOINT } from "@/config/api";
 import { useFormContext } from "react-hook-form";
 import { User } from "@/types/resources/User";
 

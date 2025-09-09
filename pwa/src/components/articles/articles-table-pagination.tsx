@@ -5,6 +5,7 @@ import { memo } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ArticlesFilters } from "@/types/resources/Article";
+import { PAGINATION } from "@/config/app";
 
 interface ArticlesTablePaginationProps {
   totalItems: number;
@@ -17,17 +18,26 @@ export const ArticlesTablePagination = memo(function ArticlesTablePagination({
   filters,
   onPageChange,
 }: ArticlesTablePaginationProps) {
-  const totalPages = Math.ceil(totalItems / (filters.itemsPerPage || 10));
-  const currentPage = filters.page || 1;
+  const totalPages = Math.ceil(
+    totalItems / (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE)
+  );
+  const currentPage = filters.page || PAGINATION.DEFAULT_PAGE;
 
   if (totalPages <= 1) return null;
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
       <div className="text-sm text-muted-foreground text-center sm:text-left">
-        Affichage de {(currentPage - 1) * (filters.itemsPerPage || 10) + 1} à{" "}
-        {Math.min(currentPage * (filters.itemsPerPage || 10), totalItems)} sur{" "}
-        {totalItems} articles
+        Affichage de{" "}
+        {(currentPage - 1) *
+          (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE) +
+          1}{" "}
+        à{" "}
+        {Math.min(
+          currentPage * (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE),
+          totalItems
+        )}{" "}
+        sur {totalItems} articles
       </div>
       <div className="flex gap-2">
         <Button

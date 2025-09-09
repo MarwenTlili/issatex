@@ -6,19 +6,22 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useArticles, useDeleteArticle } from "@/hooks/use-articles";
-import { ArticlesFilters } from "@/types/resources/Article";
+import type { ArticlesFilters } from "@/types/resources/Article";
 import { ArticlesTableContent } from "./articles-table-content";
 import { ArticlesTableFilters } from "./articles-table-filters";
 import { ArticlesTablePagination } from "./articles-table-pagination";
 import { Plus } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { getErrorMessage, isApiError } from "@/lib/api/handle-api-error";
+import { MESSAGES, PAGINATION } from "@/config/app";
 
 export function ArticlesTable() {
   const [filters, setFilters] = useState<ArticlesFilters>({
-    page: 1,
-    itemsPerPage: 5,
+    page: PAGINATION.DEFAULT_PAGE,
+    itemsPerPage: PAGINATION.DEFAULT_PAGE_SIZE,
     order: { ref: "desc" },
   });
+  const { data: articlesCollection, isLoading, error } = useArticles(filters);
   const deleteArticle = useDeleteArticle();
   const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
   const [dialogData, setDialogData] = useState<{
@@ -28,15 +31,12 @@ export function ArticlesTable() {
     actionLabel?: string;
   } | null>(null);
 
-  const { data: articlesCollection, isLoading, error } = useArticles(filters);
-
   const handleFilterChange = useCallback(
     (newFilters: Partial<ArticlesFilters>) => {
       setFilters((prev) => ({
         ...prev,
         ...newFilters,
-        // Reset to page 1 when filtering (except for page changes)
-        page: "page" in newFilters ? newFilters.page : 1,
+        page: "page" in newFilters ? newFilters.page : PAGINATION.DEFAULT_PAGE,
       }));
     },
     []
@@ -49,20 +49,30 @@ export function ArticlesTable() {
       return {
         ...prev,
         order: { [field]: newOrder },
-        page: 1,
+        page: PAGINATION.DEFAULT_PAGE,
       };
     });
   }, []);
 
   const handleDelete = useCallback(
-    async (id: number) => {
+    async (id: number, ref: string) => {
       setDialogData({
-        title: `Delete article "${id}"?`,
-        description: "Are you sure you want to delete this article?",
-        actionLabel: "Delete",
-        onConfirm: () => {
-          deleteArticle.mutateAsync(id);
-          setOpenConfirmDialog(false);
+        title: MESSAGES.ACTION.DELETE,
+        description: `${MESSAGES.DIALOG.ARTICLE_DELETE} ${ref}`,
+        actionLabel: MESSAGES.ACTION.DELETE,
+        onConfirm: async () => {
+          try {
+            await deleteArticle.mutateAsync(id);
+            setOpenConfirmDialog(false);
+          } catch (error) {
+            if (
+              isApiError(error) &&
+              ((error.status && error.status >= 500) || !error.status)
+            ) {
+              throw new Error(error.title || error.detail || "Server error");
+            }
+            setOpenConfirmDialog(false);
+          }
         },
       });
       setOpenConfirmDialog(true);
@@ -78,12 +88,33 @@ export function ArticlesTable() {
   );
 
   if (error) {
+    const errorMessage = isApiError(error)
+      ? getErrorMessage(error)
+      : error instanceof Error
+      ? error.message
+      : "Une erreur inconnue s'est produite";
+
+    if (
+      isApiError(error) &&
+      ((error.status && error.status >= 500) || !error.status)
+    ) {
+      throw new Error(error.title || error.detail || "Server error");
+    }
+
     return (
       <Card className="mx-4 sm:mx-0">
         <CardContent className="p-4 sm:p-6">
           <div className="text-center text-red-600 text-sm sm:text-base">
-            Error loading articles:{" "}
-            {error instanceof Error ? error.message : "Unknown error occurred"}
+            Erreur lors du chargement des articles: {errorMessage}
+          </div>
+          <div className="flex justify-center mt-4">
+            <Button
+              onClick={() => window.location.reload()}
+              variant="outline"
+              className="w-full sm:w-auto"
+            >
+              Réessayer
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -127,6 +158,7 @@ export function ArticlesTable() {
           />
         </CardContent>
       </Card>
+
       {openConfirmDialog && dialogData && (
         <ConfirmDialog
           open={openConfirmDialog}

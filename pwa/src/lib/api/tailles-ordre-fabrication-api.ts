@@ -1,16 +1,12 @@
 import { ApiCollection } from "@/types/resources/ApiCollection";
 import { apiRequest } from "./base";
-import { TailleArticle, TailleOrdreFabrication } from "@/types/resources/TailleOrdreFabrication";
+import {
+  TailleArticle,
+  TailleOrdreFabrication,
+} from "@/types/resources/TailleOrdreFabrication";
 
 export const taillesOrdreFabricationApi = {
-  getAllByOrdreFabricationId: async (ordreFabricationId: number) => {
-    return apiRequest<ApiCollection<TailleOrdreFabrication>>(
-      `/api/taille_ordre_fabrications?ordreFabrication=${ordreFabricationId}`
-    );
-  },
-
-  getAllByOrdreFabricationURI: (uri: string) => {
-    const ordreFabricationId = uri.split("/").pop();
+  getAllByOrdreFabrication: async (ordreFabricationId: string | number) => {
     return apiRequest<ApiCollection<TailleOrdreFabrication>>(
       `/api/taille_ordre_fabrications?ordreFabrication=${ordreFabricationId}`
     );

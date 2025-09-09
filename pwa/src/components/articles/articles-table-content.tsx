@@ -30,13 +30,14 @@ import {
 } from "lucide-react";
 import { Article, ArticlesFilters } from "@/types/resources/Article";
 import { ApiCollection } from "@/types/resources/ApiCollection";
+import { MESSAGES } from "@/config/app";
 
 interface ArticlesTableContentProps {
   articlesCollection: ApiCollection<Article> | undefined;
   isLoading: boolean;
   filters: ArticlesFilters;
   onSort: (field: "ref" | "designation") => void;
-  onDelete: (id: number) => void;
+  onDelete: (id: number, ref: string) => void;
   deleteLoading: boolean;
 }
 
@@ -96,7 +97,7 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                 <TableCell colSpan={5} className="text-center py-8">
                   <div className="flex items-center justify-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                    <span className="ml-2">Chargement des articles ...</span>
+                    <span className="ml-2">{MESSAGES.LOADING.ARTICLES}</span>
                   </div>
                 </TableCell>
               </TableRow>
@@ -134,9 +135,13 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                         </Link>
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="destructive"
                         size="icon"
-                        onClick={() => article.id && onDelete(article.id)}
+                        onClick={() =>
+                          article.id &&
+                          article.ref &&
+                          onDelete(article.id, article.ref)
+                        }
                         disabled={deleteLoading}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -208,7 +213,11 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onClick={() => article.id && onDelete(article.id)}
+                      onClick={() =>
+                        article.id &&
+                        article.ref &&
+                        onDelete(article.id, article.ref)
+                      }
                       disabled={deleteLoading}
                       className="text-red-600 focus:text-red-600"
                     >

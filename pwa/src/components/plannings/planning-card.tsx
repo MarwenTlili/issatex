@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Collapsible,
   CollapsibleContent,
@@ -23,7 +22,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Planning } from "@/types/resources/Planning";
-import { useOrdreFabricationByURI } from "@/hooks/use-ordre-fabrications";
+import { useOrdreFabrication } from "@/hooks/use-ordre-fabrications";
 import { useIlot } from "@/hooks/use-ilots";
 import { ProductionList } from "../productions/production-list";
 
@@ -35,33 +34,11 @@ export function PlanningCard({ planning }: PlanningCardProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const { data: ordreFabrication, isLoading: loadingOrdre } =
-    useOrdreFabricationByURI(planning.ordreFabrication);
+    useOrdreFabrication(planning.ordreFabrication);
   const { data: ilot, isLoading: loadingIlot } = useIlot(planning.ilot);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("fr-FR");
-  };
-
-  const isActive = () => {
-    const now = new Date();
-    const debut = new Date(planning.dateDebut);
-    const fin = new Date(planning.dateFin);
-    return now >= debut && now <= fin;
-  };
-
-  const getStatusBadge = () => {
-    if (planning.reporte) {
-      return <Badge variant="secondary">Reporté</Badge>;
-    }
-    if (isActive()) {
-      return <Badge variant="default">En cours</Badge>;
-    }
-    const now = new Date();
-    const debut = new Date(planning.dateDebut);
-    if (now < debut) {
-      return <Badge variant="outline">À venir</Badge>;
-    }
-    return <Badge variant="secondary">Terminé</Badge>;
   };
 
   return (
@@ -89,7 +66,6 @@ export function PlanningCard({ planning }: PlanningCardProps) {
                   </CardDescription>
                 </div>
               </div>
-              <div className="flex items-center gap-2">{getStatusBadge()}</div>
             </div>
           </CardHeader>
         </CollapsibleTrigger>
