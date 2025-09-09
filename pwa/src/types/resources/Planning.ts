@@ -1,3 +1,4 @@
+import { BaseFilters } from "../common/BaseFilters";
 import { Item } from "./Item";
 
 export interface Planning extends Item {
@@ -10,4 +11,8 @@ export interface Planning extends Item {
   ordreFabrication: string;
   ilot: string;
   productions: string[];
+}
+
+export interface PlanningsFilters extends BaseFilters {
+  ref?: string;
 }

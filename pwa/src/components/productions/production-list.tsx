@@ -64,7 +64,7 @@ export function ProductionList({
     error,
   } = useProductions(planningId);
 
-  const productionIsExpired = new Date(dateFin) <= new Date();
+  // const productionIsExpired = new Date(dateFin) <= new Date();
 
   const deleteProduction = useDeleteProduction();
 
@@ -255,7 +255,7 @@ export function ProductionList({
         <Button
           onClick={() => setShowForm(true)}
           size="sm"
-          disabled={productionIsExpired}
+          // disabled={productionIsExpired}
         >
           <Plus className="h-4 w-4 mr-2" />
           Nouvelle production

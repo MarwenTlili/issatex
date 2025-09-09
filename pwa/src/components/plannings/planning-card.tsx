@@ -1,67 +1,41 @@
-"use client";
-
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
-  ChevronDown,
-  ChevronRight,
-  Calendar,
-  Factory,
-  MapPin,
-} from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Planning } from "@/types/resources/Planning";
-import { useOrdreFabrication } from "@/hooks/use-ordre-fabrications";
-import { useIlot } from "@/hooks/use-ilots";
-import { ProductionList } from "../productions/production-list";
+"use client"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronDown, ChevronRight, Calendar, Factory, MapPin } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
+import type { Planning } from "@/types/resources/Planning"
+import { useOrdreFabrication } from "@/hooks/use-ordre-fabrications"
+import { useIlot } from "@/hooks/use-ilots"
+import { ProductionList } from "../productions/production-list"
 
 interface PlanningCardProps {
-  planning: Planning;
+  planning: Planning
+  isOpen: boolean
+  onToggle: () => void
 }
 
-export function PlanningCard({ planning }: PlanningCardProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const { data: ordreFabrication, isLoading: loadingOrdre } =
-    useOrdreFabrication(planning.ordreFabrication);
-  const { data: ilot, isLoading: loadingIlot } = useIlot(planning.ilot);
+export function PlanningCard({ planning, isOpen, onToggle }: PlanningCardProps) {
+  const { data: ordreFabrication, isLoading: loadingOrdre } = useOrdreFabrication(planning.ordreFabrication)
+  const { data: ilot, isLoading: loadingIlot } = useIlot(planning.ilot)
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("fr-FR");
-  };
+    return new Date(dateString).toLocaleDateString("fr-FR")
+  }
 
   return (
     <Card className="w-full">
-      <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+      <Collapsible open={isOpen} onOpenChange={onToggle}>
         <CollapsibleTrigger asChild>
           <CardHeader className="cursor-pointer rounded-md hover:bg-blue-200 transition-colors bg-blue-100">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {isOpen ? (
-                  <ChevronDown className="h-4 w-4" />
-                ) : (
-                  <ChevronRight className="h-4 w-4" />
-                )}
+                {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 <div>
-                  <CardTitle className="text-lg">
-                    Planning {planning.ref || `#${planning.id}`}
-                  </CardTitle>
+                  <CardTitle className="text-lg">Planning {planning.ref || `#${planning.id}`}</CardTitle>
                   <CardDescription className="flex items-center gap-4 mt-1">
                     <span className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      {formatDate(planning.dateDebut)} -{" "}
-                      {formatDate(planning.dateFin)}
+                      {formatDate(planning.dateDebut)} - {formatDate(planning.dateFin)}
                     </span>
                   </CardDescription>
                 </div>
@@ -78,16 +52,12 @@ export function PlanningCard({ planning }: PlanningCardProps) {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Factory className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">
-                      Ordre de fabrication:
-                    </span>
+                    <span className="text-sm font-medium">Ordre de fabrication:</span>
                   </div>
                   {loadingOrdre ? (
                     <Skeleton className="h-4 w-32" />
                   ) : (
-                    <p className="text-sm text-muted-foreground ml-6">
-                      {ordreFabrication?.ref || "Chargement..."}
-                    </p>
+                    <p className="text-sm text-muted-foreground ml-6">{ordreFabrication?.ref || "Chargement..."}</p>
                   )}
                 </div>
 
@@ -99,9 +69,7 @@ export function PlanningCard({ planning }: PlanningCardProps) {
                   {loadingIlot ? (
                     <Skeleton className="h-4 w-32" />
                   ) : (
-                    <p className="text-sm text-muted-foreground ml-6">
-                      {ilot?.nom || "Chargement..."}
-                    </p>
+                    <p className="text-sm text-muted-foreground ml-6">{ilot?.nom || "Chargement..."}</p>
                   )}
                 </div>
               </div>
@@ -118,5 +86,5 @@ export function PlanningCard({ planning }: PlanningCardProps) {
         </CollapsibleContent>
       </Collapsible>
     </Card>
-  );
+  )
 }
