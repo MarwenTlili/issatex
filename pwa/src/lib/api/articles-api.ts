@@ -30,10 +30,6 @@ class ArticlesApiService extends ApiService<
       `${API_ENDPOINTS.ARTICLES}?${params}`
     );
   }
-
-  async create(data: CreateArticleData): Promise<Article> {
-    return super.create(data);
-  }
 }
 
 export const articlesApi = new ArticlesApiService();

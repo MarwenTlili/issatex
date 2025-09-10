@@ -1,15 +1,21 @@
-"use client"
+"use client";
 
-import { memo, useState, useEffect } from "react"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Button } from "@/components/ui/button"
-import { Search, X } from "lucide-react"
-import type { PlanningsFilters } from "@/types/resources/Planning"
+import { memo, useState, useEffect } from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Search, X } from "lucide-react";
+import type { PlanningsFilters } from "@/types/resources/Planning";
 
 interface PlanningsListFiltersProps {
-  filters: PlanningsFilters
-  onFilterChange: (newFilters: Partial<PlanningsFilters>) => void
+  filters: PlanningsFilters;
+  onFilterChange: (newFilters: Partial<PlanningsFilters>) => void;
 }
 
 export const PlanningsListFilters = memo(function PlanningsListFilters({
@@ -17,25 +23,25 @@ export const PlanningsListFilters = memo(function PlanningsListFilters({
   onFilterChange,
 }: PlanningsListFiltersProps) {
   // Local state for the input field to prevent parent re-renders
-  const [localRefFilter, setLocalRefFilter] = useState(filters.ref || "")
+  const [localRefFilter, setLocalRefFilter] = useState(filters.ref || "");
 
   const handleClearFilter = () => {
-    setLocalRefFilter("")
-  }
+    setLocalRefFilter("");
+  };
 
   // Debounce the filter change to parent
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      onFilterChange({ ref: localRefFilter || undefined })
-    }, 300)
+      onFilterChange({ ref: localRefFilter || undefined });
+    }, 300);
 
-    return () => clearTimeout(timeoutId)
-  }, [localRefFilter, onFilterChange])
+    return () => clearTimeout(timeoutId);
+  }, [localRefFilter, onFilterChange]);
 
   // Update local state when filters prop changes
   useEffect(() => {
-    setLocalRefFilter(filters.ref || "")
-  }, [filters.ref])
+    setLocalRefFilter(filters.ref || "");
+  }, [filters.ref]);
 
   return (
     <div className="mb-6 space-y-4">
@@ -67,7 +73,9 @@ export const PlanningsListFilters = memo(function PlanningsListFilters({
         </div>
         <Select
           value={filters.itemsPerPage?.toString() || "10"}
-          onValueChange={(value) => onFilterChange({ itemsPerPage: Number.parseInt(value) })}
+          onValueChange={(value) =>
+            onFilterChange({ itemsPerPage: Number.parseInt(value) })
+          }
         >
           <SelectTrigger className="w-full sm:w-32">
             <SelectValue />
@@ -81,5 +89,5 @@ export const PlanningsListFilters = memo(function PlanningsListFilters({
         </Select>
       </div>
     </div>
-  )
-})
+  );
+});

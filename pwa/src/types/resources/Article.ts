@@ -1,6 +1,5 @@
 import { BaseFilters } from "@/types/common/BaseFilters";
 import { Item } from "./Item";
-import { boolean } from "zod";
 
 export interface Article extends Item {
   id?: number;

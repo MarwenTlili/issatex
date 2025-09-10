@@ -1,40 +1,67 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useForm, type SubmitHandler } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { FormField } from "@/components/ui/form-field"
+import { useState, useEffect } from "react";
+import { useForm, type SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FormField } from "@/components/ui/form-field";
 
-import { CalendarIcon, Loader2, Target, AlertTriangle, CheckCircle2 } from "lucide-react"
-import { toast } from "@/hooks/use-toast"
-import type { Production } from "@/types/resources/Production"
-import { productionSchema, type ProductionFormData } from "@/lib/validation/schemas"
-import { TAILLE_ARTICLE_OPTIONS, type TailleArticle } from "@/types/resources/TailleOrdreFabrication"
-import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications"
-import { useCreateProduction, useUpdateProduction } from "@/hooks/use-productions"
-import { OrderContextPanel } from "./order-context-panel"
+import {
+  CalendarIcon,
+  Loader2,
+  Target,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import type { Production } from "@/types/resources/Production";
+import {
+  productionSchema,
+  type ProductionFormData,
+} from "@/lib/validation/schemas";
+import {
+  TAILLE_ARTICLE_OPTIONS,
+  type TailleArticle,
+} from "@/types/resources/TailleOrdreFabrication";
+import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications";
+import {
+  useCreateProduction,
+  useUpdateProduction,
+} from "@/hooks/use-productions";
+import { OrderContextPanel } from "./order-context-panel";
 import {
   type ApiError,
   handleApiError,
   extractFormErrors,
   isValidationError,
   type FormErrors,
-} from "@/lib/api/handle-api-error"
+} from "@/lib/api/handle-api-error";
 
 interface EnhancedProductionFormProps {
-  planningId: string
-  ordreFabricationUri: string
-  dateDebut: string
-  dateFin: string
-  production?: Production
-  onSuccess?: () => void
-  onCancel?: () => void
+  planningId: string;
+  ordreFabricationUri: string;
+  dateDebut: string;
+  dateFin: string;
+  production?: Production;
+  onSuccess?: () => void;
+  onCancel?: () => void;
 }
 
 export function EnhancedProductionForm({
@@ -46,7 +73,7 @@ export function EnhancedProductionForm({
   onSuccess,
   onCancel,
 }: EnhancedProductionFormProps) {
-  const [apiErrors, setApiErrors] = useState<FormErrors>({})
+  const [apiErrors, setApiErrors] = useState<FormErrors>({});
 
   const {
     register,
@@ -66,19 +93,20 @@ export function EnhancedProductionForm({
       quantiteDeuxiemeChoix: 0,
       quantiteTotale: 0,
     },
-  })
+  });
 
-  const watchedValues = watch()
+  const watchedValues = watch();
 
-  const ordreFabricationId = ordreFabricationUri.split("/").pop() || ""
-  const { data: taillesData } = useTaillesByOrdreFabrication(ordreFabricationId)
+  const ordreFabricationId = ordreFabricationUri.split("/").pop() || "";
+  const { data: taillesData } =
+    useTaillesByOrdreFabrication(ordreFabricationId);
 
-  const createMutation = useCreateProduction()
-  const updateMutation = useUpdateProduction()
+  const createMutation = useCreateProduction();
+  const updateMutation = useUpdateProduction();
 
   useEffect(() => {
     if (production) {
-      console.log("production.tailleArticle: ", production.tailleArticle)
+      console.log("production.tailleArticle: ", production.tailleArticle);
 
       reset({
         dateProduction: production.dateProduction.split("T")[0],
@@ -86,151 +114,167 @@ export function EnhancedProductionForm({
         quantitePremiereChoix: production.quantitePremiereChoix,
         quantiteDeuxiemeChoix: production.quantiteDeuxiemeChoix,
         quantiteTotale: production.quantiteTotale,
-      })
+      });
     }
-  }, [production, reset])
+  }, [production, reset]);
 
   // Auto-calculate total quantity
   useEffect(() => {
-    const total = watchedValues.quantitePremiereChoix + watchedValues.quantiteDeuxiemeChoix
-    setValue("quantiteTotale", total)
-  }, [watchedValues.quantitePremiereChoix, watchedValues.quantiteDeuxiemeChoix, setValue])
+    const total =
+      watchedValues.quantitePremiereChoix + watchedValues.quantiteDeuxiemeChoix;
+    setValue("quantiteTotale", total);
+  }, [
+    watchedValues.quantitePremiereChoix,
+    watchedValues.quantiteDeuxiemeChoix,
+    setValue,
+  ]);
 
   const handleInputChange = (fieldName: keyof ProductionFormData) => {
     if (apiErrors[fieldName]) {
       setApiErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[fieldName]
-        return newErrors
-      })
-      clearErrors(fieldName)
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+      clearErrors(fieldName);
     }
-  }
+  };
 
   // Get order information for selected size
   const selectedSizeOrder = taillesData?.["member"]?.find(
-    (taille) => taille.tailleArticle === watchedValues.tailleArticle,
-  )
+    (taille) => taille.tailleArticle === watchedValues.tailleArticle
+  );
 
   // Calculate working days between planning dates
   const workingDays = (() => {
-    const start = new Date(dateDebut)
-    const end = new Date(dateFin)
-    let count = 0
-    const current = new Date(start)
+    const start = new Date(dateDebut);
+    const end = new Date(dateFin);
+    let count = 0;
+    const current = new Date(start);
 
     while (current <= end) {
-      const dayOfWeek = current.getDay()
+      const dayOfWeek = current.getDay();
       if (dayOfWeek !== 0) {
-        count++
+        count++;
       }
-      current.setDate(current.getDate() + 1)
+      current.setDate(current.getDate() + 1);
     }
-    return count
-  })()
+    return count;
+  })();
 
-  const dailyTarget = selectedSizeOrder ? Math.ceil(selectedSizeOrder.quantite / workingDays) : 0
+  const dailyTarget = selectedSizeOrder
+    ? Math.ceil(selectedSizeOrder.quantite / workingDays)
+    : 0;
 
   const onSubmit: SubmitHandler<ProductionFormData> = async (data) => {
     try {
-      setApiErrors({})
+      setApiErrors({});
 
       if (production) {
         await updateMutation.mutateAsync({
           id: production.id.toString(),
           data,
-        })
+        });
         toast({
           title: "Production mise à jour",
           description: "La production a été mise à jour avec succès.",
-        })
+        });
       } else {
         await createMutation.mutateAsync({
           ...data,
           planning: `/api/plannings/${planningId}`,
-        })
+        });
         toast({
           title: "Production créée",
           description: "La nouvelle production a été créée avec succès.",
-        })
+        });
       }
-      onSuccess?.()
+      onSuccess?.();
     } catch (error) {
-      const apiError = error as ApiError
+      const apiError = error as ApiError;
 
       if (isValidationError(apiError)) {
-        const formErrors = extractFormErrors(apiError)
-        setApiErrors(formErrors)
+        const formErrors = extractFormErrors(apiError);
+        setApiErrors(formErrors);
 
         // Set form errors for react-hook-form
         Object.entries(formErrors).forEach(([field, message]) => {
           setError(field as keyof ProductionFormData, {
             type: "api",
             message,
-          })
-        })
+          });
+        });
       } else {
         if ((apiError.status && apiError.status >= 500) || !apiError.status) {
           // Server errors or network errors should trigger error boundary
-          throw new Error(apiError.title || apiError.detail || "Server error")
+          throw new Error(apiError.title || apiError.detail || "Server error");
         } else {
           // Handle client errors (4xx) with toast
           handleApiError(apiError, {
             customMessage: production
               ? "Impossible de modifier la production. Vérifiez vos données."
               : "Impossible de créer la production. Vérifiez vos données.",
-          })
+          });
         }
       }
     }
-  }
+  };
 
-  const isLoading = isSubmitting || createMutation.isLoading || updateMutation.isLoading
+  const isLoading =
+    isSubmitting || createMutation.isLoading || updateMutation.isLoading;
 
   // Get available sizes from order
-  const availableSizes = taillesData?.["member"]?.map((t) => t.tailleArticle) || Object.values(TAILLE_ARTICLE_OPTIONS)
+  const availableSizes =
+    taillesData?.["member"]?.map((t) => t.tailleArticle) ||
+    Object.values(TAILLE_ARTICLE_OPTIONS);
 
   const getSuggestionAlert = () => {
-    if (!selectedSizeOrder || watchedValues.quantiteTotale === 0) return null
+    if (!selectedSizeOrder || watchedValues.quantiteTotale === 0) return null;
 
-    const isOnTarget = watchedValues.quantiteTotale === dailyTarget
-    const isAboveTarget = watchedValues.quantiteTotale > dailyTarget
-    const isBelowTarget = watchedValues.quantiteTotale < dailyTarget
+    const isOnTarget = watchedValues.quantiteTotale === dailyTarget;
+    const isAboveTarget = watchedValues.quantiteTotale > dailyTarget;
+    const isBelowTarget = watchedValues.quantiteTotale < dailyTarget;
 
     if (isOnTarget) {
       return (
         <Alert className="border-green-200 bg-green-50">
           <CheckCircle2 className="h-4 w-4 text-green-600" />
           <AlertDescription className="text-green-800">
-            Parfait ! Cette quantité correspond exactement à l&apos;objectif quotidien.
+            Parfait ! Cette quantité correspond exactement à l&apos;objectif
+            quotidien.
           </AlertDescription>
         </Alert>
-      )
+      );
     } else if (isAboveTarget) {
       return (
         <Alert className="border-orange-200 bg-orange-50">
           <AlertTriangle className="h-4 w-4 text-orange-600" />
           <AlertDescription className="text-orange-800">
-            Cette quantité dépasse l&apos;objectif quotidien de {watchedValues.quantiteTotale - dailyTarget} articles.
+            Cette quantité dépasse l&apos;objectif quotidien de{" "}
+            {watchedValues.quantiteTotale - dailyTarget} articles.
           </AlertDescription>
         </Alert>
-      )
+      );
     } else if (isBelowTarget) {
       return (
         <Alert className="border-blue-200 bg-blue-50">
           <Target className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">
-            Il manque {dailyTarget - watchedValues.quantiteTotale} articles pour atteindre l&apos;objectif quotidien.
+            Il manque {dailyTarget - watchedValues.quantiteTotale} articles pour
+            atteindre l&apos;objectif quotidien.
           </AlertDescription>
         </Alert>
-      )
+      );
     }
 
-    return null
-  }
+    return null;
+  };
 
-  const hasChanges = production ? isDirty : true
-  const isFormValid = isValid && (watchedValues.quantitePremiereChoix > 0 || watchedValues.quantiteDeuxiemeChoix > 0)
+  const hasChanges = production ? isDirty : true;
+  const isFormValid =
+    isValid &&
+    (watchedValues.quantitePremiereChoix > 0 ||
+      watchedValues.quantiteDeuxiemeChoix > 0);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -243,16 +287,23 @@ export function EnhancedProductionForm({
               {production ? "Modifier la production" : "Nouvelle production"}
             </CardTitle>
             <CardDescription>
-              Saisissez les détails de la production en tenant compte des objectifs de commande.
+              Saisissez les détails de la production en tenant compte des
+              objectifs de commande.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-6"
+              noValidate
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   label="Date de production"
                   htmlFor="dateProduction"
-                  error={errors.dateProduction?.message || apiErrors.dateProduction}
+                  error={
+                    errors.dateProduction?.message || apiErrors.dateProduction
+                  }
                   required
                 >
                   <Input
@@ -263,29 +314,43 @@ export function EnhancedProductionForm({
                     })}
                     min={dateDebut}
                     max={dateFin}
-                    className={errors.dateProduction || apiErrors.dateProduction ? "border-red-500" : ""}
+                    className={
+                      errors.dateProduction || apiErrors.dateProduction
+                        ? "border-red-500"
+                        : ""
+                    }
                   />
                 </FormField>
 
                 <FormField
                   label="Taille article"
                   htmlFor="tailleArticle"
-                  error={errors.tailleArticle?.message || apiErrors.tailleArticle}
+                  error={
+                    errors.tailleArticle?.message || apiErrors.tailleArticle
+                  }
                   required
                 >
                   <Select
                     value={watchedValues.tailleArticle}
                     onValueChange={(value: TailleArticle) => {
-                      setValue("tailleArticle", value)
-                      handleInputChange("tailleArticle")
+                      setValue("tailleArticle", value);
+                      handleInputChange("tailleArticle");
                     }}
                   >
-                    <SelectTrigger className={errors.tailleArticle || apiErrors.tailleArticle ? "border-red-500" : ""}>
+                    <SelectTrigger
+                      className={
+                        errors.tailleArticle || apiErrors.tailleArticle
+                          ? "border-red-500"
+                          : ""
+                      }
+                    >
                       <SelectValue placeholder="Sélectionner une taille" />
                     </SelectTrigger>
                     <SelectContent>
                       {availableSizes.map((taille) => {
-                        const orderInfo = taillesData?.["member"]?.find((t) => t.tailleArticle === taille)
+                        const orderInfo = taillesData?.["member"]?.find(
+                          (t) => t.tailleArticle === taille
+                        );
                         return (
                           <SelectItem key={taille} value={taille}>
                             <div className="flex items-center justify-between w-full">
@@ -297,7 +362,7 @@ export function EnhancedProductionForm({
                               )}
                             </div>
                           </SelectItem>
-                        )
+                        );
                       })}
                     </SelectContent>
                   </Select>
@@ -309,16 +374,24 @@ export function EnhancedProductionForm({
                 <div className="p-4 bg-muted/30 rounded-lg space-y-2">
                   <div className="flex items-center gap-2">
                     <Target className="h-4 w-4 text-primary" />
-                    <span className="font-medium text-sm">Objectif pour la taille {watchedValues.tailleArticle}</span>
+                    <span className="font-medium text-sm">
+                      Objectif pour la taille {watchedValues.tailleArticle}
+                    </span>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground">Total commandé</p>
-                      <p className="font-semibold text-primary">{selectedSizeOrder.quantite}</p>
+                      <p className="font-semibold text-primary">
+                        {selectedSizeOrder.quantite}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Objectif quotidien</p>
-                      <p className="font-semibold text-orange-600">{dailyTarget}</p>
+                      <p className="text-muted-foreground">
+                        Objectif quotidien
+                      </p>
+                      <p className="font-semibold text-orange-600">
+                        {dailyTarget}
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">Jours ouvrables</p>
@@ -332,7 +405,10 @@ export function EnhancedProductionForm({
                 <FormField
                   label="Quantité 1er choix"
                   htmlFor="quantitePremiereChoix"
-                  error={errors.quantitePremiereChoix?.message || apiErrors.quantitePremiereChoix}
+                  error={
+                    errors.quantitePremiereChoix?.message ||
+                    apiErrors.quantitePremiereChoix
+                  }
                   required
                 >
                   <Input
@@ -341,16 +417,25 @@ export function EnhancedProductionForm({
                     min="0"
                     {...register("quantitePremiereChoix", {
                       valueAsNumber: true,
-                      onChange: () => handleInputChange("quantitePremiereChoix"),
+                      onChange: () =>
+                        handleInputChange("quantitePremiereChoix"),
                     })}
-                    className={errors.quantitePremiereChoix || apiErrors.quantitePremiereChoix ? "border-red-500" : ""}
+                    className={
+                      errors.quantitePremiereChoix ||
+                      apiErrors.quantitePremiereChoix
+                        ? "border-red-500"
+                        : ""
+                    }
                   />
                 </FormField>
 
                 <FormField
                   label="Quantité 2ème choix"
                   htmlFor="quantiteDeuxiemeChoix"
-                  error={errors.quantiteDeuxiemeChoix?.message || apiErrors.quantiteDeuxiemeChoix}
+                  error={
+                    errors.quantiteDeuxiemeChoix?.message ||
+                    apiErrors.quantiteDeuxiemeChoix
+                  }
                   required
                 >
                   <Input
@@ -359,9 +444,15 @@ export function EnhancedProductionForm({
                     min="0"
                     {...register("quantiteDeuxiemeChoix", {
                       valueAsNumber: true,
-                      onChange: () => handleInputChange("quantiteDeuxiemeChoix"),
+                      onChange: () =>
+                        handleInputChange("quantiteDeuxiemeChoix"),
                     })}
-                    className={errors.quantiteDeuxiemeChoix || apiErrors.quantiteDeuxiemeChoix ? "border-red-500" : ""}
+                    className={
+                      errors.quantiteDeuxiemeChoix ||
+                      apiErrors.quantiteDeuxiemeChoix
+                        ? "border-red-500"
+                        : ""
+                    }
                   />
                 </FormField>
 
@@ -385,11 +476,11 @@ export function EnhancedProductionForm({
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      const target = dailyTarget
-                      setValue("quantitePremiereChoix", target)
-                      setValue("quantiteDeuxiemeChoix", 0)
-                      handleInputChange("quantitePremiereChoix")
-                      handleInputChange("quantiteDeuxiemeChoix")
+                      const target = dailyTarget;
+                      setValue("quantitePremiereChoix", target);
+                      setValue("quantiteDeuxiemeChoix", 0);
+                      handleInputChange("quantitePremiereChoix");
+                      handleInputChange("quantiteDeuxiemeChoix");
                     }}
                   >
                     Utiliser l&apos;objectif quotidien ({dailyTarget})
@@ -406,8 +497,15 @@ export function EnhancedProductionForm({
                     Annuler
                   </Button>
                 )}
-                <Button type="submit" disabled={isLoading || !isFormValid || (production && !hasChanges)}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button
+                  type="submit"
+                  disabled={
+                    isLoading || !isFormValid || (production && !hasChanges)
+                  }
+                >
+                  {isLoading && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
                   {production ? "Mise à jour" : "Créé"}
                 </Button>
               </div>
@@ -426,5 +524,5 @@ export function EnhancedProductionForm({
         />
       </div>
     </div>
-  )
+  );
 }
