@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { memo } from "react"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import type { PlanningsFilters } from "@/types/resources/Planning"
-import { PAGINATION } from "@/config/app"
+import { memo } from "react";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import type { PlanningsFilters } from "@/types/resources/Planning";
+import { PAGINATION } from "@/config/app";
 
 interface PlanningsListPaginationProps {
-  totalItems: number
-  filters: PlanningsFilters
-  onPageChange: (page: number) => void
+  totalItems: number;
+  filters: PlanningsFilters;
+  onPageChange: (page: number) => void;
 }
 
 export const PlanningsListPagination = memo(function PlanningsListPagination({
@@ -17,17 +17,26 @@ export const PlanningsListPagination = memo(function PlanningsListPagination({
   filters,
   onPageChange,
 }: PlanningsListPaginationProps) {
-  const totalPages = Math.ceil(totalItems / (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE))
-  const currentPage = filters.page || PAGINATION.DEFAULT_PAGE
+  const totalPages = Math.ceil(
+    totalItems / (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE)
+  );
+  const currentPage = filters.page || PAGINATION.DEFAULT_PAGE;
 
-  if (totalPages <= 1) return null
+  if (totalPages <= 1) return null;
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-4">
       <div className="text-sm text-muted-foreground text-center sm:text-left">
-        Affichage de {(currentPage - 1) * (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE) + 1} à{" "}
-        {Math.min(currentPage * (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE), totalItems)} sur {totalItems}{" "}
-        planifications
+        Affichage de{" "}
+        {(currentPage - 1) *
+          (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE) +
+          1}{" "}
+        à{" "}
+        {Math.min(
+          currentPage * (filters.itemsPerPage || PAGINATION.DEFAULT_PAGE_SIZE),
+          totalItems
+        )}{" "}
+        sur {totalItems} planifications
       </div>
       <div className="flex gap-2">
         <Button
@@ -42,7 +51,8 @@ export const PlanningsListPagination = memo(function PlanningsListPagination({
         </Button>
         <div className="flex gap-1">
           {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-            const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i
+            const page =
+              Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
             return (
               <Button
                 key={page}
@@ -53,7 +63,7 @@ export const PlanningsListPagination = memo(function PlanningsListPagination({
               >
                 {page}
               </Button>
-            )
+            );
           })}
         </div>
         <Button
@@ -68,5 +78,5 @@ export const PlanningsListPagination = memo(function PlanningsListPagination({
         </Button>
       </div>
     </div>
-  )
-})
+  );
+});

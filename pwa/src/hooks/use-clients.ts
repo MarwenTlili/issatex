@@ -20,7 +20,7 @@ export const useCurrentClient = () => {
       );
 
       if (clientsData.member.length === 0) {
-        throw new Error("No client found for this user");
+        throw new Error("Aucun client trouvé pour cet utilisateur");
       }
 
       // Return the first client (should be only one due to OneToOne relationship)
@@ -33,8 +33,9 @@ export const useCurrentClient = () => {
 
 export const useClientByURI = (uri?: string) => {
   return useQuery({
-    queryKey: ["client", uri],
+    queryKey: [QUERY_KEYS.CLIENT, `${uri}`],
     queryFn: () => clientsApiService.getByURI(uri!),
     enabled: !!uri,
+    onError: (err) => handleApiError(err as ApiError),
   });
 };

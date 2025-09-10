@@ -1,15 +1,11 @@
-import { ApiCollection } from "@/types/resources/ApiCollection";
-import { apiRequest } from "./base";
+import { ApiService } from "./base";
 import { Planning } from "@/types/resources/Planning";
+import { API_ENDPOINTS } from "@/config/api";
 
-export const planningsApi = {
-  getAll(page = 1, itemsPerPage = 10) {
-    return apiRequest<ApiCollection<Planning>>(
-      `/api/plannings?page=${page}&itemsPerPage=${itemsPerPage}`
-    );
-  },
+class PlanningsApiService extends ApiService<Planning> {
+  constructor() {
+    super(API_ENDPOINTS.PLANNINGS);
+  }
+}
 
-  getById: (id: number) => {
-    return apiRequest<Planning>(`/api/plannings/${id}`);
-  },
-};
+export const planningsApi = new PlanningsApiService();

@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { memo } from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
-import { ClipboardList } from "lucide-react"
-import type { Planning, PlanningsFilters } from "@/types/resources/Planning"
-import type { ApiCollection } from "@/types/resources/ApiCollection"
-import { PlanningCard } from "./planning-card"
+import { memo } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { ClipboardList } from "lucide-react";
+import type { Planning, PlanningsFilters } from "@/types/resources/Planning";
+import type { ApiCollection } from "@/types/resources/ApiCollection";
+import { PlanningCard } from "./planning-card";
 
 interface PlanningsListContentProps {
-  planningsData: ApiCollection<Planning> | undefined
-  isLoading: boolean
-  filters: PlanningsFilters
-  openPlanningId: number | null
-  onPlanningToggle: (planningId: number) => void
+  planningsData: ApiCollection<Planning> | undefined;
+  isLoading: boolean;
+  filters: PlanningsFilters;
+  openPlanningId: number | null;
+  onPlanningToggle: (planningId: number) => void;
 }
 
 export const PlanningsListContent = memo(function PlanningsListContent({
@@ -28,8 +28,8 @@ export const PlanningsListContent = memo(function PlanningsListContent({
       (planning) =>
         !filters.ref ||
         planning.ref?.toLowerCase().includes(filters.ref.toLowerCase()) ||
-        planning.id.toString().includes(filters.ref),
-    ) || []
+        planning.id.toString().includes(filters.ref)
+    ) || [];
 
   if (isLoading) {
     return (
@@ -48,7 +48,7 @@ export const PlanningsListContent = memo(function PlanningsListContent({
           </Card>
         ))}
       </div>
-    )
+    );
   }
 
   if (filteredPlannings.length === 0) {
@@ -56,7 +56,9 @@ export const PlanningsListContent = memo(function PlanningsListContent({
       <Card>
         <CardContent className="p-12 text-center">
           <ClipboardList className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-lg font-semibold mb-2">Aucune planification trouvée</h3>
+          <h3 className="text-lg font-semibold mb-2">
+            Aucune planification trouvée
+          </h3>
           <p className="text-muted-foreground">
             {filters.ref
               ? "Aucune planification ne correspond à votre recherche."
@@ -64,7 +66,7 @@ export const PlanningsListContent = memo(function PlanningsListContent({
           </p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -78,5 +80,5 @@ export const PlanningsListContent = memo(function PlanningsListContent({
         />
       ))}
     </div>
-  )
-})
+  );
+});
