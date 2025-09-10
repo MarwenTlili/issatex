@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrdreFabrication } from "@/hooks/use-ordre-fabrications";
-import { useClientByURI } from "@/hooks/use-clients";
+import { useClient } from "@/hooks/use-clients";
 import { useArticle } from "@/hooks/use-articles";
 import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications";
 import { useProductions } from "@/hooks/use-productions";
@@ -50,7 +50,7 @@ export function OrderContextPanel({
 
   const { data: ordreFabricationData, isLoading: loadingOrdre } =
     useOrdreFabrication(ordreFabricationUri);
-  const { data: clientData, isLoading: loadingClient } = useClientByURI(
+  const { data: clientData, isLoading: loadingClient } = useClient(
     ordreFabricationData?.client || ""
   );
   const { data: articleData, isLoading: loadingArticle } = useArticle(

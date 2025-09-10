@@ -31,11 +31,11 @@ export const useCurrentClient = () => {
   });
 };
 
-export const useClientByURI = (uri?: string) => {
+export const useClient = (identifier?: string | number) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.CLIENT, `${uri}`],
-    queryFn: () => clientsApiService.getByURI(uri!),
-    enabled: !!uri,
+    queryKey: [QUERY_KEYS.CLIENT, `${identifier}`],
+    queryFn: () => clientsApiService.getOne(identifier!),
+    enabled: !!identifier,
     onError: (err) => handleApiError(err as ApiError),
   });
 };

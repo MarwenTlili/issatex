@@ -13,10 +13,6 @@ class ClientsApiService extends ApiService<Client> {
       `${API_ENDPOINTS.CLIENTS}?account=${id}`
     );
   }
-
-  getByURI(uri: string) {
-    return apiRequest<Client>(uri);
-  }
 }
 
 export const clientsApiService = new ClientsApiService();
