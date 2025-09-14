@@ -113,6 +113,19 @@ export const updateProductionSchema = productionSchema.partial().extend({
   id: z.string().min(1, "ID requis"),
 });
 
+export const presenceSchema = z.object({
+  datePresence: z.string().min(1, "La date de présence est requise"),
+  heureDebut: z.string().optional(),
+  heureFin: z.string().optional(),
+  statut: z.enum(["Present", "Absent", "Retard", "Conge"] as const),
+  tempsPresence: z
+    .number()
+    .min(0, "Le temps de présence doit être positif")
+    .max(24, "Maximum 24 heures"),
+  employe: z.string().min(1, "L'employé est requis"),
+  production: z.string().min(1, "La production est requise"),
+});
+
 // User schemas
 export const userSchema = z.object({
   username: z
@@ -169,6 +182,8 @@ export type UpdateOrdreFabricationInput = z.infer<
 export type ProductionFormData = z.infer<typeof productionSchema>;
 export type CreateProductionInput = z.infer<typeof createProductionSchema>;
 export type UpdateProductionInput = z.infer<typeof updateProductionSchema>;
+
+export type PresenceFormData = z.infer<typeof presenceSchema>;
 
 export type UserFormData = z.infer<typeof userSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
