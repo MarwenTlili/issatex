@@ -12,6 +12,10 @@ export const QUERY_KEYS = {
   PLANNING: "planning",
   PRODUCTIONS: "productions",
   PRODUCTION: "production",
+  PRESENCES: "presences",
+  PRESENCE: "presence",
+  EMPLOYES: "employes",
+  EMPLOYE: "employe",
   ILOTS: "ilots",
   ILOT: "ilot",
 } as const;

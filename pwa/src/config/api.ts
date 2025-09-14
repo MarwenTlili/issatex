@@ -27,6 +27,8 @@ export const API_ENDPOINTS = {
   TAILLE_ORDRE_FABRICATIONS: "/api/taille_ordre_fabrications",
   PLANNINGS: "/api/plannings",
   PRODUCTIONS: "/api/productions",
+  PRESENCES: "/api/presences",
+  EMPLOYES: "/api/employes",
   ILOTS: "/api/ilots",
   USERS: "/api/users",
   AVATARS: "/api/avatars",
