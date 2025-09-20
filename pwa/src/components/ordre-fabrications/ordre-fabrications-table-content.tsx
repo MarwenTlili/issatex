@@ -32,6 +32,7 @@ import {
   OrdreFabricationFilters,
 } from "@/types/resources/OrdreFabrication";
 import { ApiCollection } from "@/types/resources/ApiCollection";
+import { APP_ROUTES } from "@/config/app";
 
 interface OrdreFabricationsTableContentProps {
   ordreFabricationsResponse: ApiCollection<OrdreFabrication> | undefined;
@@ -173,7 +174,11 @@ export const OrdreFabricationsTableContent = memo(
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
                         <Button variant="outline" size="icon" asChild>
-                          <Link href={`/client/ordre-fabrications/${of.id}`}>
+                          <Link
+                            href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_DETAIL(
+                              `${of.id}`
+                            )}
+                          >
                             <Eye className="h-4 w-4" />
                           </Link>
                         </Button>
@@ -182,7 +187,9 @@ export const OrdreFabricationsTableContent = memo(
                           <>
                             <Button variant="outline" size="icon" asChild>
                               <Link
-                                href={`/client/ordre-fabrications/${of.id}/edit`}
+                                href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_EDIT(
+                                  `${of.id}`
+                                )}
                               >
                                 <Edit className="h-4 w-4" />
                               </Link>
@@ -255,7 +262,9 @@ export const OrdreFabricationsTableContent = memo(
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
                         <Link
-                          href={`/client/ordre-fabrications/${of.id}`}
+                          href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_DETAIL(
+                            `${of.id}`
+                          )}
                           className="flex items-center"
                         >
                           <Eye className="mr-2 h-4 w-4" />
@@ -264,7 +273,9 @@ export const OrdreFabricationsTableContent = memo(
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link
-                          href={`/client/ordre-fabrications/${of.id}/edit`}
+                          href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_EDIT(
+                            `${of.id}`
+                          )}
                           className="flex items-center"
                         >
                           <Edit className="mr-2 h-4 w-4" />

@@ -118,7 +118,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
           </div>
           <div className="flex justify-center mt-4">
             <Button asChild className="w-full sm:w-auto">
-              <Link href="/client/ordre-fabrications">
+              <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATIONS}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Back to Ordre
                 Fabrications
               </Link>
@@ -275,13 +275,13 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
       </CardContent>
       <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 sm:p-6">
         <Button variant="outline" asChild className="w-full sm:w-auto">
-          <Link href="/client/ordre-fabrications">
+          <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATIONS}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour au list
           </Link>
         </Button>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link href={`/client/ordre-fabrications/${id}/edit`}>
+            <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_EDIT(`${id}`)}>
               <Edit className="mr-2 h-4 w-4" /> Modifier
             </Link>
           </Button>

@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { Article, ArticlesFilters } from "@/types/resources/Article";
 import { ApiCollection } from "@/types/resources/ApiCollection";
-import { MESSAGES } from "@/config/app";
+import { APP_ROUTES, MESSAGES } from "@/config/app";
 
 interface ArticlesTableContentProps {
   articlesCollection: ApiCollection<Article> | undefined;
@@ -125,12 +125,14 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                   <TableCell className="text-right">
                     <div className="flex gap-2 justify-end">
                       <Button variant="outline" size="icon" asChild>
-                        <Link href={`/client/articles/${article.id}`}>
+                        <Link
+                          href={APP_ROUTES.CLIENT.ARTICLE_DETAIL(article.id)}
+                        >
                           <BookOpen className="h-4 w-4" />
                         </Link>
                       </Button>
                       <Button variant="outline" size="icon" asChild>
-                        <Link href={`/client/articles/${article.id}/edit`}>
+                        <Link href={APP_ROUTES.CLIENT.ARTICLE_EDIT(article.id)}>
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -196,7 +198,7 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
                       <Link
-                        href={`/client/articles/${article.id}`}
+                        href={APP_ROUTES.CLIENT.ARTICLE_DETAIL(article.id)}
                         className="flex items-center"
                       >
                         <BookOpen className="mr-2 h-4 w-4" />
@@ -205,7 +207,7 @@ export const ArticlesTableContent = memo(function ArticlesTableContent({
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link
-                        href={`/client/articles/${article.id}/edit`}
+                        href={APP_ROUTES.CLIENT.ARTICLE_EDIT(article.id)}
                         className="flex items-center"
                       >
                         <Edit className="mr-2 h-4 w-4" />

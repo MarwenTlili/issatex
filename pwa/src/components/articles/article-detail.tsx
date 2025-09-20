@@ -147,7 +147,7 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
           asChild
           className="w-full sm:w-auto bg-transparent"
         >
-          <Link href="/client/articles">
+          <Link href={APP_ROUTES.CLIENT.ARTICLES}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux articles
           </Link>
         </Button>
@@ -157,7 +157,7 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
             asChild
             className="w-full sm:w-auto bg-transparent"
           >
-            <Link href={`/client/articles/${id}/edit`}>
+            <Link href={APP_ROUTES.CLIENT.ARTICLE_EDIT(article.id)}>
               <Edit className="mr-2 h-4 w-4" /> Modifier
             </Link>
           </Button>
