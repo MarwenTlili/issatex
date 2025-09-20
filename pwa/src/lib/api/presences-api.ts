@@ -19,10 +19,6 @@ class PresencesApiService extends ApiService<
     return this.getAll({ employe: employeeId });
   }
 
-  async getByProduction(productionId: string | number) {
-    return this.getAll({ production: productionId });
-  }
-
   async getByDateRange(startDate: string, endDate: string) {
     return this.getAll({
       "datePresence[after]": startDate,

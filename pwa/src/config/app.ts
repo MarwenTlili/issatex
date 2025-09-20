@@ -7,8 +7,8 @@ export const APP_ROUTES = {
     DASHBOARD: "/client",
     ARTICLES: "/client/articles",
     ARTICLE_NEW: "/client/articles/new",
-    ARTICLE_DETAIL: (id: string) => `/client/articles/${id}`,
-    ARTICLE_EDIT: (id: string) => `/client/articles/${id}/edit`,
+    ARTICLE_DETAIL: (id: number) => `/client/articles/${id}`,
+    ARTICLE_EDIT: (id: number) => `/client/articles/${id}/edit`,
     ORDRE_FABRICATIONS: "/client/ordre-fabrications",
     ORDRE_FABRICATION_NEW: "/client/ordre-fabrications/new",
     ORDRE_FABRICATION_DETAIL: (id: string) =>
@@ -23,6 +23,9 @@ export const APP_ROUTES = {
     DASHBOARD: "/secretaire",
     PRODUCTIONS: "/secretaire/productions",
     PRESENCES: "/secretaire/presences",
+    PRESENCE_NEW: "/secretaire/presences/new",
+    PRESENCE_DETAIL: (id: number) => `/secretaire/presences/${id}`,
+    PRESENCE_EDIT: (id: number) => `/secretaire/presences/${id}/edit`,
   },
 } as const;
 

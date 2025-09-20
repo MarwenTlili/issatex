@@ -35,7 +35,7 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
                 $dateDebut->modify("next monday");
 
                 $dateFin = clone $dateDebut;
-                $dateFin->modify("+5 days");
+                $dateFin->modify("+6 days"); // add saturday to working day
 
                 $planning->setDateCreation($datePlanning)
                     ->setDateDebut($dateDebut)

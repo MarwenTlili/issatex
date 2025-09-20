@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { ApiPlatformAdminDataProvider, HydraAdmin } from "@api-platform/admin";
 import PeopleIcon from "@mui/icons-material/People";
 import WorkIcon from "@mui/icons-material/Work";
+import TransferWithinAStationIcon from "@mui/icons-material/TransferWithinAStation";
 
 import { createHydraDataProvider } from "./data-provider";
 import { createAuthProvider } from "./auth-provider";
@@ -29,7 +30,12 @@ import {
   OrdreFabricationShow,
 } from "./ordres-fabrication";
 import { IlotCreate, IlotEdit, IlotList, IlotShow } from "./ilots";
-import { EmployeList, EmployeShow } from "./employes";
+import {
+  EmployeCreate,
+  EmployeEdit,
+  EmployeList,
+  EmployeShow,
+} from "./employes";
 import { PlanningList, PlanningShow } from "./plannings";
 import { ProductionList, ProductionShow } from "./productions";
 import { PresenceList, PresenceShow } from "./presences";
@@ -42,6 +48,12 @@ import {
 import PlanningCreate from "./plannings/PlanningCreate";
 import PlanningEdit from "./plannings/PlanningEdit";
 import { ENTRYPOINT } from "@/config/api";
+import {
+  AffectationEmployeIlotCreate,
+  AffectationEmployeIlotEdit,
+  AffectationEmployeIlotList,
+  AffectationEmployeIlotShow,
+} from "./affectation-employe-ilot";
 
 export default function Admin() {
   const { data: session, status } = useSession();
@@ -139,7 +151,19 @@ export default function Admin() {
         options={{ label: "Employes" }}
         list={EmployeList}
         show={EmployeShow}
+        create={EmployeCreate}
+        edit={EmployeEdit}
         icon={Badge}
+      />
+
+      <Resource
+        name="api/affectation_employe_ilots"
+        options={{ label: "Affectation Emp Ilot" }}
+        list={AffectationEmployeIlotList}
+        show={AffectationEmployeIlotShow}
+        create={AffectationEmployeIlotCreate}
+        edit={AffectationEmployeIlotEdit}
+        icon={TransferWithinAStationIcon}
       />
 
       <Resource

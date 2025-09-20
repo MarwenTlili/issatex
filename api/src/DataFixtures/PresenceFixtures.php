@@ -2,8 +2,8 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Planning;
 use App\Entity\Presence;
-use App\Entity\Production;
 use App\Enum\StatutPresence;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
@@ -17,45 +17,78 @@ class PresenceFixtures extends Fixture implements DependentFixtureInterface, Fix
   public function load(ObjectManager $manager): void {
     $this->faker = Factory::create();
 
-    /** @var Production[] */
-    $productions = [];
-
+    /** @var AffectationEmployeIlot[] $affectations */
+    $affectations = [];
     $i = 0;
-    while ($this->hasReference("PRODUCTION_" . $i)) {
-      array_push($productions, $this->getReference("PRODUCTION_$i"));
+    while ($this->hasReference("AFFECTATION_$i")) {
+      $affectations[] = $this->getReference("AFFECTATION_$i");
       $i++;
     }
 
+    /** @var Planning[] $plannings */
+    $plannings = [];
     $j = 0;
-    foreach ($productions as $production) {
-      $planning = $production->getPlanning();
-      $ilot = $planning->getIlot();
-      $affectations = $ilot->getAffectations();
-      foreach ($affectations as $affectation) {
-        // Locale time with timezone
-        $heureDebut = \DateTime::createFromFormat("H:i:s", "08:00:00", new \DateTimeZone('Africa/Tunis'));
-        // Convert locale time to UTC 
-        $heureDebut->setTimezone(new \DateTimeZone('UTC'));
+    while ($this->hasReference("PLANNING_$j")) {
+      $plannings[] = $this->getReference("PLANNING_$j");
+      $j++;
+    }
 
-        $heureFin = clone $heureDebut;
-        $heureFin->modify("+9 hours");
+    $refCounter = 0;
 
-        // Probabilité de 5 % pour l'absence
-        $absent = $this->faker->boolean(5); // 5 % de chance de retourner true
+    foreach ($affectations as $affectation) {
+      $employe = $affectation->getEmploye();
+      $ilot = $affectation->getIlot();
 
+      // collect all planning days for this ilot
+      $days = [];
+      foreach ($plannings as $planning) {
+        if ($planning->getIlot() === $ilot) {
+          $currentDate = clone $planning->getDateDebut();
+          $periodEnd   = $planning->getDateFin();
+
+          while ($currentDate <= $periodEnd) {
+            $dayOfWeek = (int)$currentDate->format('N'); // 1=Mon, 7=Sun
+            if ($dayOfWeek < 7) { // Monday–Saturday only
+              $days[$currentDate->format('Y-m-d')] = clone $currentDate;
+            }
+            $currentDate->modify('+1 day');
+          }
+        }
+      }
+
+      // generate presences only once per day
+      foreach ($days as $dateStr => $datePresence) {
         $presence = new Presence();
-        $presence->setDatePresence($production->getDateProduction())
+
+        $heureDebut = (clone $datePresence)->setTime(8, 0, 0);
+        $heureFin   = (clone $datePresence)->setTime(16, 0, 0);
+
+        // Bias random status: 90% PRESENT, 5% ABSENT, 5% CONGE
+        $rand = $this->faker->numberBetween(1, 100);
+        if ($rand <= 5) {
+          $statut = StatutPresence::ABSENT;
+        } elseif ($rand <= 10) {
+          $statut = StatutPresence::CONGE;
+        } else {
+          $statut = StatutPresence::PRESENT;
+        }
+
+        $presence
+          ->setDatePresence(clone $datePresence)
           ->setHeureDebut($heureDebut)
-          ->setHeureFin($heureDebut)
-          ->setStatut($absent ? StatutPresence::ABSENT : StatutPresence::PRESENT)
-          ->setTempsPresence($absent ? 0 : 8)
-          ->setEmploye($affectation->getEmploye())
-          ->setProduction($production)
-        ;
+          ->setHeureFin($heureFin)
+          ->setStatut($statut)
+          ->setTempsPresence(
+            $statut === StatutPresence::PRESENT
+              ? ($heureFin->getTimestamp() - $heureDebut->getTimestamp()) / 3600
+              : 0
+          )
+          ->setEmploye($employe)
+          ->setIlot($ilot);
 
         $manager->persist($presence);
-        $this->addReference("PRESENCE_$j", $presence);
-        $j++;
+        $this->addReference("PRESENCE_" . $refCounter, $presence);
+        $refCounter++;
       }
     }
 
@@ -65,7 +98,7 @@ class PresenceFixtures extends Fixture implements DependentFixtureInterface, Fix
   public function getDependencies() {
     return [
       AffectationEmployeIlotFixtures::class,
-      ProductionFixtures::class
+      PlanningFixtures::class,
     ];
   }
 

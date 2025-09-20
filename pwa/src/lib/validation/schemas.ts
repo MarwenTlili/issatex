@@ -113,18 +113,47 @@ export const updateProductionSchema = productionSchema.partial().extend({
   id: z.string().min(1, "ID requis"),
 });
 
-export const presenceSchema = z.object({
-  datePresence: z.string().min(1, "La date de présence est requise"),
-  heureDebut: z.string().optional(),
-  heureFin: z.string().optional(),
-  statut: z.enum(["Present", "Absent", "Retard", "Conge"] as const),
-  tempsPresence: z
-    .number()
-    .min(0, "Le temps de présence doit être positif")
-    .max(24, "Maximum 24 heures"),
-  employe: z.string().min(1, "L'employé est requis"),
-  production: z.string().min(1, "La production est requise"),
-});
+export const presenceSchema = z
+  .object({
+    datePresence: z
+      .string()
+      .min(1, "La date de présence est requise")
+      .refine((date) => !isNaN(Date.parse(date)), "Format de date invalide"),
+    heureDebut: z
+      .string()
+      .min(1, "L'heure de début est requise")
+      .regex(
+        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+        "Format d'heure invalide (HH:MM)"
+      ),
+    heureFin: z
+      .string()
+      .min(1, "L'heure de fin est requise")
+      .regex(
+        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
+        "Format d'heure invalide (HH:MM)"
+      ),
+    statut: z.enum(["Present", "Absent", "Retard", "Conge"], {
+      required_error: "Le statut est requis",
+    }),
+    tempsPresence: z
+      .number()
+      .min(0, "Le temps de présence doit être positif")
+      .max(24, "Le temps de présence ne peut pas dépasser 24 heures"),
+    employe: z.string().min(1, "L'employé est requis"),
+    ilot: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      const debut = new Date(`1970-01-01T${data.heureDebut}:00`);
+      const fin = new Date(`1970-01-01T${data.heureFin}:00`);
+      return fin > debut;
+    },
+    {
+      message: "L'heure de fin doit être après l'heure de début",
+      path: ["heureFin"],
+    }
+  );
 
 // User schemas
 export const userSchema = z.object({

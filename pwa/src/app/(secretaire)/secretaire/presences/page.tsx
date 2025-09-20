@@ -1,10 +1,9 @@
-import { PresenceList } from "@/components/presences/presence-list";
-import React from "react";
+import { PresencesTable } from "@/components/presences/presences-table";
 
-export default async function AttendancesPage() {
+export default async function PresencesPage() {
   return (
-    <>
-      <PresenceList />
-    </>
+    <div className="container max-w-full p-2 sm:p-4">
+      <PresencesTable />
+    </div>
   );
 }
