@@ -14,7 +14,7 @@ import { OrdreFabricationsTableFilters } from "./ordre-fabrications-table-filter
 import { OrdreFabricationsTableContent } from "./ordre-fabrications-table-content";
 import { OrdreFabricationsTablePagination } from "./ordre-fabrications-table-pagination";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import { MESSAGES } from "@/config/app";
+import { APP_ROUTES, MESSAGES } from "@/config/app";
 import { isApiError } from "@/lib/api/handle-api-error";
 
 export function OrdreFabricationsTable() {
@@ -116,7 +116,7 @@ export function OrdreFabricationsTable() {
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 p-4 sm:p-6">
         <CardTitle className="text-xl sm:text-2xl">Tout les ordres</CardTitle>
         <Button asChild className="w-full sm:w-auto">
-          <Link href="/client/ordre-fabrications/new">
+          <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_NEW}>
             <Plus className="mr-2 h-4 w-4" /> Nouveau
           </Link>
         </Button>

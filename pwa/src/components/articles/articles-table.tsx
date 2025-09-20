@@ -13,7 +13,7 @@ import { ArticlesTablePagination } from "./articles-table-pagination";
 import { Plus } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { getErrorMessage, isApiError } from "@/lib/api/handle-api-error";
-import { MESSAGES, PAGINATION } from "@/config/app";
+import { APP_ROUTES, MESSAGES, PAGINATION } from "@/config/app";
 
 export function ArticlesTable() {
   const [filters, setFilters] = useState<ArticlesFilters>({
@@ -131,7 +131,7 @@ export function ArticlesTable() {
             List des Articles
           </CardTitle>
           <Button asChild className="w-full sm:w-auto">
-            <Link href="/client/articles/new">
+            <Link href={APP_ROUTES.CLIENT.ARTICLE_NEW}>
               <Plus className="mr-2 h-4 w-4" /> Ajout Article
             </Link>
           </Button>
