@@ -151,7 +151,7 @@ Objectif: diagramme ERD pour ces fonctionnalités de production en îlot
 -   statut (enum StatutPresence)
 -   temps_presence (nombre d'heures: heure_fin - heure_debut)
 -   employe_id (FK ManyToOne employe)
--   production_id (FK ManyToOne production)
+-   ilot_id (FK ManyToOne ilot)
 
 ---
 
