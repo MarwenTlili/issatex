@@ -24,6 +24,8 @@ export const EmployeShow = () => (
       >
         <Datagrid>
           <ReferenceField source="ilot" reference="api/ilots" label="Ilot">
+            <TextField source="ref" />
+            {" - "}
             <TextField source="nom" />
           </ReferenceField>
           <BooleanField source="responsable" />
