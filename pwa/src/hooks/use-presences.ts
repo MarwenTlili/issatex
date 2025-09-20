@@ -3,13 +3,13 @@ import { presencesApi } from "@/lib/api/presences-api";
 import { QUERY_KEYS, CACHE_CONFIG } from "@/config/cache";
 import { ApiError, handleApiError } from "@/lib/api/handle-api-error";
 import type {
-  PresenceFilters,
+  PresencesFilters,
   CreatePresenceData,
   UpdatePresenceData,
 } from "@/types/resources/Presence";
 import { toast } from "sonner";
 
-export const usePresences = (filters: PresenceFilters = {}) => {
+export const usePresences = (filters: PresencesFilters = {}) => {
   return useQuery({
     queryKey: [QUERY_KEYS.PRESENCES, filters],
     queryFn: () => presencesApi.getAll({ ...filters }),
@@ -18,12 +18,12 @@ export const usePresences = (filters: PresenceFilters = {}) => {
   });
 };
 
-export const usePresence = (id: string | number) => {
+export const usePresence = (identifier?: string | number) => {
   return useQuery({
-    queryKey: [QUERY_KEYS.PRESENCE, id],
-    queryFn: () => presencesApi.getOne(id),
+    queryKey: [QUERY_KEYS.PRESENCE, identifier],
+    queryFn: () => presencesApi.getOne(identifier!),
     staleTime: CACHE_CONFIG.STALE_TIME,
-    enabled: !!id,
+    enabled: !!identifier,
     onError: (err) => handleApiError(err as ApiError),
   });
 };
@@ -48,13 +48,8 @@ export const useUpdatePresence = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({
-      id,
-      data,
-    }: {
-      id: string | number;
-      data: UpdatePresenceData;
-    }) => presencesApi.update(id, data),
+    mutationFn: (data: UpdatePresenceData) =>
+      presencesApi.update(data.id, data),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRESENCES] });
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRESENCE, id] });

@@ -1,10 +1,18 @@
 "use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -12,248 +20,384 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Clock } from "lucide-react";
-import { useActiveEmployes } from "@/hooks/use-employes";
-import { useProductions } from "@/hooks/use-productions";
-import type {
-  CreatePresenceData,
-  UpdatePresenceData,
-  StatutPresence,
-} from "@/types/resources/Presence";
-import { PresenceFormData, presenceSchema } from "@/lib/validation/schemas";
+import { FormField } from "@/components/ui/form-field";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import {
+  usePresence,
+  useCreatePresence,
+  useUpdatePresence,
+} from "@/hooks/use-presences";
+import {
+  presenceSchema,
+  type PresenceFormData,
+} from "@/lib/validation/schemas";
+import { STATUT_PRESENCE_OPTIONS } from "@/types/resources/Presence";
+import {
+  type ApiError,
+  handleApiError,
+  extractFormErrors,
+  isValidationError,
+  type FormErrors,
+} from "@/lib/api/handle-api-error";
+import { APP_ROUTES } from "@/config/app";
 
 interface PresenceFormProps {
-  initialData?: Partial<PresenceFormData>;
-  onSubmit: (data: CreatePresenceData | UpdatePresenceData) => void;
-  onCancel?: () => void;
-  isLoading?: boolean;
-  mode?: "create" | "edit";
+  presenceId?: number;
 }
 
-const statusOptions: { value: StatutPresence; label: string }[] = [
-  { value: "Present", label: "Présent" },
-  { value: "Absent", label: "Absent" },
-  { value: "Retard", label: "Retard" },
-  { value: "Conge", label: "Congé" },
-];
-
-export function PresenceForm({
-  initialData,
-  onSubmit,
-  onCancel,
-  isLoading,
-  mode = "create",
-}: PresenceFormProps) {
-  const { data: employesData } = useActiveEmployes();
-  const { data: productionsData } = useProductions("");
+export function PresenceForm({ presenceId }: PresenceFormProps) {
+  const isEdit = !!presenceId;
+  const router = useRouter();
+  const [apiErrors, setApiErrors] = useState<FormErrors>({});
 
   const {
     register,
     handleSubmit,
+    reset,
+    setError,
+    clearErrors,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm<PresenceFormData>({
     resolver: zodResolver(presenceSchema),
     defaultValues: {
-      datePresence:
-        initialData?.datePresence || new Date().toISOString().split("T")[0],
-      heureDebut: initialData?.heureDebut || "",
-      heureFin: initialData?.heureFin || "",
-      statut: initialData?.statut || "Present",
-      tempsPresence: initialData?.tempsPresence || 8,
-      employe: initialData?.employe || "",
-      production: initialData?.production || "",
+      datePresence: "",
+      heureDebut: "",
+      heureFin: "",
+      statut: "Present",
+      tempsPresence: 0,
+      employe: "",
+      ilot: "",
     },
   });
 
-  const watchedStatus = watch("statut");
-  const watchedHeureDebut = watch("heureDebut");
-  const watchedHeureFin = watch("heureFin");
+  const { data: presence, isLoading: isLoadingPresence } =
+    usePresence(presenceId);
 
-  // Auto-calculate tempsPresence when start and end times change
-  const calculateHours = () => {
-    if (watchedHeureDebut && watchedHeureFin) {
-      const start = new Date(`2000-01-01T${watchedHeureDebut}`);
-      const end = new Date(`2000-01-01T${watchedHeureFin}`);
-      const diffMs = end.getTime() - start.getTime();
-      const diffHours = Math.max(0, diffMs / (1000 * 60 * 60));
-      setValue("tempsPresence", Math.round(diffHours * 100) / 100);
+  const createPresence = useCreatePresence();
+  const updatePresence = useUpdatePresence();
+
+  // Watch for time changes to calculate tempsPresence
+  const heureDebut = watch("heureDebut");
+  const heureFin = watch("heureFin");
+
+  useEffect(() => {
+    if (heureDebut && heureFin) {
+      try {
+        const debut = new Date(`1970-01-01T${heureDebut}:00`);
+        const fin = new Date(`1970-01-01T${heureFin}:00`);
+
+        if (fin > debut) {
+          const diffMs = fin.getTime() - debut.getTime();
+          const diffHours = Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100;
+          setValue("tempsPresence", diffHours);
+        }
+      } catch (error) {
+        // Invalid time format, ignore
+      }
+    }
+  }, [heureDebut, heureFin, setValue]);
+
+  useEffect(() => {
+    if (isEdit && presence) {
+      const formatTimeForInput = (timeString?: string) => {
+        if (!timeString) return "";
+        try {
+          // Handle both full datetime and time-only formats
+          const date = timeString.includes("T")
+            ? new Date(timeString)
+            : new Date(`1970-01-01T${timeString}`);
+          return date.toTimeString().slice(0, 5); // HH:MM format
+        } catch {
+          return timeString;
+        }
+      };
+
+      const formatDateForInput = (dateString?: string) => {
+        if (!dateString) return "";
+        try {
+          const date = new Date(dateString);
+          return date.toISOString().split("T")[0]; // YYYY-MM-DD format
+        } catch {
+          return dateString;
+        }
+      };
+
+      reset({
+        datePresence: formatDateForInput(presence.datePresence),
+        heureDebut: formatTimeForInput(presence.heureDebut),
+        heureFin: formatTimeForInput(presence.heureFin),
+        statut: presence.statut || "Present",
+        tempsPresence: presence.tempsPresence || 0,
+        employe: presence.employe || "",
+        ilot: presence.ilot || "",
+      });
+    }
+  }, [isEdit, presence, reset]);
+
+  const handleInputChange = (fieldName: keyof PresenceFormData) => {
+    if (apiErrors[fieldName]) {
+      setApiErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldName];
+        return newErrors;
+      });
+      clearErrors(fieldName);
     }
   };
 
+  const onSubmit = async (data: PresenceFormData) => {
+    try {
+      setApiErrors({});
+
+      if (isEdit && presenceId) {
+        await updatePresence.mutateAsync({ id: presenceId, ...data });
+      } else {
+        await createPresence.mutateAsync(data);
+      }
+      router.push("/client/presences");
+    } catch (error) {
+      const apiError = error as ApiError;
+
+      if (isValidationError(apiError)) {
+        const formErrors = extractFormErrors(apiError);
+        setApiErrors(formErrors);
+
+        // Set form errors for react-hook-form
+        Object.entries(formErrors).forEach(([field, message]) => {
+          setError(field as keyof PresenceFormData, {
+            type: "api",
+            message,
+          });
+        });
+      } else {
+        if ((apiError.status && apiError.status >= 500) || !apiError.status) {
+          // Server errors or network errors should trigger error boundary
+          throw new Error(apiError.title || apiError.detail || "Server error");
+        } else {
+          // Handle client errors (4xx) with toast
+          handleApiError(apiError, {
+            customMessage: isEdit
+              ? "Impossible de modifier la présence. Vérifiez vos données."
+              : "Impossible de créer la présence. Vérifiez vos données.",
+          });
+        }
+      }
+    }
+  };
+
+  const isLoading =
+    isSubmitting || createPresence.isLoading || updatePresence.isLoading;
+
+  if (isEdit && isLoadingPresence) {
+    return (
+      <Card className="mx-4 sm:mx-0 max-w-2xl">
+        <CardContent className="p-6">
+          <LoadingSpinner text="Chargement de la présence..." />
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
-          {mode === "create" ? "Nouvelle présence" : "Modifier la présence"}
+        <CardTitle className="text-xl sm:text-2xl">
+          {isEdit ? "Modifier la présence" : "Créer une nouvelle présence"}
         </CardTitle>
       </CardHeader>
 
-      <CardContent>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="datePresence">Date de présence</Label>
-              <div className="relative">
-                <Input
-                  id="datePresence"
-                  type="date"
-                  {...register("datePresence")}
-                  className="pl-10"
-                />
-                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              </div>
-              {errors.datePresence && (
-                <p className="text-sm text-destructive">
-                  {errors.datePresence.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="statut">Statut</Label>
-              <Select
-                value={watchedStatus}
-                onValueChange={(value: StatutPresence) =>
-                  setValue("statut", value)
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <CardContent className="p-4 sm:p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              label="Date de présence"
+              htmlFor="datePresence"
+              error={errors.datePresence?.message || apiErrors.datePresence}
+              required
+            >
+              <Input
+                id="datePresence"
+                type="date"
+                {...register("datePresence", {
+                  onChange: () => handleInputChange("datePresence"),
+                })}
+                className={
+                  errors.datePresence || apiErrors.datePresence
+                    ? "border-red-500"
+                    : ""
                 }
+              />
+            </FormField>
+
+            <FormField
+              label="Statut"
+              htmlFor="statut"
+              error={errors.statut?.message || apiErrors.statut}
+              required
+            >
+              <Select
+                value={watch("statut")}
+                onValueChange={(value) => {
+                  setValue("statut", value as any);
+                  handleInputChange("statut");
+                }}
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className={
+                    errors.statut || apiErrors.statut ? "border-red-500" : ""
+                  }
+                >
                   <SelectValue placeholder="Sélectionner un statut" />
                 </SelectTrigger>
                 <SelectContent>
-                  {statusOptions.map((option) => (
+                  {STATUT_PRESENCE_OPTIONS.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.statut && (
-                <p className="text-sm text-destructive">
-                  {errors.statut.message}
-                </p>
-              )}
-            </div>
+            </FormField>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="heureDebut">Heure de début</Label>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <FormField
+              label="Heure de début"
+              htmlFor="heureDebut"
+              error={errors.heureDebut?.message || apiErrors.heureDebut}
+              required
+            >
               <Input
                 id="heureDebut"
                 type="time"
-                {...register("heureDebut")}
-                onChange={(e) => {
-                  setValue("heureDebut", e.target.value);
-                  setTimeout(calculateHours, 100);
-                }}
+                {...register("heureDebut", {
+                  onChange: () => handleInputChange("heureDebut"),
+                })}
+                className={
+                  errors.heureDebut || apiErrors.heureDebut
+                    ? "border-red-500"
+                    : ""
+                }
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="heureFin">Heure de fin</Label>
+            <FormField
+              label="Heure de fin"
+              htmlFor="heureFin"
+              error={errors.heureFin?.message || apiErrors.heureFin}
+              required
+            >
               <Input
                 id="heureFin"
                 type="time"
-                {...register("heureFin")}
-                onChange={(e) => {
-                  setValue("heureFin", e.target.value);
-                  setTimeout(calculateHours, 100);
-                }}
+                {...register("heureFin", {
+                  onChange: () => handleInputChange("heureFin"),
+                })}
+                className={
+                  errors.heureFin || apiErrors.heureFin ? "border-red-500" : ""
+                }
               />
-            </div>
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="tempsPresence">Temps de présence (heures)</Label>
+            <FormField
+              label="Temps de présence (heures)"
+              htmlFor="tempsPresence"
+              error={errors.tempsPresence?.message || apiErrors.tempsPresence}
+              required
+              description="Calculé automatiquement"
+            >
               <Input
                 id="tempsPresence"
                 type="number"
-                step="0.25"
+                step="0.01"
                 min="0"
                 max="24"
-                {...register("tempsPresence", { valueAsNumber: true })}
+                {...register("tempsPresence", {
+                  valueAsNumber: true,
+                  onChange: () => handleInputChange("tempsPresence"),
+                })}
+                className={
+                  errors.tempsPresence || apiErrors.tempsPresence
+                    ? "border-red-500"
+                    : ""
+                }
+                readOnly
               />
-              {errors.tempsPresence && (
-                <p className="text-sm text-destructive">
-                  {errors.tempsPresence.message}
-                </p>
-              )}
-            </div>
+            </FormField>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="employe">Employé</Label>
-              <Select
-                value={watch("employe")}
-                onValueChange={(value) => setValue("employe", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un employé" />
-                </SelectTrigger>
-                <SelectContent>
-                  {employesData?.["member"]?.map((employe) => (
-                    <SelectItem key={employe["@id"]} value={employe["@id"]}>
-                      {employe.prenom} {employe.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.employe && (
-                <p className="text-sm text-destructive">
-                  {errors.employe.message}
-                </p>
-              )}
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <FormField
+              label="Employé"
+              htmlFor="employe"
+              error={errors.employe?.message || apiErrors.employe}
+              required
+              description="ID ou référence de l'employé"
+            >
+              <Input
+                id="employe"
+                {...register("employe", {
+                  onChange: () => handleInputChange("employe"),
+                })}
+                placeholder="Ex: /api/employes/123"
+                className={
+                  errors.employe || apiErrors.employe ? "border-red-500" : ""
+                }
+              />
+            </FormField>
 
-            <div className="space-y-2">
-              <Label htmlFor="production">Production</Label>
-              <Select
-                value={watch("production")}
-                onValueChange={(value) => setValue("production", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner une production" />
-                </SelectTrigger>
-                <SelectContent>
-                  {productionsData?.["member"]?.map((production) => (
-                    <SelectItem
-                      key={production["@id"]}
-                      value={production["@id"]}
-                    >
-                      {production.ref || `Production #${production.id}`}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.production && (
-                <p className="text-sm text-destructive">
-                  {errors.production.message}
-                </p>
-              )}
-            </div>
+            <FormField
+              label="Îlot"
+              htmlFor="ilot"
+              error={errors.ilot?.message || apiErrors.ilot}
+              description="ID ou référence de l'îlot (optionnel)"
+            >
+              <Input
+                id="ilot"
+                {...register("ilot", {
+                  onChange: () => handleInputChange("ilot"),
+                })}
+                placeholder="Ex: /api/ilots/46"
+                className={
+                  errors.ilot || apiErrors.ilot ? "border-red-500" : ""
+                }
+              />
+            </FormField>
           </div>
+        </CardContent>
 
-          <div className="flex justify-end gap-3 pt-4">
-            {onCancel && (
-              <Button type="button" variant="outline" onClick={onCancel}>
-                Annuler
-              </Button>
+        <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 sm:p-6">
+          <Button
+            type="button"
+            variant="outline"
+            asChild
+            className="w-full sm:w-auto bg-transparent"
+          >
+            <Link href={APP_ROUTES.SECRETAIRE.PRESENCES}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Annuler
+            </Link>
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={isLoading || (!isDirty && isEdit)}
+            className="w-full sm:w-auto"
+          >
+            {isLoading ? (
+              <LoadingSpinner size="sm" />
+            ) : isEdit ? (
+              "Mettre à jour"
+            ) : (
+              "Créer la présence"
             )}
-            <Button type="submit" disabled={isLoading}>
-              {isLoading
-                ? "Enregistrement..."
-                : mode === "create"
-                ? "Créer"
-                : "Mettre à jour"}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
+          </Button>
+        </CardFooter>
+      </form>
     </Card>
   );
 }

@@ -17,7 +17,8 @@ class EmployeFixtures extends Fixture implements FixtureGroupInterface {
 
         $postes = PosteEmploye::cases();
 
-        for ($i = 0; $i < 12; $i++) {
+        // more employes for testing back-end filter
+        for ($i = 0; $i < 100; $i++) {
             $employe = new Employe();
             $employe->setNom($this->faker->firstName())
                 ->setPrenom($this->faker->lastName())

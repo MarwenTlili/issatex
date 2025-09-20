@@ -53,10 +53,17 @@ class Ilot {
     #[ORM\OneToMany(mappedBy: 'ilot', targetEntity: AffectationEmployeIlot::class, orphanRemoval: true)]
     private Collection $affectations;
 
+    /**
+     * @var Collection<int, Presence>
+     */
+    #[ORM\OneToMany(mappedBy: 'ilot', targetEntity: Presence::class)]
+    private Collection $presences;
+
     public function __construct() {
         $this->plannings = new ArrayCollection();
         $this->machines = new ArrayCollection();
         $this->affectations = new ArrayCollection();
+        $this->presences = new ArrayCollection();
     }
 
     public function getId(): ?int {
@@ -163,6 +170,33 @@ class Ilot {
                 $affectation->setIlot(null);
             }
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Presence>
+     */
+    public function getPresences(): Collection {
+        return $this->presences;
+    }
+
+    public function addPresence(Presence $presence): static {
+        if (!$this->presences->contains($presence)) {
+            $this->presences->add($presence);
+            $presence->setIlot($this);
+        }
+
+        return $this;
+    }
+
+    public function removePresence(Presence $presence): static {
+        if ($this->presences->removeElement($presence)) {
+            // set the owning side to null (unless already changed)
+            if ($presence->getIlot() === $this) {
+                $presence->setIlot(null);
+            }
+        }
+
         return $this;
     }
 }

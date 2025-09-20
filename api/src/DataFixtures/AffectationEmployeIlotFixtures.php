@@ -22,6 +22,8 @@ class AffectationEmployeIlotFixtures extends Fixture implements DependentFixture
         while ($this->hasReference("EMPLOYE_$i")) {
             array_push($employes, $this->getReference("EMPLOYE_$i"));
             $i++;
+            // The rest of employes are just for testing back-end filter
+            if ($i == 11) break;
         }
 
         foreach ($employes as $key => $employe) {
@@ -31,6 +33,8 @@ class AffectationEmployeIlotFixtures extends Fixture implements DependentFixture
                 ->setIlot($key < 6 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"));
 
             $manager->persist($affectation);
+            $referenceName = "AFFECTATION_" . $key;
+            $this->addReference($referenceName, $affectation);
         }
 
         $manager->flush();

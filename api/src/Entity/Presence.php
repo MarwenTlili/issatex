@@ -17,13 +17,14 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiFilter(
     SearchFilter::class,
     properties: [
+        "ref" => "ipartial",
         "employe" => "exact",
-        "production" => "exact",
+        "ilot" => "exact",
         "statut" => "exact"
     ]
 )]
 #[ApiFilter(DateFilter::class, properties: ['datePresence'])]
-#[ApiFilter(OrderFilter::class, properties: ["datePresence" => "DESC"])]
+#[ApiFilter(OrderFilter::class, properties: ["ref", "datePresence" => "DESC"])]
 class Presence {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
@@ -53,8 +54,7 @@ class Presence {
     private ?Employe $employe = null;
 
     #[ORM\ManyToOne(inversedBy: 'presences')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Production $production = null;
+    private ?Ilot $ilot = null;
 
     public function getId(): ?int {
         return $this->id;
@@ -125,12 +125,12 @@ class Presence {
         return $this;
     }
 
-    public function getProduction(): ?Production {
-        return $this->production;
+    public function getIlot(): ?Ilot {
+        return $this->ilot;
     }
 
-    public function setProduction(?Production $production): static {
-        $this->production = $production;
+    public function setIlot(?Ilot $ilot): static {
+        $this->ilot = $ilot;
 
         return $this;
     }

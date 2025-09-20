@@ -2,7 +2,7 @@ import { BaseFilters } from "@/types/common/BaseFilters";
 import { Item } from "./Item";
 
 export interface Article extends Item {
-  id?: number;
+  id: number;
   ref?: string;
   designation?: string;
   composition?: string;

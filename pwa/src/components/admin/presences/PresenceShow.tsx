@@ -15,13 +15,20 @@ export const PresenceShow = () => (
       <ReferenceField source="employe" reference="api/employes">
         <TextField source="nom" />
       </ReferenceField>
-      <ReferenceField source="production" reference="api/productions">
-        <TextField source="ref" />
-      </ReferenceField>
       <TextField source="statut" />
       <NumberField source="tempsPresence" label="Temps de Présence (H)" />
-      <DateField source="heureDebut" showTime />
-      <DateField source="heureFin" showTime />
+      <DateField
+        source="heureDebut"
+        showTime
+        showDate={false}
+        options={{ timeZone: "UTC", hour: "2-digit", minute: "2-digit" }}
+      />
+      <DateField
+        source="heureFin"
+        showTime
+        showDate={false}
+        options={{ timeZone: "UTC", hour: "2-digit", minute: "2-digit" }}
+      />
     </SimpleShowLayout>
   </Show>
 );

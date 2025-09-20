@@ -12,14 +12,39 @@ import {
   DateInput,
   ReferenceInput,
   SelectInput,
+  AutocompleteInput,
 } from "react-admin";
 
 const PresenceFilters = [
   <SearchInput key="search" source="q" alwaysOn />,
-  <DateInput key="datePresence" source="datePresence" label="Date" />,
   <ReferenceInput key="employe" source="employe" reference="api/employes">
-    <SelectInput
-      optionText={(record: any) => `${record.prenom} ${record.nom}`}
+    <AutocompleteInput
+      optionText={(record: any) =>
+        `${record.prenom} ${record.nom} (${record.ref})`
+      }
+      filterToQuery={(searchText: string) => ({
+        ref: searchText,
+      })}
+      slotProps={{
+        paper: {
+          sx: {
+            minWidth: "300px", // Ensure minimum width for dropdown
+            maxWidth: "400px", // Prevent it from getting too wide
+            "& .MuiAutocomplete-option": {
+              whiteSpace: "nowrap",
+              textOverflow: "ellipsis",
+              overflow: "hidden",
+              padding: "8px 16px",
+            },
+          },
+        },
+        popper: {
+          sx: {
+            width: "fit-content !important",
+            minWidth: "300px",
+          },
+        },
+      }}
     />
   </ReferenceInput>,
   <SelectInput
@@ -52,8 +77,8 @@ export const PresenceList = () => (
       <ReferenceField source="employe" reference="api/employes">
         <TextField source="nom" />
       </ReferenceField>
-      <ReferenceField source="production" reference="api/productions">
-        <TextField source="ref" />
+      <ReferenceField source="ilot" reference="api/ilots">
+        <TextField source="nom" />
       </ReferenceField>
       <TextField source="statut" />
       <NumberField source="tempsPresence" label="Temps de Présence (H)" />
