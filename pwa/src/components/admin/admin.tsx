@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Resource, Loading, AuthProvider } from "react-admin";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { ApiPlatformAdminDataProvider, HydraAdmin } from "@api-platform/admin";
 import PeopleIcon from "@mui/icons-material/People";
 import WorkIcon from "@mui/icons-material/Work";
@@ -83,10 +83,11 @@ export default function Admin() {
     }
   }, [status, session]);
 
-  // If session has error, don't render the admin interface
+  // If session has error, don't render the admin interface, just signout
   if (session?.error === "RefreshTokenError") {
+    signOut({ callbackUrl: "/login" });
     return (
-      <Loading loadingPrimary="loading..." loadingSecondary="session erroor" />
+      <Loading loadingPrimary="Signing out..." loadingSecondary="Please wait" />
     );
   }
 
