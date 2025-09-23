@@ -7,8 +7,7 @@ export const createAuthProvider = (session: any): AuthProvider => ({
 
   // Logout using NextAuth's signOut
   logout: () => {
-    signOut({ callbackUrl: "/login" });
-    return Promise.resolve();
+    return signOut({ callbackUrl: "/login" });
   },
 
   // Check if the user is authenticated as ADMIN and session error
