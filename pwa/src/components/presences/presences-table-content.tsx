@@ -116,7 +116,9 @@ export function PresencesTableContent({
           Aucune présence trouvée
         </div>
         <Button asChild>
-          <Link href="/client/presences/new">Créer une présence</Link>
+          <Link href={APP_ROUTES.SECRETAIRE.PRESENCE_NEW}>
+            Créer une présence
+          </Link>
         </Button>
       </div>
     );
@@ -307,13 +309,19 @@ export function PresencesTableContent({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/client/presences/${presence.id}`}>
+                      <Link
+                        href={APP_ROUTES.SECRETAIRE.PRESENCE_DETAIL(
+                          presence.id
+                        )}
+                      >
                         <Eye className="mr-2 h-4 w-4" />
                         Voir
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link href={`/client/presences/${presence.id}/edit`}>
+                      <Link
+                        href={APP_ROUTES.SECRETAIRE.PRESENCE_EDIT(presence.id)}
+                      >
                         <Edit className="mr-2 h-4 w-4" />
                         Modifier
                       </Link>
