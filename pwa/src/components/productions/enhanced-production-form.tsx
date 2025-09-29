@@ -106,8 +106,6 @@ export function EnhancedProductionForm({
 
   useEffect(() => {
     if (production) {
-      console.log("production.tailleArticle: ", production.tailleArticle);
-
       reset({
         dateProduction: production.dateProduction.split("T")[0],
         tailleArticle: production.tailleArticle,
