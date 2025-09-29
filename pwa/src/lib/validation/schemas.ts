@@ -141,7 +141,7 @@ export const presenceSchema = z
       .min(0, "Le temps de présence doit être positif")
       .max(24, "Le temps de présence ne peut pas dépasser 24 heures"),
     employe: z.string().min(1, "L'employé est requis"),
-    ilot: z.string().optional(),
+    ilot: z.string(),
   })
   .refine(
     (data) => {

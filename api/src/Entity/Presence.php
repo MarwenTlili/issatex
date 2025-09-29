@@ -6,14 +6,19 @@ use ApiPlatform\Doctrine\Orm\Filter\DateFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use App\Enum\StatutPresence;
 use App\Repository\PresenceRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PresenceRepository::class)]
-#[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiResource(
+    paginationClientItemsPerPage: true,
+    normalizationContext: ['groups' => ['presence']]
+)]
 #[ApiFilter(
     SearchFilter::class,
     properties: [
@@ -24,36 +29,53 @@ use Doctrine\ORM\Mapping as ORM;
     ]
 )]
 #[ApiFilter(DateFilter::class, properties: ['datePresence'])]
-#[ApiFilter(OrderFilter::class, properties: ["ref", "datePresence" => "DESC"])]
+#[ApiFilter(
+    OrderFilter::class,
+    properties: [
+        "ref",
+        "datePresence" => "DESC",
+        "statut",
+        "ilot.nom"
+    ]
+)]
 class Presence {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
+    #[Groups('presence')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
+    #[Groups('presence')]
     private ?string $ref = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups('presence')]
     private ?\DateTimeInterface $datePresence = null;
 
     #[ORM\Column(type: "time", nullable: true)]
+    #[Groups('presence')]
     private ?\DateTimeInterface $heureDebut = null;
 
     #[ORM\Column(type: "time", nullable: true)]
+    #[Groups('presence')]
     private ?\DateTimeInterface $heureFin = null;
 
     #[ORM\Column(type: "string", enumType: StatutPresence::class)]
+    #[Groups('presence')]
     private ?StatutPresence $statut = null;
 
     #[ORM\Column]
+    #[Groups('presence')]
     private ?int $tempsPresence = null;
 
     #[ORM\ManyToOne(inversedBy: 'presences')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups('presence')]
     private ?Employe $employe = null;
 
     #[ORM\ManyToOne(inversedBy: 'presences')]
+    #[Groups('presence')]
     private ?Ilot $ilot = null;
 
     public function getId(): ?int {

@@ -1,9 +1,11 @@
-import { ApiService } from "./base";
+import { apiRequest, ApiService, buildQueryParams } from "./base";
 import { API_ENDPOINTS } from "@/config/api";
+import { ApiCollection } from "@/types/resources/ApiCollection";
 import type {
   Presence,
   CreatePresenceData,
   UpdatePresenceData,
+  PresencesFilters,
 } from "@/types/resources/Presence";
 
 class PresencesApiService extends ApiService<

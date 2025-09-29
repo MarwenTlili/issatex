@@ -72,14 +72,9 @@ export const isToday = (date: string | Date): boolean => {
 export const formatTime = (time: string): string => {
   if (!time) return "";
 
-  // Handle both HH:MM:SS and HH:MM formats
   try {
-    const date = new Date(time);
-    return date.toLocaleTimeString("fr-FR", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false, // always 24h format
-    });
+    const [hours, minutes] = time.split("T")[1].split(":");
+    return `${hours}:${minutes}`;
   } catch {
     return "";
   }
