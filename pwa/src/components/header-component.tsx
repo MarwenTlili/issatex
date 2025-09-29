@@ -19,6 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { Session } from "next-auth";
 import Image from "next/image";
 import { getNavigationItems } from "@/config/navigation";
+import { API_CONFIG } from "@/config/api";
 
 type SessionStatus = "authenticated" | "unauthenticated";
 
@@ -157,7 +158,7 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
                         {session.user.image ? (
                           <Image
                             src={
-                              session.user.image ||
+                              `${API_CONFIG.BASE_URL}${session.user.image}` ||
                               "/placeholder.svg?height=32&width=32" ||
                               "/placeholder.svg"
                             }
@@ -165,6 +166,7 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
                             className="h-8 w-8 rounded-full ring-2 ring-blue-500"
                             width={32}
                             height={32}
+                            unoptimized // Skip Next.js optimizer for profile pictures
                           />
                         ) : (
                           <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
