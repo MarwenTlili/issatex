@@ -15,15 +15,6 @@ export const useEmployes = (
   });
 };
 
-export const useActiveEmployes = () => {
-  return useQuery({
-    queryKey: [QUERY_KEYS.EMPLOYES, "active"],
-    queryFn: () => employesApi.getActive(),
-    staleTime: CACHE_CONFIG.STALE_TIME,
-    onError: (err) => handleApiError(err as ApiError),
-  });
-};
-
 export const useEmploye = (id: string | number) => {
   return useQuery({
     queryKey: [QUERY_KEYS.EMPLOYE, id],
