@@ -6,10 +6,6 @@ class EmployesApiService extends ApiService<Employe> {
   constructor() {
     super(API_ENDPOINTS.EMPLOYES);
   }
-
-  async getActive() {
-    return this.getAll({ actif: true });
-  }
 }
 
 export const employesApi = new EmployesApiService();
