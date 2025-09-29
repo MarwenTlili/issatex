@@ -26,12 +26,13 @@ export const APP_ROUTES = {
     PRESENCE_NEW: "/secretaire/presences/new",
     PRESENCE_DETAIL: (id: number) => `/secretaire/presences/${id}`,
     PRESENCE_EDIT: (id: number) => `/secretaire/presences/${id}/edit`,
+    SETTINGS: "/secretaire/parametres",
   },
 } as const;
 
 // Pagination
 export const PAGINATION = {
-  DEFAULT_PAGE_SIZE: 5,
+  DEFAULT_PAGE_SIZE: 50,
   MAX_PAGE_SIZE: 100,
   DEFAULT_PAGE: 1,
 } as const;

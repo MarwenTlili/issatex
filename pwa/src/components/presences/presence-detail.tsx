@@ -28,6 +28,7 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { isApiError, getErrorMessage } from "@/lib/api/handle-api-error";
 import { STATUT_PRESENCE_OPTIONS } from "@/types/resources/Presence";
+import { APP_ROUTES } from "@/config/app";
 
 interface PresenceDetailsProps {
   id: number;
@@ -68,7 +69,7 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
         try {
           await deletePresence.mutateAsync(id);
           setOpenConfirmDialog(false);
-          router.push("/client/presences");
+          router.push(APP_ROUTES.SECRETAIRE.PRESENCES);
         } catch (error) {
           if (
             isApiError(error) &&
@@ -135,7 +136,7 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
           </div>
           <div className="flex justify-center mt-4">
             <Button asChild className="w-full sm:w-auto">
-              <Link href="/client/presences">
+              <Link href={APP_ROUTES.SECRETAIRE.PRESENCES}>
                 <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux présences
               </Link>
             </Button>
@@ -213,7 +214,8 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
               <div>
                 <h3 className="font-medium">Employé</h3>
                 <p className="text-sm text-muted-foreground">
-                  {presence.employe?.split("/").pop() || "N/A"}
+                  {`${presence.employe?.nom} ${presence.employe.prenom} (${presence.employe.ref})` ||
+                    "N/A"}
                 </p>
               </div>
             </div>
@@ -223,7 +225,7 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
               <div>
                 <h3 className="font-medium">Îlot</h3>
                 <p className="text-sm text-muted-foreground">
-                  {presence.ilot?.split("/").pop() || "Non assigné"}
+                  {`${presence.ilot?.nom} (${presence.ilot?.ref})` || "Non assigné"}
                 </p>
               </div>
             </div>
@@ -251,7 +253,7 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
           asChild
           className="w-full sm:w-auto bg-transparent"
         >
-          <Link href="/client/presences">
+          <Link href={APP_ROUTES.SECRETAIRE.PRESENCES}>
             <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux présences
           </Link>
         </Button>
@@ -261,7 +263,7 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
             asChild
             className="w-full sm:w-auto bg-transparent"
           >
-            <Link href={`/client/presences/${id}/edit`}>
+            <Link href={APP_ROUTES.SECRETAIRE.PRESENCE_EDIT(id)}>
               <Edit className="mr-2 h-4 w-4" /> Modifier
             </Link>
           </Button>

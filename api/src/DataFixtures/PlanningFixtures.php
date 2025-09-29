@@ -20,46 +20,39 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
         $ordreFabrications = [];
         $i = 0;
         while ($this->hasReference("ORDRE_FABRICATION_$i")) {
-            array_push($ordreFabrications, $this->getReference("ORDRE_FABRICATION_$i"));
+            $ordreFabrications[] = $this->getReference("ORDRE_FABRICATION_$i");
             $i++;
         }
 
         foreach ($ordreFabrications as $key => $of) {
-            $dateCreation = $of->getDateCreation();
-            if ($dateCreation instanceof \DateTime) {
-                $planning = new Planning();
-                $datePlanning = clone $dateCreation;
-                $datePlanning->modify("+1 day");
+            $planning = new Planning();
 
-                $dateDebut = clone $datePlanning;
-                $dateDebut->modify("next monday");
-
-                $dateFin = clone $dateDebut;
-                $dateFin->modify("+6 days"); // add saturday to working day
-
-                $planning->setDateCreation($datePlanning)
-                    ->setDateDebut($dateDebut)
-                    ->setDateFin($dateFin)
-                    ->setReporte(false)
-                    ->setOrdreFabrication($of)
-                    // 2 première plannings dans la même Ilot
-                    ->setIlot(
-                        $key < 2
-                            ? $this->getReference("ILOT_0")
-                            : $this->getReference("ILOT_1")
-                    )
-                    // ->setIlot($key % 2 === 0 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"))
-                    // ->setIlot($this->getReference("ILOT_0"))
-                ;
-
-                $of->setLance(true);
-                
-                $manager->persist($of);
-                $manager->persist($planning);
-
-                $referenceName = "PLANNING_" . $key;
-                $this->addReference($referenceName, $planning);
+            if ($key === (count($ordreFabrications) - 1)) {
+                // 👈 Last planning always covers THIS week
+                $dateDebut = new \DateTimeImmutable('last monday');
+                $dateFin   = (clone $dateDebut)->modify('+6 days'); // until Saturday
+                $dateCreation = (clone $dateDebut)->modify('-1 day');
+            } else {
+                // Other plannings can still be random (previous weeks)
+                $dateCreation = $this->faker->dateTimeBetween("-3 week", "-1 week");
+                $dateDebut = (clone $dateCreation)->modify("next monday");
+                $dateFin   = (clone $dateDebut)->modify("+6 days");
             }
+
+            $planning->setDateCreation($dateCreation)
+                ->setDateDebut($dateDebut)
+                ->setDateFin($dateFin)
+                ->setReporte(false)
+                ->setOrdreFabrication($of)
+                ->setIlot($key < 2 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"));
+
+            $of->setLance(true);
+
+            $manager->persist($of);
+            $manager->persist($planning);
+
+            $referenceName = "PLANNING_" . $key;
+            $this->addReference($referenceName, $planning);
         }
 
         $manager->flush();
@@ -68,7 +61,7 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
     public function getDependencies() {
         return [
             OrdreFabricationFixtues::class,
-            IlotFixtures::class
+            IlotFixtures::class,
         ];
     }
 

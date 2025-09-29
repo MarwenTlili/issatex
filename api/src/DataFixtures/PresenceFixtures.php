@@ -58,19 +58,60 @@ class PresenceFixtures extends Fixture implements DependentFixtureInterface, Fix
 
       // generate presences only once per day
       foreach ($days as $dateStr => $datePresence) {
+        if ($datePresence > new \DateTimeImmutable("today")) {
+          break;
+        }
         $presence = new Presence();
 
+        // Bias random status: 90% PRESENT, 3% RETARD, 5% ABSENT, 2% CONGE
+        $statuses = [
+          StatutPresence::PRESENT->value => 90,
+          StatutPresence::RETARD->value  => 5,
+          StatutPresence::ABSENT->value  => 3,
+          StatutPresence::CONGE->value   => 2,
+        ];
+
+        $rand = $this->faker->numberBetween(1, 100);
+        $current = 0;
+
+        foreach ($statuses as $statusValue => $weight) {
+          $current += $weight;
+          if ($rand <= $current) {
+            $statut = StatutPresence::from($statusValue);
+            break;
+          }
+        }
+
+        // Default working hours
         $heureDebut = (clone $datePresence)->setTime(8, 0, 0);
         $heureFin   = (clone $datePresence)->setTime(16, 0, 0);
 
-        // Bias random status: 90% PRESENT, 5% ABSENT, 5% CONGE
-        $rand = $this->faker->numberBetween(1, 100);
-        if ($rand <= 5) {
-          $statut = StatutPresence::ABSENT;
-        } elseif ($rand <= 10) {
-          $statut = StatutPresence::CONGE;
-        } else {
-          $statut = StatutPresence::PRESENT;
+        switch ($statut) {
+          // Both ABSENT and CONGE WILL BE null, null, 0
+          case StatutPresence::ABSENT:
+          case StatutPresence::CONGE:
+            $heureDebut = null;
+            $heureFin   = null;
+            $tempsPresence = 0;
+            break;
+
+          case StatutPresence::RETARD:
+            // Arrives 15–120 minutes late
+            $delayMinutes = $this->faker->numberBetween(1, 15);
+            $heureDebut->modify("+$delayMinutes minutes");
+            $tempsPresence = ($heureFin->getTimestamp() - $heureDebut->getTimestamp()) / 3600;
+            break;
+
+          case StatutPresence::PRESENT:
+            /**
+             * Small variations: early leave / slightly late
+             */
+            // $startVariation = $this->faker->numberBetween(-10, 20); // minutes
+            // $endVariation   = $this->faker->numberBetween(-60, 10); // minutes
+            // $heureDebut->modify("+$startVariation minutes");
+            // $heureFin->modify("+$endVariation minutes");
+            $tempsPresence = ($heureFin->getTimestamp() - $heureDebut->getTimestamp()) / 3600;
+            break;
         }
 
         $presence
@@ -78,11 +119,7 @@ class PresenceFixtures extends Fixture implements DependentFixtureInterface, Fix
           ->setHeureDebut($heureDebut)
           ->setHeureFin($heureFin)
           ->setStatut($statut)
-          ->setTempsPresence(
-            $statut === StatutPresence::PRESENT
-              ? ($heureFin->getTimestamp() - $heureDebut->getTimestamp()) / 3600
-              : 0
-          )
+          ->setTempsPresence(max(0, $tempsPresence))
           ->setEmploye($employe)
           ->setIlot($ilot);
 

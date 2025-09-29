@@ -21,45 +21,54 @@ class ProductionFixtures extends Fixture implements DependentFixtureInterface, F
         /** @var Planning[] $plannings */
         $plannings = [];
         for ($i = 0; $i < 3; $i++) {
-            array_push($plannings, $this->getReference("PLANNING_" . $i));
+            $plannings[] = $this->getReference("PLANNING_" . $i);
         }
 
+        $today = new \DateTimeImmutable("today");
         $j = 0;
+
         foreach ($plannings as $planning) {
             /** @var OrdreFabrication $of */
             $of = $planning->getOrdreFabrication();
-
             $dateDebut = $planning->getDateDebut();
 
             if ($dateDebut instanceof \DateTime) {
-                // Jours de Lundi->Samedi
                 for ($i = 0; $i < 6; $i++) {
-                    $offset = $i % 6;
+                    $jour = (clone $dateDebut)->modify("+$i day");
 
-                    $jour = clone $dateDebut;
-                    $jour->modify("+" . $offset . " day");
+                    if ($jour > $today) {
+                        break; // stop, no production after today
+                    }
 
-                    foreach (TailleArticle::cases() as $key => $tailleArticle) {
+                    // Force at least one production today
+                    if ($i === 5 && $jour < $today) {
+                        $jour = $today;
+                    }
+
+                    foreach (TailleArticle::cases() as $tailleArticle) {
                         $quantiteDemandee = $of->getQuantiteParTaille($tailleArticle);
+                        $quantiteParJour = max(1, intval($quantiteDemandee / 6));
 
-                        $quantiteParJour = intval($quantiteDemandee / 6);
-                        $quantitePremiereChoix = $this->faker->numberBetween($quantiteParJour - 10, $quantiteParJour);
+                        $quantitePremiereChoix = $this->faker->numberBetween(
+                            max(1, $quantiteParJour - 10),
+                            $quantiteParJour
+                        );
                         $quantiteDeuxiemeChoix = $this->faker->numberBetween(1, 5);
-                        $qantiteTotale = $quantitePremiereChoix + $quantiteDeuxiemeChoix;
+                        $quantiteTotale = $quantitePremiereChoix + $quantiteDeuxiemeChoix;
 
                         $production = new Production();
                         $production->setDateProduction($jour)
                             ->setTailleArticle($tailleArticle)
                             ->setQuantitePremiereChoix($quantitePremiereChoix)
                             ->setQuantiteDeuxiemeChoix($quantiteDeuxiemeChoix)
-                            ->setQuantiteTotale($qantiteTotale)
-                            ->setPlanning($planning)
-                        ;
+                            ->setQuantiteTotale($quantiteTotale)
+                            ->setPlanning($planning);
+
                         $manager->persist($production);
 
                         $referenceName = sprintf("PRODUCTION_%d", $j);
                         $this->addReference($referenceName, $production);
-                        $j += 1;
+                        $j++;
                     }
                 }
             }
@@ -71,7 +80,7 @@ class ProductionFixtures extends Fixture implements DependentFixtureInterface, F
     public function getDependencies() {
         return [
             TailleOrdreFabricationFixtures::class,
-            PlanningFixtures::class
+            PlanningFixtures::class,
         ];
     }
 

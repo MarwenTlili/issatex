@@ -9,6 +9,7 @@ use App\Repository\EmployeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: EmployeRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
@@ -25,18 +26,23 @@ class Employe {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
+    #[Groups('presence')]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
+    #[Groups('presence')]
     private ?string $ref = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('presence')]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('presence')]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups('presence')]
     private ?string $poste = null;
 
     /**

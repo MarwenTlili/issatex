@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,14 +31,15 @@ import {
   User,
 } from "lucide-react";
 import type { ApiCollection } from "@/types/resources/ApiCollection";
-import type { Presence, PresencesFilters } from "@/types/resources/Presence";
+import type { Presence, PresenceFieldOrder, PresencesFilters } from "@/types/resources/Presence";
 import { APP_ROUTES } from "@/config/app";
+import { formatDate, formatTime } from "@/lib/utils/date";
 
 interface PresencesTableContentProps {
   presencesCollection?: ApiCollection<Presence>;
   isLoading: boolean;
   filters: PresencesFilters;
-  onSort: (field: "ref" | "datePresence" | "statut") => void;
+  onSort: (field: PresenceFieldOrder) => void;
   onDelete: (id: number, ref: string) => void;
   deleteLoading: boolean;
 }
@@ -73,29 +72,9 @@ export function PresencesTableContent({
   const handleDelete = async (id: number, ref: string) => {
     setDeletingId(id);
     try {
-      await onDelete(id, ref);
+      onDelete(id, ref);
     } finally {
       setDeletingId(null);
-    }
-  };
-
-  const formatTime = (timeString?: string) => {
-    if (!timeString) return "-";
-    try {
-      const date = new Date(`${timeString}`);
-      return format(date, "HH:mm");
-    } catch {
-      return timeString;
-    }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    try {
-      const date = new Date(dateString);
-      return format(date, "dd/MM/yyyy", { locale: fr });
-    } catch {
-      return dateString;
     }
   };
 
@@ -165,7 +144,8 @@ export function PresencesTableContent({
               <div className="flex items-center gap-2">
                 <User className="h-3 w-3 text-muted-foreground" />
                 <span className="truncate">
-                  {presence.employe?.split("/").pop() || "N/A"}
+                  {`${presence.employe?.nom} ${presence.employe.prenom} (${presence.employe.ref})` ||
+                    "N/A"}
                 </span>
               </div>
             </div>
@@ -258,7 +238,12 @@ export function PresencesTableContent({
             </TableHead>
             <TableHead>Temps</TableHead>
             <TableHead>Employé</TableHead>
-            <TableHead>Îlot</TableHead>
+            <TableHead>
+              <Button variant="ghost" onClick={() => onSort("ilot.nom")}>
+                Îlot
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+            </TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -291,14 +276,11 @@ export function PresencesTableContent({
               </TableCell>
               <TableCell>{presence.tempsPresence || 0}h</TableCell>
               <TableCell>
-                <div className="max-w-32 truncate">
-                  {presence.employe?.split("/").pop() || "N/A"}
-                </div>
+                {`${presence.employe?.nom} ${presence.employe.prenom} (${presence.employe.ref})` ||
+                  "N/A"}
               </TableCell>
               <TableCell>
-                <div className="max-w-24 truncate">
-                  {presence.ilot?.split("/").pop() || "-"}
-                </div>
+                <div>{presence.ilot?.ref || "-"}</div>
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>

@@ -1,7 +1,10 @@
 import { BaseFilters } from "../common/BaseFilters";
+import { Employe } from "./Employe";
+import { Ilot } from "./Ilot";
 import type { Item } from "./Item";
 
 export type StatutPresence = "Present" | "Absent" | "Retard" | "Conge";
+export type PresenceFieldOrder = "ref" | "datePresence" | "statut" | "ilot.nom";
 
 export interface Presence extends Item {
   id: number;
@@ -11,8 +14,8 @@ export interface Presence extends Item {
   heureFin: string;
   statut: StatutPresence;
   tempsPresence: number;
-  employe: string;
-  ilot: string;
+  employe: Employe;
+  ilot: Ilot;
 }
 
 export interface CreatePresenceData {
@@ -32,6 +35,7 @@ export interface UpdatePresenceData extends Partial<CreatePresenceData> {
 export interface PresencesFilters extends BaseFilters {
   ref?: string;
   employe?: string;
+  ilot?: string;
   statut?: string;
   datePresence?: {
     after?: string;

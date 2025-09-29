@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { usePresences, useDeletePresence } from "@/hooks/use-presences";
-import type { PresencesFilters } from "@/types/resources/Presence";
+import type { PresenceFieldOrder, PresencesFilters } from "@/types/resources/Presence";
 import { PresencesTableContent } from "./presences-table-content";
 import { PresencesTableFilters } from "./presences-table-filters";
 import { PresencesTablePagination } from "./presences-table-pagination";
@@ -42,7 +42,7 @@ export function PresencesTable() {
     []
   );
 
-  const handleSort = useCallback((field: "ref" | "datePresence" | "statut") => {
+  const handleSort = useCallback((field: PresenceFieldOrder) => {
     setFilters((prev) => {
       const currentOrder = prev.order?.[field];
       const newOrder = currentOrder === "asc" ? "desc" : "asc";
