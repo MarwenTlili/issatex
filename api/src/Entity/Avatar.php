@@ -60,6 +60,7 @@ class Avatar {
 
     #[Vich\UploadableField(mapping: 'avatars', fileNameProperty: 'filePath')]
     #[Assert\NotNull]
+    #[Assert\File(maxSize: "2M")]
     private ?File $file = null;
 
     #[ApiProperty(writable: false)]
