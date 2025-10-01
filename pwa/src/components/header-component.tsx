@@ -9,16 +9,15 @@ import {
   ChevronDown,
   Menu,
   X,
-  Settings,
   LogOut,
   LogIn,
   UserPlus,
   FactoryIcon,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Session } from "next-auth";
+import type { Session } from "next-auth";
 import Image from "next/image";
-import { getNavigationItems } from "@/config/navigation";
+import { getNavigationItems, getProfileMenuItems } from "@/config/navigation";
 import { API_CONFIG } from "@/config/api";
 
 type SessionStatus = "authenticated" | "unauthenticated";
@@ -32,11 +31,13 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
 
   const userRoles = session?.user.roles || [];
   const navItems = getNavigationItems(userRoles);
+  const profileItems = getProfileMenuItems(userRoles);
 
   // Handle scroll effect for navbar
   useEffect(() => {
@@ -70,6 +71,10 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [session?.user.image]);
 
   return (
     <>
@@ -155,18 +160,17 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
                       aria-haspopup="true"
                     >
                       <div className="flex items-center space-x-2 border border-gray-200 dark:border-gray-700 rounded-full pl-1 pr-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                        {session.user.image ? (
+                        {session.user.image && !avatarError ? (
                           <Image
-                            src={
-                              `${API_CONFIG.BASE_URL}${session.user.image}` ||
-                              "/placeholder.svg?height=32&width=32" ||
-                              "/placeholder.svg"
-                            }
+                            src={`${API_CONFIG.BASE_URL}${session.user.image}`}
                             alt="Profile"
                             className="h-8 w-8 rounded-full ring-2 ring-blue-500"
                             width={32}
                             height={32}
-                            unoptimized // Skip Next.js optimizer for profile pictures
+                            unoptimized
+                            onError={() => {
+                              setAvatarError(true);
+                            }}
                           />
                         ) : (
                           <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
@@ -192,20 +196,23 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
                       >
                         <div className="px-4 py-2">
                           <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Signed in as
+                            Connecté en tant que
                           </p>
                           <p className="text-sm font-medium truncate">
                             {session.user.email}
                           </p>
                         </div>
                         <Separator className="mx-2 w-auto" />
-                        <Link
-                          href="/settings"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          <Settings className="mr-3 h-5 w-5 text-gray-400" />
-                          Settings
-                        </Link>
+                        {profileItems.map((item) => (
+                          <Link
+                            key={item.name}
+                            href={item.href}
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            onClick={() => setProfileOpen(false)}
+                          >
+                            {item.name}
+                          </Link>
+                        ))}
                         <Separator className="mx-2 w-auto" />
                         <button
                           onClick={() => {
@@ -216,7 +223,7 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
                           className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
                         >
                           <LogOut className="mr-3 h-5 w-5 text-gray-400" />
-                          Sign out
+                          Se déconnecter
                         </button>
                       </div>
                     )}
