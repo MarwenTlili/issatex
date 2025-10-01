@@ -205,10 +205,8 @@ export class ApiService<T, CreateT = Partial<T>, UpdateT = Partial<T>> {
   }
 
   async getOne(identifier: string | number): Promise<T> {
-    const url =
-      typeof identifier === "string"
-        ? identifier
-        : `${this.endpoint}/${identifier}`;
+    const isURI = typeof identifier === "string" && identifier.startsWith("/");
+    const url = isURI ? identifier : `${this.endpoint}/${identifier}`;
     return apiRequest<T>(url);
   }
 
