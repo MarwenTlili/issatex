@@ -18,6 +18,9 @@ export const QUERY_KEYS = {
   EMPLOYE: "employe",
   ILOTS: "ilots",
   ILOT: "ilot",
+  USERS: "users",
+  USER: "user",
+  CURRENT_USER: "current-user",
 } as const;
 
 // Cache Configuration

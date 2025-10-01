@@ -15,6 +15,7 @@ export const APP_ROUTES = {
       `/client/ordre-fabrications/${id}`,
     ORDRE_FABRICATION_EDIT: (id: string) =>
       `/client/ordre-fabrications/${id}/edit`,
+    SETTINGS: `/client/parametres`
   },
   ADMIN: {
     DASHBOARD: "/admin",
