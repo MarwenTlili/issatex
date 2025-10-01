@@ -1,13 +1,20 @@
-import type { NextAuthOptions, User } from "next-auth";
+import type { NextAuthOptions, User as NextAuthUser } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 import { apiFetch, refreshTokens } from "./auth-functions";
-import { JWT } from "next-auth/jwt";
+import type { JWT } from "next-auth/jwt";
 import { logger } from "@/lib/utils/Logger";
-import { JwtAuthData, JwtPayload } from "@/types/index";
+import type { JwtAuthData, JwtPayload } from "@/types/index";
 
 import { parseJwt } from "@/lib/utils";
-import { AUTH_URL, NEXTAUTH_SECRET } from "@/config/api";
+import {
+  AUTH_URL,
+  NEXTAUTH_SECRET,
+  API_CONFIG,
+  API_ENDPOINTS,
+  ENTRYPOINT,
+} from "@/config/api";
+import { User } from "@/types/resources/User";
 
 export const authOptions: NextAuthOptions = {
   secret: NEXTAUTH_SECRET,
@@ -37,7 +44,7 @@ export const authOptions: NextAuthOptions = {
 
           if (!payload) return null;
 
-          const user: User = {
+          const user: NextAuthUser = {
             id: payload.sub,
             name: payload.username,
             email: payload.email,
@@ -59,7 +66,7 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, trigger, session }) {
       // Initial sign in
       if (user && account) {
         const jwt: JWT = {
@@ -76,6 +83,46 @@ export const authOptions: NextAuthOptions = {
           },
         };
         return jwt;
+      }
+
+      // Fetch the latest user data from the API to get updated avatar
+      if (trigger === "update") {
+        try {
+          // we are on server-side that's why using ENTRYPOINT instead of API_CONFIG.BASE_URL
+          const userResponse = await apiFetch<User>(
+            `${ENTRYPOINT}${API_ENDPOINTS.USERS}/${token.user?.id}`,
+            "GET",
+            token.accessToken
+          );
+
+          if (!userResponse) return token;
+
+          // Extract avatar contentUrl if avatar is an object
+          let avatarUrl = null;
+          if (
+            userResponse.avatar &&
+            typeof userResponse.avatar === "object" &&
+            userResponse.avatar.contentUrl
+          ) {
+            avatarUrl = userResponse.avatar.contentUrl;
+          }
+
+          // Update token with fresh user data
+          token.user = {
+            ...token.user,
+            id: token.user?.id || String(userResponse.id),
+            name: userResponse.username || token.user?.name,
+            email: userResponse.email || token.user?.email,
+            roles: userResponse.roles || token.user?.roles,
+            image: avatarUrl || "",
+          };
+        } catch (error) {
+          logger("error", "Failed to fetch user data during session update", {
+            error,
+          });
+        }
+
+        return token;
       }
 
       // Return previous token if the access token has not expired yet

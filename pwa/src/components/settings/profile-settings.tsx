@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useCurrentUser, useUpdateUser } from "@/hooks/use-current-user";
 import { uploadAvatar } from "@/lib/api/avatars-api";
@@ -32,7 +32,7 @@ import { toast } from "sonner";
 import { API_CONFIG } from "@/config/api";
 
 export function ProfileSettings() {
-  const { data: session, update: updateSession } = useSession();
+  const { update: updateSession } = useSession();
   const { data: user, isLoading } = useCurrentUser();
   const updateUser = useUpdateUser();
 
@@ -45,14 +45,14 @@ export function ProfileSettings() {
   });
 
   // Update form data when user data is loaded
-  useState(() => {
+  useEffect(() => {
     if (user) {
       setFormData({
         username: user.username || "",
         email: user.email || "",
       });
     }
-  });
+  }, [user]);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -88,7 +88,7 @@ export function ProfileSettings() {
       const avatarData = await uploadAvatar(selectedFile);
 
       await updateUser.mutateAsync({
-        avatar: avatarData["@id"], // Use IRI instead of full object
+        avatar: avatarData["@id"],
       });
 
       // Update session to reflect new avatar
@@ -139,7 +139,6 @@ export function ProfileSettings() {
         email: formData.email,
       });
 
-      // Update session
       await updateSession();
 
       toast.success("Profil mis à jour avec succès");
