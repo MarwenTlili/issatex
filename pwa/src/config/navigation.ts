@@ -4,7 +4,9 @@ import {
   Home,
   Layers,
   Shirt,
+  Settings,
 } from "lucide-react";
+import { APP_ROUTES } from "./app";
 
 export interface NavItem {
   name: string;
@@ -79,4 +81,41 @@ export const getItemsByRole = (role: string): NavItem[] => {
   return navigationConfig.filter(
     (item) => item.roles.includes(role) || item.roles.length === 0
   );
+};
+
+export interface ProfileMenuItem {
+  name: string;
+  href: string; // link if navigable
+  action?: () => void; // optional callback for buttons (like signOut)
+  icon: React.ComponentType<{ className?: string }>;
+  roles: string[];
+  order: number;
+}
+
+export const profileMenuConfig: ProfileMenuItem[] = [
+  {
+    name: "Paramètres",
+    href: APP_ROUTES.CLIENT.SETTINGS,
+    icon: Settings,
+    roles: ["ROLE_CLIENT"],
+    order: 1,
+  },
+  {
+    name: "Paramètres",
+    href: APP_ROUTES.SECRETAIRE.SETTINGS,
+    icon: Settings,
+    roles: ["ROLE_SECRETARY"],
+    order: 1,
+  },
+];
+
+export const getProfileMenuItems = (
+  userRoles: string[] = []
+): ProfileMenuItem[] => {
+  return profileMenuConfig
+    .filter((item) => {
+      if (item.roles.length === 0) return true;
+      return item.roles.some((role) => userRoles.includes(role));
+    })
+    .sort((a, b) => a.order - b.order);
 };
