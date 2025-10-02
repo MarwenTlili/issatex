@@ -166,11 +166,32 @@ export const userSchema = z.object({
     .max(
       VALIDATION.MAX_LENGTH.USERNAME,
       `Nom d'utilisateur trop long (max ${VALIDATION.MAX_LENGTH.USERNAME} caractères)`
+    )
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Le nom d'utilisateur ne peut contenir que des lettres, chiffres et underscores (_)"
     ),
   email: emailSchema,
-  roles: z.array(z.string()).min(1, "Au moins un rôle requis"),
-  enabled: z.boolean().default(true),
+  // roles: z.array(z.string()).min(1, "Au moins un rôle requis"),
+  // enabled: z.boolean().default(true),
 });
+
+// Password change schema with confirmation validation
+export const passwordChangeSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Mot de passe actuel requis"),
+    newPassword: z
+      .string()
+      .min(
+        VALIDATION.MIN_LENGTH.PASSWORD,
+        `Nouveau mot de passe trop court (min ${VALIDATION.MIN_LENGTH.PASSWORD} caractères)`
+      ),
+    confirmPassword: z.string().min(1, "Confirmation du mot de passe requise"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Les mots de passe ne correspondent pas",
+    path: ["confirmPassword"],
+  });
 
 export const createUserSchema = userSchema.extend({
   plainPassword: z
@@ -217,5 +238,7 @@ export type PresenceFormData = z.infer<typeof presenceSchema>;
 export type UserFormData = z.infer<typeof userSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+export type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>
 
 export type LoginFormData = z.infer<typeof loginSchema>;
