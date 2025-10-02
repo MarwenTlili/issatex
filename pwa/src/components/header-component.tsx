@@ -168,6 +168,7 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
                             width={32}
                             height={32}
                             unoptimized
+                            priority={true} // high loading priority
                             onError={() => {
                               setAvatarError(true);
                             }}
