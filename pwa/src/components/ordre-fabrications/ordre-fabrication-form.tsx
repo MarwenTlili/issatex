@@ -90,7 +90,7 @@ export function OrdreFabricationForm({
   const { data: articlesResponse, isLoading: isLoadingArticles } = useArticles({
     itemsPerPage: PAGINATION.MAX_PAGE_SIZE,
     order: { ref: "desc" },
-    withoutOrdreFabrication: true,
+    // withoutOrdreFabrication: true,
     currentArticle: ordreFabrication?.article?.split("/").pop(),
   });
 
