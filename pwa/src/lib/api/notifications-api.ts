@@ -12,7 +12,7 @@ class NotificationsApiService extends ApiService<Notification> {
     super(API_ENDPOINTS.NOTIFICATIONS);
   }
 
-  async getAllByClientId(
+  async getAllByAccountId(
     accountId: number,
     filters: NotificationFilters = {}
   ): Promise<ApiCollection<Notification>> {

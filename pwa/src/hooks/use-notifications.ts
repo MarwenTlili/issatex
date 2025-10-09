@@ -18,9 +18,9 @@ export const useNotifications = (filters: NotificationFilters = {}) => {
       if (!currentUser?.id) {
         throw new Error("Aucun utilisteur trouvé");
       }
-      return notificationsApi.getAllByClientId(currentUser?.id, filters);
+      return notificationsApi.getAllByAccountId(currentUser?.id, filters);
     },
-    refetchInterval: 1000, // Refetch every 1 seconds for real-time updates
+    refetchInterval: 30000, // Refetch every 1 seconds for real-time updates
     enabled: !!currentUser?.id,
     onError: (err) => handleApiError(err as ApiError),
   });
