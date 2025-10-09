@@ -122,7 +122,7 @@ export function NotificationsDropdown() {
                   Pas de notifications pour le moment
                 </div>
               ) : (
-                <ScrollArea className="h-64">
+                <ScrollArea className="max-h-64 overflow-y-auto">
                   {notifications.map((n, index) => (
                     <div
                       key={n.id}
