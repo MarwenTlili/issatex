@@ -9,6 +9,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import {
+  useDeleteNotification,
   useMarkNotificationAsRead,
   useMarkNotificationAsUnread,
   useNotifications,
@@ -41,6 +42,7 @@ export function NotificationsDropdown() {
   const { data: notificationsCollection } = useNotifications();
   const markNotificationAsRead = useMarkNotificationAsRead();
   const markNotificationAsUnread = useMarkNotificationAsUnread();
+  const deleteNotification = useDeleteNotification();
 
   const notifications = notificationsCollection?.member || [];
   const unreadCount = notifications.filter((n) => !n.lu).length;
@@ -186,6 +188,14 @@ export function NotificationsDropdown() {
                                 }}
                               >
                                 Détails
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteNotification.mutateAsync(n.id);
+                                }}
+                              >
+                                Supprimer
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
