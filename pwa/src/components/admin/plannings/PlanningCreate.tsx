@@ -38,7 +38,7 @@ const WatchPlanning = () => {
 
 const PlanningCreate = () => {
   const dateDebut = getNextMonday();
-  const dateFin = addDays(dateDebut, 5);
+  const dateFin = addDays(dateDebut, 6);
 
   return (
     <Create
@@ -50,7 +50,7 @@ const PlanningCreate = () => {
       })}
     >
       <SimpleForm>
-        <WatchPlanning />
+        {/* <WatchPlanning /> */}
 
         <DateInput source="dateCreation" defaultValue={new Date()} />
         <DateInput source="dateDebut" defaultValue={dateDebut.toISOString()} />

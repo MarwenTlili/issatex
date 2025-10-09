@@ -32,5 +32,6 @@ export const API_ENDPOINTS = {
   ILOTS: "/api/ilots",
   USERS: "/api/users",
   AVATARS: "/api/avatars",
+  NOTIFICATIONS: "/api/notifications",
   HEALTH: "/api/health",
 } as const;

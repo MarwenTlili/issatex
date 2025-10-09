@@ -14,6 +14,7 @@ use ApiPlatform\Metadata\Patch;
 use App\Enum\StatutOF;
 use App\Enum\TailleArticle;
 use App\Repository\OrdreFabricationRepository;
+use App\State\OrdreFabricationProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -23,13 +24,14 @@ use Doctrine\ORM\Mapping as ORM;
 #[ApiResource(
     paginationClientItemsPerPage: true,
     mercure: true,
+    processor: OrdreFabricationProcessor::class,
     operations: [
         new Post(),
         new Get(),
         new GetCollection(),
         new Patch(),
         new Delete()
-    ]
+    ],
 )]
 #[ApiFilter(
     SearchFilter::class,

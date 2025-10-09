@@ -8,4 +8,5 @@ enum TypeNotification: string {
     case SYSTEM_ALERT = 'system_alert';
     case MAINTENANCE_NOTICE = 'maintenance_notice';
     case NEW_MESSAGE = 'new_message';
+    case ORDER_STATUS_CHANGED = 'order_status_changed';
 }
