@@ -40,6 +40,7 @@ services:
                 App\Entity\TailleOrdreFabrication: 'TOF'
                 App\Entity\User: 'USR'
                 App\Entity\Avatar: 'AVA'
+                App\Entity\Notification: 'NOT'
         tags:
             - { name: doctrine.entity_listener }
 

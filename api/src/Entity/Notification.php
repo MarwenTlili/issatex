@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Enum\TypeNotification;
 use App\Repository\NotificationRepository;
@@ -9,12 +11,23 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    order: ['dateCreation' => 'DESC']
+)]
+#[ApiFilter(
+    SearchFilter::class,
+    properties: [
+        "account" => "exact"
+    ]
+)]
 class Notification {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
     private ?int $id = null;
+
+    #[ORM\Column(length: 255, nullable: true, unique: true)]
+    private ?string $ref = null;
 
     #[ORM\Column(length: 255)]
     private ?string $expediteur = null;
@@ -40,6 +53,15 @@ class Notification {
 
     public function getId(): ?int {
         return $this->id;
+    }
+
+    public function getRef(): ?string {
+        return $this->ref;
+    }
+
+    public function setRef(string $ref): static {
+        $this->ref = $ref;
+        return $this;
     }
 
     public function getExpediteur(): ?string {

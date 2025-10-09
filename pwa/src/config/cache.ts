@@ -21,6 +21,8 @@ export const QUERY_KEYS = {
   USERS: "users",
   USER: "user",
   CURRENT_USER: "current-user",
+  NOTIFICATIONS: "notifications",
+  NOTIFICATION: "notification",
 } as const;
 
 // Cache Configuration

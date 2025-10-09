@@ -8,6 +8,7 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\State\ProcessorInterface;
 use App\Entity\Planning;
 use App\Enum\StatutOF;
+use App\Service\OrdreFabricationStatusService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
@@ -15,7 +16,10 @@ final class PlanningStateProcessor implements ProcessorInterface {
     public function __construct(
         #[Autowire(service: 'api_platform.doctrine.orm.state.persist_processor')]
         private ProcessorInterface $persistProcessor,
-        private EntityManagerInterface $entityManager
+        #[Autowire(service: 'api_platform.doctrine.orm.state.remove_processor')]
+        private ProcessorInterface $removeProcessor,
+        private EntityManagerInterface $entityManager,
+        private OrdreFabricationStatusService $statusService,
     ) {
     }
 
@@ -25,18 +29,24 @@ final class PlanningStateProcessor implements ProcessorInterface {
         }
 
         if ($operation instanceof Post) {
-            $ordreFabrication = $data->getOrdreFabrication();
-            $ordreFabrication->setStatut(StatutOF::PLANIFIE)
-                ->setLance(true);
-            $this->entityManager->persist($ordreFabrication);
+            $of = $data->getOrdreFabrication();
+            $old = $of->getStatut();
+            $new = StatutOF::PLANIFIE;
+            $of->setStatut($new)->setLance(true);
+            $this->statusService->handleStatusChange($of, $old, $new);
+            $this->entityManager->persist($of);
         }
 
         if ($operation instanceof Delete) {
-            $ordreFabrication = $data->getOrdreFabrication();
-            $ordreFabrication->setStatut(StatutOF::ANNULE)
-                ->setLance(false);
-            $this->entityManager->persist($ordreFabrication);
+            $of = $data->getOrdreFabrication();
+            $old = $of->getStatut();
+            $new = StatutOF::ANNULE;
+            $of->setStatut($new)->setLance(false);
+            $this->statusService->handleStatusChange($of, $old, $new);
+            $this->entityManager->persist($of);
             $this->entityManager->flush();
+
+            return $this->removeProcessor->process($data, $operation, $uriVariables, $context);
         }
 
         // Delegate to default Doctrine persist processor

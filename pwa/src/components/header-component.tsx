@@ -19,6 +19,7 @@ import type { Session } from "next-auth";
 import Image from "next/image";
 import { getNavigationItems, getProfileMenuItems } from "@/config/navigation";
 import { API_CONFIG } from "@/config/api";
+import { NotificationsDropdown } from "./notifications/notifications-dropdown";
 
 type SessionStatus = "authenticated" | "unauthenticated";
 
@@ -36,6 +37,7 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
   const router = useRouter();
 
   const userRoles = session?.user.roles || [];
+  const isRoleClient = userRoles.includes("ROLE_CLIENT");
   const navItems = getNavigationItems(userRoles);
   const profileItems = getProfileMenuItems(userRoles);
 
@@ -60,7 +62,7 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
       }
 
       if (menuElement && !menuElement.contains(target)) {
-        // Don&apos;t close the menu when clicking the menu button
+        // Don't close the menu when clicking the menu button
         const menuButton = document.getElementById("menu-button");
         if (menuButton && !menuButton.contains(target)) {
           setMenuOpen(false);
@@ -127,7 +129,7 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
             </div>
 
             {/* Right Side - Auth Section - Fixed width container */}
-            <div className="flex items-center">
+            <div className="flex items-center justify-center">
               {/* Auth states with consistent width and height */}
               <div className="h-10 w-[180px] flex items-end justify-end">
                 {status === "unauthenticated" ? (
@@ -146,88 +148,94 @@ const HeaderComponent: FC<HeaderComponentProps> = ({ session, status }) => {
                     ></div>
                   </div>
                 ) : session?.user ? (
-                  <div
-                    className="relative w-full flex justify-end"
-                    id="profile-dropdown"
-                  >
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setProfileOpen(!profileOpen);
-                      }}
-                      className="flex items-center space-x-2 focus:outline-none"
-                      aria-expanded={profileOpen}
-                      aria-haspopup="true"
-                    >
-                      <div className="flex items-center space-x-2 border border-gray-200 dark:border-gray-700 rounded-full pl-1 pr-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                        {session.user.image && !avatarError ? (
-                          <Image
-                            src={`${API_CONFIG.BASE_URL}${session.user.image}`}
-                            alt="Profile"
-                            className="h-8 w-8 rounded-full ring-2 ring-blue-500"
-                            width={32}
-                            height={32}
-                            unoptimized
-                            priority={true} // high loading priority
-                            onError={() => {
-                              setAvatarError(true);
-                            }}
-                          />
-                        ) : (
-                          <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                            {session.user.name?.charAt(0) || "U"}
-                          </div>
-                        )}
-                        <span className="text-sm font-medium hidden sm:block max-w-[100px] truncate">
-                          {session.user.name || "User"}
-                        </span>
-                        <ChevronDown
-                          className={`h-5 w-5 transition-transform ${
-                            profileOpen ? "rotate-180" : ""
-                          }`}
-                        />
-                      </div>
-                    </button>
+                  <div className="flex justify-center">
+                    {/* Notifications dropdown */}
+                    {isRoleClient && <NotificationsDropdown />}
 
-                    {/* Profile Dropdown - Absolute positioning to avoid layout shift */}
-                    {profileOpen && (
-                      <div
-                        id="profile-dropdown"
-                        className="absolute right-0 mt-11 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
+                    {/* Profile avatar dropdown */}
+                    <div
+                      className="relative w-full flex justify-end"
+                      id="profile-dropdown"
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProfileOpen(!profileOpen);
+                        }}
+                        className="flex items-center space-x-2 focus:outline-none"
+                        aria-expanded={profileOpen}
+                        aria-haspopup="true"
                       >
-                        <div className="px-4 py-2">
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            Connecté en tant que
-                          </p>
-                          <p className="text-sm font-medium truncate">
-                            {session.user.email}
-                          </p>
+                        <div className="flex items-center space-x-2 border border-gray-200 dark:border-gray-700 rounded-full pl-1 pr-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                          {session.user.image && !avatarError ? (
+                            <Image
+                              src={`${API_CONFIG.BASE_URL}${session.user.image}`}
+                              alt="Profile"
+                              className="h-8 w-8 rounded-full ring-2 ring-blue-500"
+                              width={32}
+                              height={32}
+                              unoptimized
+                              priority={true} // high loading priority
+                              onError={() => {
+                                setAvatarError(true);
+                              }}
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                              {session.user.name?.charAt(0) || "U"}
+                            </div>
+                          )}
+                          <span className="text-sm font-medium hidden sm:block max-w-[100px] truncate">
+                            {session.user.name || "User"}
+                          </span>
+                          <ChevronDown
+                            className={`h-5 w-5 transition-transform ${
+                              profileOpen ? "rotate-180" : ""
+                            }`}
+                          />
                         </div>
-                        <Separator className="mx-2 w-auto" />
-                        {profileItems.map((item) => (
-                          <Link
-                            key={item.name}
-                            href={item.href}
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                            onClick={() => setProfileOpen(false)}
-                          >
-                            {item.name}
-                          </Link>
-                        ))}
-                        <Separator className="mx-2 w-auto" />
-                        <button
-                          onClick={() => {
-                            signOut({ redirect: false }).then(() => {
-                              router.push("/login");
-                            });
-                          }}
-                          className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      </button>
+
+                      {/* Profile Dropdown - Absolute positioning to avoid layout shift */}
+                      {profileOpen && (
+                        <div
+                          id="profile-dropdown"
+                          className="absolute right-0 mt-11 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg py-1 ring-1 ring-black ring-opacity-5 focus:outline-none z-10"
                         >
-                          <LogOut className="mr-3 h-5 w-5 text-gray-400" />
-                          Se déconnecter
-                        </button>
-                      </div>
-                    )}
+                          <div className="px-4 py-2">
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              Connecté en tant que
+                            </p>
+                            <p className="text-sm font-medium truncate">
+                              {session.user.email}
+                            </p>
+                          </div>
+                          <Separator className="mx-2 w-auto" />
+                          {profileItems.map((item) => (
+                            <Link
+                              key={item.name}
+                              href={item.href}
+                              className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              onClick={() => setProfileOpen(false)}
+                            >
+                              {item.name}
+                            </Link>
+                          ))}
+                          <Separator className="mx-2 w-auto" />
+                          <button
+                            onClick={() => {
+                              signOut({ redirect: false }).then(() => {
+                                router.push("/login");
+                              });
+                            }}
+                            className="flex w-full items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          >
+                            <LogOut className="mr-3 h-5 w-5 text-gray-400" />
+                            Se déconnecter
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <div className="flex items-center space-x-4 justify-end w-full">
