@@ -1,5 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import type {
   Notification,
   NotificationFilters,
@@ -8,9 +7,13 @@ import { notificationsApi } from "@/lib/api/notifications-api";
 import { type ApiError, handleApiError } from "@/lib/api/handle-api-error";
 import { QUERY_KEYS } from "@/config/cache";
 import { useCurrentUser } from "./use-current-user";
+import { useMercureNotifications } from "@/mercure/useMercureNotifications";
 
 export const useNotifications = (filters: NotificationFilters = {}) => {
   const { data: currentUser } = useCurrentUser();
+
+  // Subscribe to Mercure when user is logged in
+  useMercureNotifications(currentUser?.id, filters);
 
   return useQuery({
     queryKey: [QUERY_KEYS.NOTIFICATIONS, currentUser?.id, filters],
@@ -20,7 +23,6 @@ export const useNotifications = (filters: NotificationFilters = {}) => {
       }
       return notificationsApi.getAllByAccountId(currentUser?.id, filters);
     },
-    refetchInterval: 30000, // Refetch every 1 seconds for real-time updates
     enabled: !!currentUser?.id,
     onError: (err) => handleApiError(err as ApiError),
   });
@@ -61,15 +63,17 @@ export const useMarkNotificationAsUnread = () => {
 };
 
 export const useDeleteNotification = () => {
+  const { data: currentUser } = useCurrentUser();
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, number>({
     mutationFn: (id: number) => notificationsApi.delete(id),
     onSuccess: () => {
+      // user.id is required for query key consistency
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.NOTIFICATIONS],
+        queryKey: [QUERY_KEYS.NOTIFICATIONS, currentUser?.id],
+        exact: false, // with or without filters
       });
-      toast.success("Notification supprimée");
     },
     onError: (error) =>
       handleApiError(error as ApiError, {

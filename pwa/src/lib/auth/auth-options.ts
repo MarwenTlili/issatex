@@ -10,7 +10,6 @@ import { parseJwt } from "@/lib/utils";
 import {
   AUTH_URL,
   NEXTAUTH_SECRET,
-  API_CONFIG,
   API_ENDPOINTS,
   ENTRYPOINT,
 } from "@/config/api";
@@ -54,6 +53,7 @@ export const authOptions: NextAuthOptions = {
             refreshToken: authData.refresh_token,
             // store expires_in in user's object as timestamp (ms) after calculation
             expiresAt: Date.now() + authData.expires_in * 1000, // ms
+            mercureJwt: authData.mercureJwt,
           };
 
           /** Return a user object that will be stored in the JWT */
@@ -81,6 +81,7 @@ export const authOptions: NextAuthOptions = {
             roles: user.roles,
             image: user.image,
           },
+          mercureJwt: user.mercureJwt,
         };
         return jwt;
       }
@@ -145,6 +146,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       session.accessToken = token.accessToken;
+      session.mercureJwt = token.mercureJwt;
       return session;
     },
   },

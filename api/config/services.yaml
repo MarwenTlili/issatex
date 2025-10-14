@@ -57,3 +57,7 @@ services:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess }
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_failure, method: onAuthenticationFailure }
+
+    App\Service\MercureJwtProvider:
+        arguments:
+            $secret: '%env(MERCURE_JWT_SECRET)%'

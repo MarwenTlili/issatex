@@ -26,10 +26,11 @@ export interface JwtPayload {
   avatar?: string;
 }
 
-/** Define proper types for jwtAuthResponse and user */
+/** Define proper types for JwtAuthData (data structure of the JWT Auth response) */
 export interface JwtAuthData {
   access_token: string;
   refresh_token: string;
   expires_in: number; // seconds
   token_type: string;
+  mercureJwt?: string;
 }

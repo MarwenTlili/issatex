@@ -19,6 +19,7 @@
       "@/components/*": ["./src/components/*"],
       "@/config/*": ["./src/config/*"],
       "@/hooks/*": ["./src/hooks/*"],
+      "@/mercure/*": ["./src/mercure/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/styles/*": ["./src/styles/*"],
       "@/types/*": ["./src/types/*"],
