@@ -127,7 +127,7 @@ export function NotificationsDropdown() {
                 <ScrollArea className="max-h-64 overflow-y-auto">
                   {notifications.map((n, index) => (
                     <div
-                      key={n.id}
+                      key={`notification-${n.id}`}
                       className="group relative"
                       onClick={() => openNotification(n)}
                     >

@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\UrlGeneratorInterface;
 use App\Enum\TypeNotification;
 use App\Repository\NotificationRepository;
 use Doctrine\DBAL\Types\Types;
@@ -12,7 +13,14 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: NotificationRepository::class)]
 #[ApiResource(
-    order: ['dateCreation' => 'DESC']
+    order: ['dateCreation' => 'DESC'],
+    mercure: [
+        'private' => true,
+        'topics' => [
+            '@=iri(object, ' . UrlGeneratorInterface::ABS_PATH . ')', // canonical: /api/notifications/{id}
+            '@=iri(object.getAccount(), ' . UrlGeneratorInterface::ABS_PATH . ')', // alternative: /api/users/{id}
+        ],
+    ],
 )]
 #[ApiFilter(
     SearchFilter::class,

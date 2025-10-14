@@ -11,6 +11,7 @@ declare module "next-auth" {
       image?: string;
     };
     expires: ISODateString;
+    mercureJwt?: string;
     error?: string;
   }
 
@@ -23,6 +24,7 @@ declare module "next-auth" {
     accessToken?: string;
     refreshToken?: string;
     expiresAt?: number; // (ms) = now (ms) + expires_in (sec) * 1000
+    mercureJwt?: string;
   }
 }
 
@@ -31,7 +33,6 @@ declare module "next-auth/jwt" {
     accessToken?: string;
     refreshToken?: string;
     expiresAt?: number;
-    error?: string;
     user?: {
       id: string;
       name?: string;
@@ -39,5 +40,7 @@ declare module "next-auth/jwt" {
       roles?: string[];
       image?: string;
     };
+    mercureJwt?: string;
+    error?: string;
   }
 }
