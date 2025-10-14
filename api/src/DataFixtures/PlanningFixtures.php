@@ -4,6 +4,7 @@ namespace App\DataFixtures;
 
 use App\Entity\OrdreFabrication;
 use App\Entity\Planning;
+use App\Enum\StatutOF;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -46,7 +47,8 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
                 ->setOrdreFabrication($of)
                 ->setIlot($key < 2 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"));
 
-            $of->setLance(true);
+            $of->setLance(true)
+                ->setStatut(StatutOF::PLANIFIE);
 
             $manager->persist($of);
             $manager->persist($planning);

@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use App\Entity\OrdreFabrication;
 use App\Entity\Planning;
 use App\Entity\Production;
+use App\Enum\StatutOF;
 use App\Enum\TailleArticle;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
@@ -31,6 +32,9 @@ class ProductionFixtures extends Fixture implements DependentFixtureInterface, F
             /** @var OrdreFabrication $of */
             $of = $planning->getOrdreFabrication();
             $dateDebut = $planning->getDateDebut();
+
+            $joursRemplis = 0;
+            $joursPrevus = 6;
 
             if ($dateDebut instanceof \DateTime) {
                 for ($i = 0; $i < 6; $i++) {
@@ -70,7 +74,18 @@ class ProductionFixtures extends Fixture implements DependentFixtureInterface, F
                         $this->addReference($referenceName, $production);
                         $j++;
                     }
+                    $joursRemplis++;
                 }
+
+                // 🎯 si tous les jours de production sont remplis, statut TERMINE
+                if ($joursRemplis >= $joursPrevus) {
+                    $of->setStatut(StatutOF::TERMINE);
+                } else {
+                    // pour rendre plus vivant : certains sont encore en cours
+                    $of->setStatut(StatutOF::EN_COURS);
+                }
+
+                $manager->persist($of);
             }
         }
 

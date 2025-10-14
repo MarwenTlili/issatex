@@ -16,6 +16,7 @@ class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterfa
 
     public function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
+        $this->faker->seed(random_int(1, 999999));
 
         /** @var Article[] */
         $articles = [];
