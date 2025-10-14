@@ -4,15 +4,14 @@ import {
   TextField,
   DateField,
   NumberField,
-  ReferenceField,
   ShowButton,
   TopToolbar,
   FilterButton,
   SearchInput,
-  DateInput,
   ReferenceInput,
   SelectInput,
   AutocompleteInput,
+  FunctionField,
 } from "react-admin";
 
 const PresenceFilters = [
@@ -74,12 +73,16 @@ export const PresenceList = () => (
     <Datagrid>
       <TextField source="ref" />
       <DateField source="datePresence" />
-      <ReferenceField source="employe" reference="api/employes">
-        <TextField source="nom" />
-      </ReferenceField>
-      <ReferenceField source="ilot" reference="api/ilots">
-        <TextField source="nom" />
-      </ReferenceField>
+      <FunctionField
+        label="Employé"
+        render={(record) =>
+          `${record?.employe?.nom} - ${record?.employe?.prenom} (${record?.employe?.ref})`
+        }
+      />
+      <FunctionField 
+        label="Ilot" 
+        render={(record) => record.ilot.nom}
+      />
       <TextField source="statut" />
       <NumberField source="tempsPresence" label="Temps de Présence (H)" />
       <ShowButton />
