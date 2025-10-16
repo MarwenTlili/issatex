@@ -2,6 +2,7 @@ import { BaseFilters } from "../common/BaseFilters";
 import { Article } from "./Article";
 import { Client } from "./Client";
 import { Item } from "./Item";
+import { Planning } from "./Planning";
 import {
   TailleArticle,
   TailleOrdreFabrication,
@@ -28,7 +29,7 @@ export interface OrdreFabrication extends Item {
   lance: boolean;
   client: string;
   article: string;
-  plannings: string[];
+  plannings: Planning[];
   tailleOFs: string[];
 }
 

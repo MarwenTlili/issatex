@@ -253,7 +253,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
               </div>
             ) : (
               <p className="text-sm sm:text-base text-muted-foreground">
-                Aucune information sur la taille n&apos;est disponible
+                {"Aucune information sur la taille n'est disponible"}
               </p>
             )}
           </div>
@@ -266,7 +266,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
             <div className="flex flex-wrap gap-2">
               {ordreFabrication.plannings.map((planning, index) => (
                 <Badge key={index} variant="outline" className="text-xs">
-                  {planning.split("/").pop()}
+                  {planning.ref}
                 </Badge>
               ))}
             </div>
