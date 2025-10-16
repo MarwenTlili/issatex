@@ -17,6 +17,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Table(
@@ -37,7 +39,9 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Patch(),
         new Delete()
     ],
-    order: ['dateCreation' => 'DESC']   // default order
+    order: ['dateCreation' => 'DESC'],   // default order
+    normalizationContext: ['groups' => ['planning:read']],
+    denormalizationContext: ['groups' => ['planning:write']],
 )]
 #[ApiFilter(
     SearchFilter::class,
@@ -61,37 +65,46 @@ class Planning {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
+    #[Groups(['planning:read', 'ordreFabrication:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
+    #[Groups(['planning:read', 'ordreFabrication:read'])]
     private ?string $ref = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
     private ?\DateTimeInterface $dateCreation = null;
 
     #[Assert\GreaterThanOrEqual(propertyPath: "date_creation", message: "La date de debut doit être postérieure à la date de création.")]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
     private ?\DateTimeInterface $dateDebut = null;
 
     #[Assert\GreaterThan(propertyPath: "date_debut", message: "La date de fin doit être postérieure à la date de début.")]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
     private ?\DateTimeInterface $dateFin = null;
 
     #[ORM\Column(type: "boolean", options: ["default" => false])]
+    #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
     private ?bool $reporte = null;
 
     #[ORM\ManyToOne(inversedBy: 'plannings')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['planning:read'])]
     private ?OrdreFabrication $ordreFabrication = null;
 
     #[ORM\ManyToOne(inversedBy: 'plannings')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
     private ?Ilot $ilot = null;
 
     /**
      * @var Collection<int, Production>
      */
     #[ORM\OneToMany(mappedBy: 'planning', targetEntity: Production::class, orphanRemoval: true)]
+    #[Groups(['planning:read', 'ordreFabrication:read'])]
     private Collection $productions;
 
     public function __construct() {

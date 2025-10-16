@@ -19,6 +19,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: OrdreFabricationRepository::class)]
 #[ApiResource(
@@ -32,6 +33,8 @@ use Doctrine\ORM\Mapping as ORM;
         new Patch(),
         new Delete()
     ],
+    normalizationContext: ['groups' => ['ordreFabrication:read']],
+    denormalizationContext: ['groups' => ['ordreFabrication:write']],
 )]
 #[ApiFilter(
     SearchFilter::class,
@@ -55,53 +58,67 @@ class OrdreFabrication {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
+    #[Groups(['ordreFabrication:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
+    #[Groups(['ordreFabrication:read'])]
     private ?string $ref = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?\DateTimeInterface $dateCreation = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?\DateTimeInterface $dateCloture = null;
 
     #[ORM\Column]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?bool $urgent = null;
 
     #[ORM\Column(type: Types::STRING, enumType: StatutOF::class)]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?StatutOF $statut;
 
     #[ORM\Column]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?int $quantiteTotale = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?string $prixUnitaire = null;
 
     #[ORM\Column]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?int $tempsUnitaire = null;
 
     #[ORM\Column(type: "boolean", options: ["default" => false])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?bool $lance = null;
 
     #[ORM\ManyToOne(inversedBy: 'ordreFabrications')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?Client $client = null;
 
     #[ORM\ManyToOne(inversedBy: 'ordreFabrications')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?Article $article = null;
 
     /**
      * @var Collection<int, TailleOF>
      */
     #[ORM\OneToMany(mappedBy: 'ordreFabrication', targetEntity: TailleOrdreFabrication::class, orphanRemoval: true)]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private Collection $taillesOrdreFabrication;
 
     /**
      * @var Collection<int, Planning>
      */
     #[ORM\OneToMany(mappedBy: 'ordreFabrication', targetEntity: Planning::class, orphanRemoval: true)]
+    #[Groups(['ordreFabrication:read'])]
     private Collection $plannings;
 
     public function __construct() {

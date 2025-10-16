@@ -1,5 +1,7 @@
 "use client";
 
+import React from "react";
+
 import {
   Show,
   SimpleShowLayout,
@@ -15,7 +17,6 @@ import {
   TopToolbar,
   ListButton,
   CreateButton,
-  Button,
   useRedirect,
 } from "react-admin";
 import {
@@ -26,24 +27,19 @@ import {
   Typography,
   Box,
   Chip,
-  Alert,
-  LinearProgress,
 } from "@mui/material";
 import {
   Schedule as ScheduleIcon,
   Assignment as AssignmentIcon,
   Straighten as StraightenIcon,
-  PlayArrow as PlayArrowIcon,
 } from "@mui/icons-material";
 
 const ShowActions = () => {
-  const redirect = useRedirect();
-
   return (
     <TopToolbar>
       <ListButton />
       <CreateButton
-        resource="plannings"
+        resource="api/plannings"
         label="Créer Planning"
         icon={<ScheduleIcon />}
       />
@@ -105,7 +101,7 @@ const OrderSummaryCard = () => {
 
   const totalValue =
     record.quantiteTotale * Number.parseFloat(record.prixUnitaire || 0);
-  const totalTime = record.quantiteTotale * (record.tempsUnitaire || 0);
+  const totalTime = record.quantiteTotale * (record.tempsUnitaire / 100 || 0);
 
   return (
     <Card>
@@ -115,7 +111,7 @@ const OrderSummaryCard = () => {
       />
       <CardContent>
         <Grid container spacing={2}>
-          <Grid item xs={6} md={3}>
+          <Grid item xs={6} md={2}>
             <Typography variant="body2" color="textSecondary">
               Quantité totale
             </Typography>
@@ -123,7 +119,7 @@ const OrderSummaryCard = () => {
               {record.quantiteTotale?.toLocaleString()} pièces
             </Typography>
           </Grid>
-          <Grid item xs={6} md={3}>
+          <Grid item xs={6} md={2}>
             <Typography variant="body2" color="textSecondary">
               Prix unitaire
             </Typography>
@@ -134,7 +130,7 @@ const OrderSummaryCard = () => {
               }).format(Number.parseFloat(record.prixUnitaire || 0))}
             </Typography>
           </Grid>
-          <Grid item xs={6} md={3}>
+          <Grid item xs={6} md={2}>
             <Typography variant="body2" color="textSecondary">
               Valeur totale
             </Typography>
@@ -147,7 +143,15 @@ const OrderSummaryCard = () => {
           </Grid>
           <Grid item xs={6} md={3}>
             <Typography variant="body2" color="textSecondary">
-              Temps total estimé
+              Temps Unitaire (cmn)
+            </Typography>
+            <Typography variant="h6" color="primary">
+              {record.tempsUnitaire}
+            </Typography>
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <Typography variant="body2" color="textSecondary">
+              Temps total estimé (h)
             </Typography>
             <Typography variant="h6">
               {Math.round(totalTime / 60)} heures
@@ -180,48 +184,38 @@ const OrderSummaryCard = () => {
   );
 };
 
-const ProductionProgressCard = () => {
-  const record = useRecordContext();
-  if (!record) return null;
-
-  // This would need to be calculated from actual production data
-  const progress =
-    record.statut === "TERMINE" ? 100 : record.statut === "EN_COURS" ? 45 : 0;
+const TailleOrdreFabricationDatagrid = () => {
+  const ordreFabrication = useRecordContext();
 
   return (
-    <Card>
-      <CardHeader
-        title="Avancement de la production"
-        avatar={<PlayArrowIcon color="primary" />}
+    <Datagrid bulkActionButtons={false}>
+      <TextField source="tailleArticle" label="Taille" />
+      <NumberField source="quantite" label="Quantité" />
+      <FunctionField
+        label="Pourcentage"
+        render={(tailleOF: any) => {
+          const percent =
+            ordreFabrication?.quantiteTotale > 0
+              ? (
+                  (tailleOF.quantite / ordreFabrication?.quantiteTotale) *
+                  100
+                ).toFixed(1)
+              : "0.0";
+          return `${percent}%`;
+        }}
       />
-      <CardContent>
-        <Box mb={2}>
-          <Typography variant="body2" color="textSecondary" gutterBottom>
-            Progression globale
-          </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={progress}
-            sx={{ height: 8, borderRadius: 4 }}
-          />
-          <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
-            {progress}% complété
-          </Typography>
-        </Box>
-
-        {record.statut === "ANNULE" && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            Cette commande a été annulée
-          </Alert>
-        )}
-
-        {record.urgent && record.statut !== "TERMINE" && (
-          <Alert severity="warning" sx={{ mt: 2 }}>
-            Commande urgente - Priorité élevée
-          </Alert>
-        )}
-      </CardContent>
-    </Card>
+      <FunctionField
+        label="Valeur"
+        render={(tailleOF: any) => {
+          const prix = parseFloat(ordreFabrication?.prixUnitaire || "0");
+          const value = tailleOF.quantite * prix;
+          return new Intl.NumberFormat("fr-FR", {
+            style: "currency",
+            currency: "EUR",
+          }).format(value);
+        }}
+      />
+    </Datagrid>
   );
 };
 
@@ -297,11 +291,8 @@ export const OrdreFabricationShow = () => (
         </Grid>
 
         {/* Summary Cards */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={12}>
           <OrderSummaryCard />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <ProductionProgressCard />
         </Grid>
 
         {/* Tailles (Sizes) Section */}
@@ -318,35 +309,14 @@ export const OrdreFabricationShow = () => (
                 target="ordreFabrication"
                 sort={{ field: "tailleArticle", order: "ASC" }}
               >
-                <Datagrid bulkActionButtons={false}>
-                  <TextField source="tailleArticle" label="Taille" />
-                  <NumberField source="quantite" label="Quantité" />
-                  <FunctionField
-                    label="Pourcentage"
-                    render={(record: any, parentRecord: any) => {
-                      const percentage = parentRecord
-                        ? (
-                            (record.quantite / parentRecord.quantiteTotale) *
-                            100
-                          ).toFixed(1)
-                        : 0;
-                      return `${percentage}%`;
-                    }}
-                  />
-                  <FunctionField
-                    label="Valeur"
-                    render={(record: any, parentRecord: any) => {
-                      const value = parentRecord
-                        ? record.quantite *
-                          Number.parseFloat(parentRecord.prixUnitaire || 0)
-                        : 0;
-                      return new Intl.NumberFormat("fr-FR", {
-                        style: "currency",
-                        currency: "EUR",
-                      }).format(value);
-                    }}
-                  />
-                </Datagrid>
+                <ReferenceManyField
+                  label=""
+                  reference="api/taille_ordre_fabrications"
+                  target="ordreFabrication"
+                  sort={{ field: "tailleArticle", order: "ASC" }}
+                >
+                  <TailleOrdreFabricationDatagrid />
+                </ReferenceManyField>
               </ReferenceManyField>
             </CardContent>
           </Card>
@@ -396,19 +366,6 @@ export const OrdreFabricationShow = () => (
                   <BooleanField source="reporte" label="Reporté" />
                 </Datagrid>
               </ReferenceManyField>
-
-              {/* Add Planning Button */}
-              <Box mt={2}>
-                <Button
-                  variant="contained"
-                  startIcon={<ScheduleIcon />}
-                  onClick={() =>
-                    (window.location.href = "/admin/plannings/create")
-                  }
-                >
-                  Ajouter un planning
-                </Button>
-              </Box>
             </CardContent>
           </Card>
         </Grid>
