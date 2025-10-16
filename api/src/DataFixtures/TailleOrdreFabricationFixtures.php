@@ -31,8 +31,8 @@ class TailleOrdreFabricationFixtures extends Fixture implements DependentFixture
             // Suivi des quantités totales par ordre de fabrication
             $ordreFabricationQuantities[spl_object_id($of)] = 0;
             foreach (TailleArticle::cases() as $tailleArticle) {
-                $random = $this->faker->numberBetween(200, 400);
-                $quantite = ceil($random / 100) * 100;
+                $random = $this->faker->numberBetween(50, 150);
+                $quantite = ceil($random / 50) * 50;
 
                 $taille = new TailleOrdreFabrication();
                 $taille->setTailleArticle($tailleArticle)
