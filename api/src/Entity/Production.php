@@ -10,37 +10,50 @@ use App\Enum\TailleArticle;
 use App\Repository\ProductionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ProductionRepository::class)]
-#[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiResource(
+    paginationClientItemsPerPage: true,
+    normalizationContext: ['groups' => ['production:read']],
+    denormalizationContext: ['groups' => ['production:write']],
+)]
 #[ApiFilter(SearchFilter::class, properties: ["planning" => "exact", "tailleArticle" => "exact"])]
 #[ApiFilter(OrderFilter::class, properties: ["dateProduction" => "DESC"])]
 class Production {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
+    #[Groups(['production:read', 'planning:read', 'ordreFabrication:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
+    #[Groups(['production:read', 'planning:read', 'ordreFabrication:read'])]
     private ?string $ref = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Groups(['production:read', 'production:write', 'planning:read', 'ordreFabrication:read'])]
     private ?\DateTimeInterface $dateProduction = null;
 
     #[ORM\Column(type: Types::STRING, enumType: TailleArticle::class)]
+    #[Groups(['production:read', 'production:write', 'planning:read', 'ordreFabrication:read'])]
     private ?TailleArticle $tailleArticle;
 
     #[ORM\Column]
+    #[Groups(['production:read', 'production:write', 'planning:read', 'ordreFabrication:read'])]
     private ?int $quantitePremiereChoix = null;
 
     #[ORM\Column]
+    #[Groups(['production:read', 'production:write', 'planning:read', 'ordreFabrication:read'])]
     private ?int $quantiteDeuxiemeChoix = null;
 
     #[ORM\Column]
+    #[Groups(['production:read', 'production:write', 'planning:read', 'ordreFabrication:read'])]
     private ?int $quantiteTotale = null;
 
     #[ORM\ManyToOne(inversedBy: 'productions')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['production:read', 'production:write'])]
     private ?Planning $planning = null;
 
     public function __construct() {
