@@ -38,7 +38,7 @@ class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterfa
             $dateCloture = clone $dateCreation;
             $dateCloture->modify('+1 month');
 
-            $random = $this->faker->numberBetween(1000, 4000);
+            $random = $this->faker->numberBetween(500, 1500);
             $tempsUnitaire = ceil($random / 1000) * 1000;
 
             $of = new OrdreFabrication();
