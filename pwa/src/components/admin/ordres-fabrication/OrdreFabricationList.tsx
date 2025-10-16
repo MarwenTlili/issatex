@@ -174,6 +174,7 @@ export const OrdreFabricationList = () => (
           )
         }
       />
+      <NumberField source="tempsUnitaire" label="Temps Unitaire (cmn)" />
       <StatutField label="Statut" />
       <LanceField label="En Production"/>
       <PriorityField label="Priorité" />
