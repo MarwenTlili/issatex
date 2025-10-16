@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -29,6 +30,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useIlots } from "@/hooks/use-ilots";
+import { SelectLabel } from "@radix-ui/react-select";
 
 interface PresencesTableFiltersProps {
   filters: PresencesFilters;
@@ -40,6 +43,7 @@ export function PresencesTableFilters({
   onFilterChange,
 }: PresencesTableFiltersProps) {
   const { data: employesCollection } = useEmployes();
+  const { data: ilotsCollection } = useIlots();
 
   const [localFilters, setLocalFilters] = useState({
     ref: filters.ref || "",
@@ -47,12 +51,15 @@ export function PresencesTableFilters({
     dateAfter: filters.datePresence?.after || "",
     dateBefore: filters.datePresence?.before || "",
     employe: filters.employe || "",
+    ilot: filters.ilot || "",
   });
 
   const employes = employesCollection?.member || [];
   const selectedEmploye = employes.find(
     (emp) => emp.id === Number.parseInt(localFilters.employe)
   );
+
+  const ilots = ilotsCollection?.member || [];
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -75,6 +82,7 @@ export function PresencesTableFilters({
     }
 
     newFilters.employe = localFilters.employe || "";
+    newFilters.ilot = localFilters.ilot || "";
 
     onFilterChange(newFilters);
   };
@@ -86,6 +94,7 @@ export function PresencesTableFilters({
       dateAfter: "",
       dateBefore: "",
       employe: "",
+      ilot: "",
     });
     setSearchTerm("");
     onFilterChange({
@@ -93,6 +102,7 @@ export function PresencesTableFilters({
       statut: undefined,
       datePresence: undefined,
       employe: undefined,
+      ilot: undefined,
     });
   };
 
@@ -114,7 +124,8 @@ export function PresencesTableFilters({
     filters.datePresence?.after ||
     (filters.statut && filters.statut !== "all") ||
     filters.datePresence ||
-    filters.employe;
+    filters.employe ||
+    filters.ilot;
 
   return (
     <div className="space-y-4 mb-4">
@@ -383,6 +394,53 @@ export function PresencesTableFilters({
                         e.stopPropagation();
                         setLocalFilters((prev) => ({ ...prev, employe: "" }));
                         setSearchTerm("");
+                      }}
+                      className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted z-10"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* ilot select filter */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Ilot</label>
+                <div className="relative">
+                  <Select
+                    value={localFilters.ilot || "all"}
+                    onValueChange={(value) =>
+                      setLocalFilters((prev) => ({
+                        ...prev,
+                        ilot: value === "all" ? "" : value,
+                      }))
+                    }
+                  >
+                    <SelectTrigger
+                      className={cn("w-full", localFilters.ilot && "pr-10")}
+                    >
+                      <SelectValue placeholder="Tous les ilots" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectItem value="all">Tous les ilots</SelectItem>
+                        {ilots.map((ilot) => (
+                          <SelectItem key={ilot.id} value={`${ilot.id}`}>
+                            {ilot.nom} ({ilot.ref})
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+
+                  {localFilters.ilot && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setLocalFilters((prev) => ({ ...prev, ilot: "" }));
+                        onFilterChange({ ilot: undefined });
                       }}
                       className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0 hover:bg-muted z-10"
                     >
