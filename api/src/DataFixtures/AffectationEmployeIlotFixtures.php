@@ -23,7 +23,7 @@ class AffectationEmployeIlotFixtures extends Fixture implements DependentFixture
             array_push($employes, $this->getReference("EMPLOYE_$i"));
             $i++;
             // The rest of employes are just for testing back-end filter
-            if ($i == 11) break;
+            if ($i == 12) break;
         }
 
         foreach ($employes as $key => $employe) {
