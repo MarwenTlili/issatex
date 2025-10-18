@@ -26,36 +26,36 @@ class Employe {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
-    #[Groups('presence')]
+    #[Groups(['presence', 'affectation:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
-    #[Groups('presence')]
+    #[Groups(['presence', 'affectation:read'])]
     private ?string $ref = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('presence')]
+    #[Groups(['presence', 'affectation:read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('presence')]
+    #[Groups(['presence', 'affectation:read'])]
     private ?string $prenom = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups('presence')]
+    #[Groups(['presence', 'affectation:read'])]
     private ?string $poste = null;
-
-    /**
-     * @var Collection<int, Presence>
-     */
-    #[ORM\OneToMany(mappedBy: 'employe', targetEntity: Presence::class, orphanRemoval: true)]
-    private Collection $presences;
 
     /**
      * @var Collection<int, IlotEmploye>
      */
     #[ORM\OneToMany(mappedBy: 'employe', targetEntity: AffectationEmployeIlot::class, orphanRemoval: true)]
     private Collection $affectations;
+
+    /**
+     * @var Collection<int, Presence>
+     */
+    #[ORM\OneToMany(mappedBy: 'employe', targetEntity: Presence::class, orphanRemoval: true)]
+    private Collection $presences;
 
     public function __construct() {
         $this->presences = new ArrayCollection();

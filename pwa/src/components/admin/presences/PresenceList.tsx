@@ -1,9 +1,9 @@
+import { formatDecimalHours } from "@/lib/utils/date";
 import {
   List,
   Datagrid,
   TextField,
   DateField,
-  NumberField,
   ShowButton,
   TopToolbar,
   FilterButton,
@@ -79,12 +79,12 @@ export const PresenceList = () => (
           `${record?.employe?.nom} - ${record?.employe?.prenom} (${record?.employe?.ref})`
         }
       />
-      <FunctionField 
-        label="Ilot" 
-        render={(record) => record.ilot.nom}
-      />
+      <FunctionField label="Ilot" render={(record) => record.ilot.nom} />
       <TextField source="statut" />
-      <NumberField source="tempsPresence" label="Temps de Présence (H)" />
+      <FunctionField
+        label="Temps de Présence"
+        render={(record) => formatDecimalHours(record.tempsPresence)}
+      />
       <ShowButton />
     </Datagrid>
   </List>

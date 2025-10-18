@@ -31,9 +31,13 @@ import {
   User,
 } from "lucide-react";
 import type { ApiCollection } from "@/types/resources/ApiCollection";
-import type { Presence, PresenceFieldOrder, PresencesFilters } from "@/types/resources/Presence";
+import type {
+  Presence,
+  PresenceFieldOrder,
+  PresencesFilters,
+} from "@/types/resources/Presence";
 import { APP_ROUTES } from "@/config/app";
-import { formatDate, formatTime } from "@/lib/utils/date";
+import { formatDate, formatDecimalHours, formatTime } from "@/lib/utils/date";
 
 interface PresencesTableContentProps {
   presencesCollection?: ApiCollection<Presence>;
@@ -151,7 +155,7 @@ export function PresencesTableContent({
             </div>
 
             <div className="text-xs text-muted-foreground">
-              Temps: {presence.tempsPresence || 0}h
+              Temps: {formatDecimalHours(presence.tempsPresence)}h
             </div>
 
             <div className="flex justify-end">
@@ -274,7 +278,9 @@ export function PresencesTableContent({
                   ] || presence.statut}
                 </Badge>
               </TableCell>
-              <TableCell>{presence.tempsPresence || 0}h</TableCell>
+              <TableCell>
+                {formatDecimalHours(presence.tempsPresence)}
+              </TableCell>
               <TableCell>
                 {`${presence.employe?.nom} ${presence.employe.prenom} (${presence.employe.ref})` ||
                   "N/A"}

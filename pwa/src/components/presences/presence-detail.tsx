@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +27,7 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { isApiError, getErrorMessage } from "@/lib/api/handle-api-error";
 import { STATUT_PRESENCE_OPTIONS } from "@/types/resources/Presence";
 import { APP_ROUTES } from "@/config/app";
+import { formatDate, formatDecimalHours, formatTime } from "@/lib/utils/date";
 
 interface PresenceDetailsProps {
   id: number;
@@ -82,28 +81,6 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
       },
     });
     setOpenConfirmDialog(true);
-  };
-
-  const formatTime = (timeString?: string) => {
-    if (!timeString) return "-";
-    try {
-      const date = timeString.includes("T")
-        ? new Date(timeString)
-        : new Date(`1970-01-01T${timeString}`);
-      return format(date, "HH:mm");
-    } catch {
-      return timeString;
-    }
-  };
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    try {
-      const date = new Date(dateString);
-      return format(date, "EEEE dd MMMM yyyy", { locale: fr });
-    } catch {
-      return dateString;
-    }
   };
 
   if (isLoading) {
@@ -202,7 +179,7 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
               <div>
                 <h3 className="font-medium">Temps de présence</h3>
                 <p className="text-sm text-muted-foreground">
-                  {presence.tempsPresence || 0} heures
+                  {formatDecimalHours(presence.tempsPresence)}
                 </p>
               </div>
             </div>
@@ -225,7 +202,8 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
               <div>
                 <h3 className="font-medium">Îlot</h3>
                 <p className="text-sm text-muted-foreground">
-                  {`${presence.ilot?.nom} (${presence.ilot?.ref})` || "Non assigné"}
+                  {`${presence.ilot?.nom} (${presence.ilot?.ref})` ||
+                    "Non assigné"}
                 </p>
               </div>
             </div>

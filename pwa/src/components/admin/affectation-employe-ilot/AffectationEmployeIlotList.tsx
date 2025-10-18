@@ -12,8 +12,6 @@ import {
   CreateButton,
   ExportButton,
   FilterButton,
-  SearchInput,
-  ReferenceField,
 } from "react-admin";
 
 const assignmentFilters = [
@@ -58,18 +56,10 @@ export const AffectationEmployeIlotList = () => (
       }}
     >
       <TextField source="ref" label="Reference" />
-      <ReferenceField source="employe" reference="employes" label="Employee">
-        <TextField source="nom" />
-      </ReferenceField>
-      <ReferenceField source="employe" reference="employes" label="First Name">
-        <TextField source="prenom" />
-      </ReferenceField>
-      <ReferenceField source="employe" reference="employes" label="Position">
-        <TextField source="poste" />
-      </ReferenceField>
-      <ReferenceField source="ilot" reference="ilots" label="Workshop">
-        <TextField source="nom" />
-      </ReferenceField>
+      <TextField source="employe.nom" label="Nom Emp" />
+      <TextField source="employe.prenom" label="Prenom Emp" />
+      <TextField source="employe.poste" label="Position" />
+      <TextField source="ilot.ref" label="Ilot" />
       <BooleanField
         source="responsable"
         label="Responsible"

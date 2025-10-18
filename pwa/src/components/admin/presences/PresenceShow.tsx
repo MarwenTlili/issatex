@@ -1,10 +1,10 @@
+import { formatDecimalHours } from "@/lib/utils/date";
 import {
   Show,
   SimpleShowLayout,
   TextField,
   DateField,
-  NumberField,
-  ReferenceField,
+  FunctionField,
 } from "react-admin";
 
 export const PresenceShow = () => (
@@ -12,11 +12,17 @@ export const PresenceShow = () => (
     <SimpleShowLayout>
       <TextField source="ref" />
       <DateField source="datePresence" />
-      <ReferenceField source="employe" reference="api/employes">
-        <TextField source="nom" />
-      </ReferenceField>
+      <FunctionField
+        source="employe"
+        render={(record) =>
+          `${record.employe.nom} - ${record.employe.prenom} (${record.employe.ref})`
+        }
+      />
       <TextField source="statut" />
-      <NumberField source="tempsPresence" label="Temps de Présence (H)" />
+      <FunctionField
+        label="Temps de Présence"
+        render={(record) => formatDecimalHours(record.tempsPresence)}
+      />
       <DateField
         source="heureDebut"
         showTime

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,7 +29,6 @@ import {
   useCreatePresence,
   useUpdatePresence,
 } from "@/hooks/use-presences";
-import { useEmployes } from "@/hooks/use-employes";
 import { useIlots } from "@/hooks/use-ilots";
 import { STATUT_PRESENCE_OPTIONS } from "@/types/resources/Presence";
 import {
@@ -40,8 +39,14 @@ import {
   type FormErrors,
 } from "@/lib/api/handle-api-error";
 import { APP_ROUTES } from "@/config/app";
-import { formatDate, formatTime } from "@/lib/utils/date";
+import {
+  diffHours,
+  formatDate,
+  formatDecimalHours,
+  formatTime,
+} from "@/lib/utils/date";
 import { PresenceFormData, presenceSchema } from "@/lib/validation/schemas";
+import { useAffectationEmployeIlot } from "@/hooks/use-affectation-employe-ilot";
 
 interface PresenceFormProps {
   presenceId?: number;
@@ -64,10 +69,11 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
     resolver: zodResolver(presenceSchema),
     defaultValues: {
       datePresence: "",
-      heureDebut: "",
-      heureFin: "",
+      heureDebut: null,
+      heureFin: null,
       statut: "Present",
-      tempsPresence: 0,
+      tempsPresence: null,
+      tempsPresenceText: "",
       employe: "",
       ilot: "",
     },
@@ -78,50 +84,85 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
 
   const { data: presence, isLoading: isLoadingPresence } =
     usePresence(presenceId);
-  const { data: employesData, isLoading: isLoadingEmployes } = useEmployes();
   const { data: ilotsData, isLoading: isLoadingIlots } = useIlots();
 
   const createPresence = useCreatePresence();
   const updatePresence = useUpdatePresence();
 
-  useEffect(() => {
-    if (heureDebut && heureFin) {
-      const debut = new Date(`1970-01-01T${heureDebut}:00`);
-      const fin = new Date(`1970-01-01T${heureFin}:00`);
-      if (fin > debut) {
-        const diffHours =
-          Math.round(
-            ((fin.getTime() - debut.getTime()) / (1000 * 60 * 60)) * 100
-          ) / 100;
-        setValue("tempsPresence", diffHours);
-      }
-    }
-  }, [heureDebut, heureFin, setValue]);
+  const ilot = useWatch({ control, name: "ilot" });
 
+  const { data: affectationsEmployeIlot, isLoading: affectationsIsLoading } =
+    useAffectationEmployeIlot({ ilot });
+
+  const employesForIlot = useMemo(() => {
+    if (!affectationsEmployeIlot || !ilot) return [];
+    return affectationsEmployeIlot.member.map((a) => a.employe);
+  }, [affectationsEmployeIlot, ilot]);
+
+  const statut = useWatch({ control, name: "statut" });
+
+  // --- 1️⃣ Handle edit mode (loading + ilot setup + form reset) ---
   useEffect(() => {
-    if (isEdit && presence && employesData && ilotsData) {
-      setTimeout(() => {
-        reset({
-          datePresence: formatDate(presence.datePresence, "INPUT"),
-          heureDebut: formatTime(presence.heureDebut),
-          heureFin: formatTime(presence.heureFin),
-          statut: presence.statut || "Present",
-          tempsPresence: presence.tempsPresence || 0,
-          employe: presence.employe["@id"] || "",
-          ilot: presence.ilot["@id"] || "",
-        });
-      }, 0);
+    if (!isEdit || !presence) return;
+
+    // Step 1: set ilot first (to trigger employes loading)
+    if (presence.ilot?.["@id"]) {
+      setValue("ilot", presence.ilot["@id"]);
     }
-  }, [isEdit, presence, employesData, ilotsData, reset]);
+
+    // Step 2: when employes are ready, reset the form
+    if (ilotsData && employesForIlot.length > 0) {
+      reset({
+        datePresence: formatDate(presence.datePresence, "INPUT"),
+        heureDebut: presence.heureDebut
+          ? formatTime(presence.heureDebut)
+          : null,
+        heureFin: presence.heureFin ? formatTime(presence.heureFin) : null,
+        statut: presence.statut || "Present",
+        tempsPresence: presence.tempsPresence || null,
+        employe: presence.employe?.["@id"] || "",
+        ilot: presence.ilot?.["@id"] || "",
+      });
+    }
+  }, [isEdit, presence, ilotsData, employesForIlot, reset, setValue]);
+
+  // --- 2️⃣ Handle statut changes (auto-reset for Absent / Congé) ---
+  useEffect(() => {
+    if (["Absent", "Conge"].includes(statut)) {
+      setValue("heureDebut", null);
+      setValue("heureFin", null);
+      setValue("tempsPresence", null);
+      setValue("tempsPresenceText", "");
+    }
+  }, [statut, setValue]);
+
+  // --- 3️⃣ Compute tempsPresence automatically ---
+  useEffect(() => {
+    // Only compute if statut allows time tracking
+    if (["Absent", "Conge"].includes(statut)) return;
+
+    const diff = diffHours(heureDebut, heureFin);
+    setValue("tempsPresence", diff);
+    setValue("tempsPresenceText", formatDecimalHours(diff));
+  }, [heureDebut, heureFin, statut, setValue]);
 
   const onSubmit = async (data: PresenceFormData) => {
     try {
       setApiErrors({});
-      // console.log(data);
+
+      // remove tempsPresenceText (UI only)
+      const { tempsPresenceText, ...payload } = data;
+
+      // Normalize heures based on statut
+      if (["Absent", "Conge"].includes(payload.statut)) {
+        payload.heureDebut = null as any;
+        payload.heureFin = null as any;
+      }
+
       if (isEdit && presenceId) {
-        await updatePresence.mutateAsync({ id: presenceId, ...data });
+        await updatePresence.mutateAsync({ id: presenceId, ...payload });
       } else {
-        await createPresence.mutateAsync(data);
+        await createPresence.mutateAsync(payload);
       }
       router.push(APP_ROUTES.SECRETAIRE.PRESENCES);
     } catch (err) {
@@ -155,7 +196,6 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
     );
   }
 
-  const employes = employesData?.member ?? [];
   const ilots = ilotsData?.member ?? [];
 
   return (
@@ -218,13 +258,13 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
               label="Heure de début"
               htmlFor="heureDebut"
               error={errors.heureDebut?.message || apiErrors.heureDebut}
-              required
             >
               <Input
                 id="heureDebut"
                 type="time"
                 lang="fr-FR"
                 {...register("heureDebut")}
+                disabled={["Absent", "Conge"].includes(statut)}
               />
             </FormField>
 
@@ -232,63 +272,30 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
               label="Heure de fin"
               htmlFor="heureFin"
               error={errors.heureFin?.message || apiErrors.heureFin}
-              required
             >
               <Input
                 id="heureFin"
                 type="time"
                 lang="fr-FR"
                 {...register("heureFin")}
+                disabled={["Absent", "Conge"].includes(statut)}
               />
             </FormField>
 
             <FormField
-              label="Temps de présence (heures)"
-              htmlFor="tempsPresence"
-              error={errors.tempsPresence?.message || apiErrors.tempsPresence}
-              required
+              label="Temps de présence (h)"
+              htmlFor="tempsPresenceText"
             >
               <Input
-                id="tempsPresence"
-                type="number"
+                id="tempsPresenceText"
+                type="string"
+                {...register("tempsPresenceText")}
                 readOnly
-                {...register("tempsPresence", { valueAsNumber: true })}
               />
             </FormField>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            <FormField
-              label="Employé"
-              htmlFor="employe"
-              error={errors.employe?.message || apiErrors.employe}
-              required
-            >
-              <Controller
-                name="employe"
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value || ""}
-                    disabled={isLoadingEmployes}
-                    key={field.value || "empty"}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un employé" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {employes.map((e) => (
-                        <SelectItem key={e.id} value={e["@id"]}>
-                          {e.prenom} {e.nom} ({e.ref})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-            </FormField>
-
             <FormField
               label="Îlot"
               htmlFor="ilot"
@@ -313,6 +320,37 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
                       {ilots.map((i) => (
                         <SelectItem key={i.id} value={i["@id"]}>
                           {i.nom} ({i.ref})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </FormField>
+
+            <FormField
+              label="Employé"
+              htmlFor="employe"
+              error={errors.employe?.message || apiErrors.employe}
+              required
+            >
+              <Controller
+                name="employe"
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value || ""}
+                    disabled={affectationsIsLoading}
+                    key={field.value || "empty"}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un employé" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {employesForIlot.map((e) => (
+                        <SelectItem key={e.id} value={e["@id"]}>
+                          {e?.prenom} {e?.nom} ({e?.ref})
                         </SelectItem>
                       ))}
                     </SelectContent>

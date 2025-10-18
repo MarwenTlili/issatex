@@ -10,20 +10,20 @@ export interface Presence extends Item {
   id: number;
   ref: string;
   datePresence: string;
-  heureDebut: string;
-  heureFin: string;
+  heureDebut: string | null;
+  heureFin: string | null;
   statut: StatutPresence;
-  tempsPresence: number;
+  tempsPresence: string | null;
   employe: Employe;
   ilot: Ilot;
 }
 
 export interface CreatePresenceData {
   datePresence?: string;
-  heureDebut?: string;
-  heureFin?: string;
+  heureDebut?: string | null;
+  heureFin?: string | null;
   statut?: StatutPresence;
-  tempsPresence?: number;
+  tempsPresence?: string | null;
   employe?: string;
   ilot?: string;
 }

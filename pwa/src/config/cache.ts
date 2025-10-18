@@ -18,6 +18,8 @@ export const QUERY_KEYS = {
   EMPLOYE: "employe",
   ILOTS: "ilots",
   ILOT: "ilot",
+  AFFECTATIONS_EMPLOYE_ILOT: "affectations-employe-ilot",
+  AFFECTATION_EMPLOYE_ILOT: "affectation-employe-ilot",
   USERS: "users",
   USER: "user",
   CURRENT_USER: "current-user",

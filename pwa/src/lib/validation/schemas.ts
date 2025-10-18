@@ -119,39 +119,24 @@ export const presenceSchema = z
       .string()
       .min(1, "La date de présence est requise")
       .refine((date) => !isNaN(Date.parse(date)), "Format de date invalide"),
-    heureDebut: z
-      .string()
-      .min(1, "L'heure de début est requise")
-      .regex(
-        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-        "Format d'heure invalide (HH:MM)"
-      ),
-    heureFin: z
-      .string()
-      .min(1, "L'heure de fin est requise")
-      .regex(
-        /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/,
-        "Format d'heure invalide (HH:MM)"
-      ),
+    heureDebut: z.string().nullable().optional(),
+    heureFin: z.string().nullable().optional(),
     statut: z.enum(["Present", "Absent", "Retard", "Conge"], {
       required_error: "Le statut est requis",
     }),
-    tempsPresence: z
-      .number()
-      .min(0, "Le temps de présence doit être positif")
-      .max(24, "Le temps de présence ne peut pas dépasser 24 heures"),
+    tempsPresence: z.string().nullable(),
+    tempsPresenceText: z.string().optional(),
     employe: z.string().min(1, "L'employé est requis"),
     ilot: z.string(),
   })
   .refine(
-    (data) => {
-      const debut = new Date(`1970-01-01T${data.heureDebut}:00`);
-      const fin = new Date(`1970-01-01T${data.heureFin}:00`);
-      return fin > debut;
-    },
+    (data) =>
+      ["Absent", "Conge"].includes(data.statut) ||
+      (data.heureDebut && data.heureFin),
     {
-      message: "L'heure de fin doit être après l'heure de début",
-      path: ["heureFin"],
+      message:
+        "L'heure de début et de fin sont requises pour les statuts Présent ou Retard.",
+      path: ["heureDebut"], // attach to heureDebut input
     }
   );
 
@@ -239,6 +224,6 @@ export type UserFormData = z.infer<typeof userSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
-export type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>
+export type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>;
 
 export type LoginFormData = z.infer<typeof loginSchema>;

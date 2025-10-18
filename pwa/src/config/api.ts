@@ -11,7 +11,9 @@ export const AUTH_URL = `${ENTRYPOINT}/${API_PREFIX}/token/login`;
 export const TOKEN_REFRESH_URL = `${ENTRYPOINT}/${API_PREFIX}/token/refresh`;
 export const TOKEN_INVALIDATE_URL = `${ENTRYPOINT}/${API_PREFIX}/token/invalidate`;
 export const FETCH_PROFILE_URL = `${ENTRYPOINT}/${API_PREFIX}/profile`;
-export const MERCURE_PUBLIC_URL = process.env.NEXT_PUBLIC_MERCURE_PUBLIC_URL || 'https://localhost/.well-known/mercure';
+export const MERCURE_PUBLIC_URL =
+  process.env.NEXT_PUBLIC_MERCURE_PUBLIC_URL ||
+  "https://localhost/.well-known/mercure";
 
 // API Configuration
 export const API_CONFIG = {
@@ -31,6 +33,7 @@ export const API_ENDPOINTS = {
   PRESENCES: "/api/presences",
   EMPLOYES: "/api/employes",
   ILOTS: "/api/ilots",
+  AFFECTATION_EMPLOYE_ILOT: "/api/affectation_employe_ilots",
   USERS: "/api/users",
   AVATARS: "/api/avatars",
   NOTIFICATIONS: "/api/notifications",
