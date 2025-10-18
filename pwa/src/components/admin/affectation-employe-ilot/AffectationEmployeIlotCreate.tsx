@@ -19,7 +19,13 @@ export const AffectationEmployeIlotCreate = () => {
           },
         }}
       >
-        <ReferenceInput source="employe" reference="api/employes" required>
+        <ReferenceInput
+          source="employe.id"
+          reference="api/employes"
+          parse={(value) => ({ id: value })} // Convert ID to sub-object
+          format={(value) => value?.id} // Extract ID from sub-object
+          required
+        >
           <SelectInput
             optionText={(record) =>
               `${record.nom} ${record.prenom} (${record.poste})`

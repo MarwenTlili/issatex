@@ -65,9 +65,9 @@ class Presence {
     #[Groups('presence')]
     private ?StatutPresence $statut = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     #[Groups('presence')]
-    private ?int $tempsPresence = null;
+    private ?string $tempsPresence = null;
 
     #[ORM\ManyToOne(inversedBy: 'presences')]
     #[ORM\JoinColumn(nullable: false)]
@@ -128,11 +128,11 @@ class Presence {
         return $this;
     }
 
-    public function getTempsPresence(): ?int {
+    public function getTempsPresence(): ?string {
         return $this->tempsPresence;
     }
 
-    public function setTempsPresence(int $tempsPresence): static {
+    public function setTempsPresence(?string $tempsPresence): static {
         $this->tempsPresence = $tempsPresence;
         return $this;
     }

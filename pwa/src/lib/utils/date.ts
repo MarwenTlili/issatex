@@ -69,7 +69,7 @@ export const isToday = (date: string | Date): boolean => {
   return dateObj.toDateString() === today.toDateString();
 };
 
-export const formatTime = (time: string): string => {
+export const formatTime = (time: string | null): string => {
   if (!time) return "";
 
   try {
@@ -78,6 +78,47 @@ export const formatTime = (time: string): string => {
   } catch {
     return "";
   }
-
-  return time;
 };
+
+/**
+ * Calculate difference between two times (HH:mm)
+ * Returns decimal hours as string (e.g. "7.92") or null if invalid.
+ */
+export function diffHours(
+  heureDebut: string | null | undefined,
+  heureFin: string | null | undefined
+): string | null {
+  if (!heureDebut || !heureFin) return null;
+
+  const diffMs =
+    new Date(`1970-01-01T${heureFin}:00`).getTime() -
+    new Date(`1970-01-01T${heureDebut}:00`).getTime();
+
+  if (diffMs <= 0) return null;
+
+  const diffHours = diffMs / (1000 * 60 * 60);
+  const roundedHours = Math.round(diffHours * 100) / 100;
+  return roundedHours.toString();
+}
+
+/**
+ * Convert decimal hours (e.g. "7.92") into a formatted string (e.g. "7h55").
+ */
+export function formatDecimalHours(
+  decimalString: string | number | null | undefined
+): string {
+  if (!decimalString) return "0h00";
+
+  const decimal =
+    typeof decimalString === "string"
+      ? parseFloat(decimalString)
+      : decimalString;
+
+  if (isNaN(decimal)) return "0h00";
+
+  const totalMinutes = Math.round(decimal * 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  return `${hours}h${minutes.toString().padStart(2, "0")}`;
+}
