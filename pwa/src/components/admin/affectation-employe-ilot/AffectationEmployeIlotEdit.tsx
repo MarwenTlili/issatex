@@ -19,16 +19,21 @@ export const AffectationEmployeIlotEdit = () => {
           },
         }}
       >
-        <ReferenceInput source="employe" reference="api/employes" required>
+        <ReferenceInput source="employe.@id" reference="api/employes" required>
           <SelectInput
-            optionText={(record) =>
-              `${record.nom} ${record.prenom} (${record.poste})`
-            }
             label="Employee"
+            optionValue="@id"
+            optionText={(record) =>
+              `${record.ref} - ${record.nom} ${record.prenom}`
+            }
           />
         </ReferenceInput>
-        <ReferenceInput source="ilot" reference="api/ilots" required>
-          <SelectInput optionText="nom" label="Workshop" />
+        <ReferenceInput source="ilot.@id" reference="api/ilots" required>
+          <SelectInput
+            label="Ilot"
+            optionValue="@id"
+            optionText={(record) => `${record.ref} - ${record.nom}`}
+          />
         </ReferenceInput>
         <BooleanInput source="responsable" label="Is Responsible" />
       </SimpleForm>
