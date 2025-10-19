@@ -14,7 +14,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
     paginationClientItemsPerPage: true,
     normalizationContext: ['groups' => ['affectation:read']]
 )]
-#[ApiFilter(SearchFilter::class, properties: ["employe" => "exact", "ilot" => "exact"])]
+#[ApiFilter(
+    SearchFilter::class, 
+    properties: [
+        "employe.id" => "exact", 
+        "employe.ref" => "partial", 
+        "ilot.id" => "exact"
+    ]
+)]
 class AffectationEmployeIlot {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
