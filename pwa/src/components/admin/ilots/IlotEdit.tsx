@@ -3,10 +3,9 @@ import { Edit, SimpleForm, TextInput, required } from "react-admin";
 export const IlotEdit = () => (
   <Edit>
     <SimpleForm>
-      <TextInput source="id" disabled />
-      <TextInput source="ref" fullWidth />
-      <TextInput source="nom" validate={[required()]} fullWidth />
-      <TextInput source="description" multiline rows={4} fullWidth />
+      <TextInput source="ref" label="Réf" disabled />
+      <TextInput source="nom" validate={[required()]} />
+      <TextInput source="description" multiline rows={4} />
     </SimpleForm>
   </Edit>
 );
