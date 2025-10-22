@@ -23,7 +23,7 @@ export const EmployeShow = () => (
         target="employe"
       >
         <Datagrid>
-          <ReferenceField source="ilot" reference="api/ilots" label="Ilot">
+          <ReferenceField source="ilot[@id]" reference="api/ilots" label="Ilot">
             <TextField source="ref" />
             {" - "}
             <TextField source="nom" />
@@ -36,7 +36,7 @@ export const EmployeShow = () => (
         label="Présence"
         reference="api/presences"
         target="employe"
-        // sort={{ field: "datePresence", order: "DESC" }}
+        sort={{ field: "datePresence", order: "DESC" }}
         perPage={10}
       >
         <Datagrid>
