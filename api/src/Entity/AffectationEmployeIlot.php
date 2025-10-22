@@ -7,6 +7,7 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AffectationEmployeIlotRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AffectationEmployeIlotRepository::class)]
@@ -15,12 +16,16 @@ use Symfony\Component\Serializer\Annotation\Groups;
     normalizationContext: ['groups' => ['affectation:read']]
 )]
 #[ApiFilter(
-    SearchFilter::class, 
+    SearchFilter::class,
     properties: [
-        "employe.id" => "exact", 
-        "employe.ref" => "partial", 
+        "employe.id" => "exact",
+        "employe.ref" => "partial",
         "ilot.id" => "exact"
     ]
+)]
+#[UniqueEntity(
+    fields: ['employe'],
+    message: 'Cet employé est déjà affecté à un ilot.'
 )]
 class AffectationEmployeIlot {
     #[ORM\Id]
