@@ -1,17 +1,17 @@
 import { ENTRYPOINT } from "@/config/api";
 import {
   ApiPlatformAdminDataProvider,
-  fetchHydra,
-  HttpClientResponse,
   hydraDataProvider,
+  HydraHttpClientResponse,
 } from "@api-platform/admin";
 import { parseHydraDocumentation } from "@api-platform/api-doc-parser";
 import { getSession, signOut } from "next-auth/react";
+import { fetchUtils, HttpError } from "react-admin";
 
 export const httpClient = async (
   url: string | URL,
   options: any = {}
-): Promise<HttpClientResponse> => {
+): Promise<HydraHttpClientResponse> => {
   const session = await getSession();
 
   if (session?.error === "RefreshTokenError") {
@@ -27,17 +27,43 @@ export const httpClient = async (
     headers.set("Authorization", `Bearer ${session.accessToken}`);
   }
 
-  const response = await fetchHydra(new URL(url, ENTRYPOINT), {
-    ...options,
-    headers,
-  });
+  try {
+    // Do a *normal fetch*, not fetchHydra,
+    // otherwise it will throw HttpError and we can't map fileds errors
+    const response = await fetchUtils.fetchJson(
+      new URL(url, ENTRYPOINT).toString(),
+      {
+        ...options,
+        headers,
+      }
+    );
 
-  if (response.status === 401 || response.status === 403) {
-    await signOut({ redirect: true, callbackUrl: "/login" });
-    throw new Error("Unauthorized");
+    return {
+      status: response.status,
+      headers: response.headers,
+      json: response.json,
+    };
+  } catch (error: any) {
+    // This is where 4xx/5xx errors end up
+    if (error instanceof HttpError) {
+      const body = error.body;
+
+      if (error.status === 401 || error.status === 403) {
+        await signOut({ redirect: true, callbackUrl: "/login" });
+      }
+
+      if (body?.violations) {
+        // preserve API Platform's validation error structure
+        throw new HttpError(
+          body.title || "An error occured",
+          error.status,
+          body
+        );
+      }
+    }
+
+    throw error;
   }
-
-  return response;
 };
 
 export const createHydraDataProvider = async (
