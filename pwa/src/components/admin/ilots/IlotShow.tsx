@@ -206,7 +206,7 @@ export const IlotShow = () => {
         <SectionTitle icon={People} title="Affectations (Employés assignés)" />
         <ResponsiveReferenceList
           reference="api/affectation_employe_ilots"
-          target="ilot"
+          target="ilot.id"
           sort={{ field: "id", order: "ASC" }}
           renderSimpleListItem={(r) =>
             `${r.employe?.nom ?? ""} ${r.employe?.prenom ?? ""} ${
