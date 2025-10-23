@@ -26,12 +26,12 @@ import {
   Typography,
   Grid,
   Paper,
-  Avatar,
   Button,
   Divider,
   CircularProgress,
   Alert,
   Stack,
+  Avatar,
 } from "@mui/material";
 import {
   Person,
@@ -44,6 +44,7 @@ import { getSession } from "next-auth/react";
 import { ENTRYPOINT } from "@/config/api";
 import { useFormContext } from "react-hook-form";
 import { User } from "@/types/resources/User";
+import { Avatar as AvatarResource } from "@/types/resources/Avatar";
 
 // Constants
 const ROLE_CHOICES = [
@@ -175,7 +176,7 @@ const AvatarInput = ({
   const { field } = useInput({ source });
 
   // Get the current avatar URL if it exists
-  const avatarUrl = record?.avatar?.contentUrl;
+  const avatarUrl = (record?.avatar as AvatarResource).contentUrl;
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
