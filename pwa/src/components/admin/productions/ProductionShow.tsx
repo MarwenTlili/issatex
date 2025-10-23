@@ -21,20 +21,6 @@ export const ProductionShow = () => (
       <NumberField source="quantitePremiereChoix" />
       <NumberField source="quantiteDeuxiemeChoix" />
       <NumberField source="quantiteTotale" />
-
-      <ReferenceManyField reference="api/presences" target="production">
-        <Datagrid>
-          <ReferenceField
-            source="employe"
-            reference="api/employes"
-          >
-            <TextField source="nom" />
-          </ReferenceField>
-          <DateField source="datePresence" />
-          <TextField source="statut" />
-          <NumberField source="tempsPresence" />
-        </Datagrid>
-      </ReferenceManyField>
     </SimpleShowLayout>
   </Show>
 );
