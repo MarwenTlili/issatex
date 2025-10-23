@@ -13,9 +13,12 @@ class IlotFixtures extends Fixture {
     function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 
-        for ($i = 0; $i < 2; $i++) {
+        $numberOfIlots = 2;
+
+        for ($i = 0; $i < $numberOfIlots; $i++) {
+            $letter = chr(65 + $i);
             $ilot = new Ilot();
-            $ilot->setNom("Ilot_" . $i+1)
+            $ilot->setNom("Ilot_" . $letter)
                 ->setDescription($this->faker->sentence(3))
             ;
             $manager->persist($ilot);
