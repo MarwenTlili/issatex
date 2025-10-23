@@ -1,7 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Resource, Loading, AuthProvider, defaultTheme } from "react-admin";
+import {
+  Resource,
+  Loading,
+  AuthProvider,
+} from "react-admin";
 import { signOut, useSession } from "next-auth/react";
 import { ApiPlatformAdminDataProvider, HydraAdmin } from "@api-platform/admin";
 import PeopleIcon from "@mui/icons-material/People";
@@ -54,14 +58,7 @@ import {
   AffectationEmployeIlotList,
   AffectationEmployeIlotShow,
 } from "./affectation-employe-ilot";
-import { createTheme } from "@mui/material";
-
-const lightTheme = createTheme(defaultTheme);
-
-const darkTheme = createTheme({
-  ...defaultTheme,
-  palette: { mode: "dark" },
-});
+import { darkTheme, lightTheme } from "./themes";
 
 export default function Admin() {
   const { data: session, status } = useSession();
