@@ -61,7 +61,7 @@ class Ilot {
     /**
      * @var Collection<int, Presence>
      */
-    #[ORM\OneToMany(mappedBy: 'ilot', targetEntity: Presence::class)]
+    #[ORM\OneToMany(mappedBy: 'ilot', targetEntity: Presence::class, orphanRemoval: true)]
     private Collection $presences;
 
     public function __construct() {

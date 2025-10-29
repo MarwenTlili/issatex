@@ -62,7 +62,6 @@ const SectionTitle = ({ icon: Icon, title }: { icon: any; title: string }) => (
 // --- Ilot Summary ---
 const IlotSummary = () => {
   const record = useRecordContext();
-  const theme = useTheme();
 
   if (!record) return null;
 
