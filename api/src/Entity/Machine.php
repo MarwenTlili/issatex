@@ -39,6 +39,7 @@ class Machine {
     private ?StatutMachine $statut;
 
     #[ORM\ManyToOne(inversedBy: 'machines')]
+    #[ORM\JoinColumn(nullable: true, onDelete: "SET NULL")]
     private ?Ilot $ilot = null;
 
     public function getId(): ?int {
