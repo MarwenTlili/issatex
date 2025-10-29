@@ -92,7 +92,7 @@ class Planning {
 
     #[ORM\ManyToOne(inversedBy: 'plannings')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['planning:read'])]
+    #[Groups(['planning:read', 'planning:write'])]
     private ?OrdreFabrication $ordreFabrication = null;
 
     #[ORM\ManyToOne(inversedBy: 'plannings')]
