@@ -18,7 +18,7 @@ class IlotFixtures extends Fixture {
         for ($i = 0; $i < $numberOfIlots; $i++) {
             $letter = chr(65 + $i);
             $ilot = new Ilot();
-            $ilot->setNom("Ilot_" . $letter)
+            $ilot->setNom($letter)
                 ->setDescription($this->faker->sentence(3))
             ;
             $manager->persist($ilot);
