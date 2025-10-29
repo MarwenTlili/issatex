@@ -176,7 +176,7 @@ const AvatarInput = ({
   const { field } = useInput({ source });
 
   // Get the current avatar URL if it exists
-  const avatarUrl = (record?.avatar as AvatarResource).contentUrl;
+  const avatarUrl = (record?.avatar as AvatarResource)?.contentUrl;
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
