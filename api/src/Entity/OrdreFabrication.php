@@ -14,7 +14,9 @@ use ApiPlatform\Metadata\Patch;
 use App\Enum\StatutOF;
 use App\Enum\TailleArticle;
 use App\Repository\OrdreFabricationRepository;
-use App\State\OrdreFabricationProcessor;
+use App\State\OrdreFabrication\CreateOrdreFabricationProcessor;
+use App\State\OrdreFabrication\DeleteOrdreFabricationProcessor;
+use App\State\OrdreFabrication\UpdateOrdreFabricationProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -25,13 +27,12 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ApiResource(
     paginationClientItemsPerPage: true,
     mercure: true,
-    processor: OrdreFabricationProcessor::class,
     operations: [
-        new Post(),
+        new Post(processor: CreateOrdreFabricationProcessor::class),
         new Get(),
         new GetCollection(),
-        new Patch(),
-        new Delete()
+        new Patch(processor: UpdateOrdreFabricationProcessor::class),
+        new Delete(processor: DeleteOrdreFabricationProcessor::class)
     ],
     normalizationContext: ['groups' => ['ordreFabrication:read']],
     denormalizationContext: ['groups' => ['ordreFabrication:write']],
