@@ -7,7 +7,9 @@ import {
   FilterButton,
   SearchInput,
   SelectInput,
+  SimpleList,
 } from "react-admin";
+import { useMediaQuery, Theme } from "@mui/material";
 import RowActions from "@/components/admin/common/row-actions";
 import { Employe } from "@/types/resources/Employe";
 
@@ -33,14 +35,26 @@ const EmployeListActions = () => (
   </TopToolbar>
 );
 
-export const EmployeList = () => (
-  <List filters={EmployeFilters} actions={<EmployeListActions />}>
-    <Datagrid rowClick={false}>
-      <TextField source="ref" label="Ref" />
-      <TextField source="nom" label="Nom" />
-      <TextField source="prenom" label="Prénom" />
-      <TextField source="poste" label="Poste" />
-      <RowActions<Employe> resource="api/employes" />
-    </Datagrid>
-  </List>
-);
+export const EmployeList = () => {
+  const isSmall = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
+
+  return (
+    <List filters={EmployeFilters} actions={<EmployeListActions />}>
+      {isSmall ? (
+        <SimpleList
+          primaryText={(record: Employe) => record.nom + " " + record.prenom}
+          secondaryText={(record: Employe) => record.poste}
+          tertiaryText={(record: Employe) => record.ref}
+        />
+      ) : (
+        <Datagrid rowClick={false}>
+          <TextField source="ref" label="Ref" />
+          <TextField source="nom" label="Nom" />
+          <TextField source="prenom" label="Prénom" />
+          <TextField source="poste" label="Poste" />
+          <RowActions<Employe> resource="api/employes" />
+        </Datagrid>
+      )}
+    </List>
+  );
+};
