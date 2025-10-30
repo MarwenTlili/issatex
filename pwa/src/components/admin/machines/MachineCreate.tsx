@@ -7,11 +7,10 @@ import {
   required,
 } from "react-admin";
 import { statutChoices } from "./MachineList";
-import { Machine } from "@/types/resources/Machine";
 
 export const MachineCreate = () => {
   return (
-    <Create<Machine> redirect="list">
+    <Create redirect="list">
       <SimpleForm>
         <TextInput source="nom" validate={[required()]} />
         <TextInput source="type" validate={[required()]} />

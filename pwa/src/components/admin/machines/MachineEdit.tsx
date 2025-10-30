@@ -30,7 +30,7 @@ const CustomTitle = () => {
 
 export const MachineEdit = () => {
   return (
-    <Edit<Machine> title={<CustomTitle />} redirect="list">
+    <Edit title={<CustomTitle />} redirect="list">
       <SimpleForm toolbar={<CustomToolbar />}>
         <TextInput source="ref" disabled />
         <TextInput source="nom" validate={[required()]} />
