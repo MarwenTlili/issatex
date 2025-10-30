@@ -3,9 +3,6 @@ import {
   Datagrid,
   TextField,
   ReferenceField,
-  EditButton,
-  ShowButton,
-  DeleteButton,
   CreateButton,
   TopToolbar,
   FilterButton,
@@ -13,6 +10,11 @@ import {
   SelectInput,
   ReferenceInput,
 } from "react-admin";
+import RowActions from "@/components/admin/common/row-actions";
+import { STATUTS } from "@/types/resources/Machine";
+
+// array of choices for React-Admin SelectInput component (id, name)
+export const statutChoices = STATUTS.map((s) => ({ id: s, name: s }));
 
 const MachineFilters = [
   <SearchInput key="search" source="ref" alwaysOn />,
@@ -20,15 +22,7 @@ const MachineFilters = [
     key="statut"
     source="statut"
     label="Status"
-    choices={[
-      { id: "Fonctionnelle", name: "Fonctionnelle" },
-      { id: "En Panne", name: "En Panne" },
-      { id: "En Maintenance", name: "En Maintenance" },
-      { id: "En Arretee", name: "En Arrêtée" },
-      { id: "En Cours De Reparation", name: "En Cours De Réparation" },
-      { id: "Disponible", name: "Disponible" },
-      { id: "Indisponible", name: "Indisponible" },
-    ]}
+    choices={statutChoices}
   />,
   <ReferenceInput key="ilot" source="ilot" reference="api/ilots">
     <SelectInput optionText="nom" />
@@ -48,7 +42,7 @@ export const MachineList = () => (
     actions={<MachineListActions />}
     sort={{ field: "nom", order: "ASC" }}
   >
-    <Datagrid>
+    <Datagrid rowClick={false}>
       <TextField source="ref" label="Reference" />
       <TextField source="nom" label="Name" />
       <TextField source="type" label="Type" />
@@ -56,9 +50,7 @@ export const MachineList = () => (
       <ReferenceField source="ilot" reference="api/ilots" label="Ilot">
         <TextField source="nom" />
       </ReferenceField>
-      <EditButton />
-      <ShowButton />
-      <DeleteButton />
+      <RowActions resource="api/machines" />
     </Datagrid>
   </List>
 );

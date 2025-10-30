@@ -1,7 +1,19 @@
-import { Show, SimpleShowLayout, TextField, ReferenceField } from "react-admin";
+import { Machine } from "@/types/resources/Machine";
+import {
+  Show,
+  SimpleShowLayout,
+  TextField,
+  ReferenceField,
+  useRecordContext,
+} from "react-admin";
+
+const CustomTitle = () => {
+  const record = useRecordContext<Machine>();
+  return `${record?.ref}`;
+};
 
 export const MachineShow = () => (
-  <Show>
+  <Show title={<CustomTitle />}>
     <SimpleShowLayout>
       <TextField source="ref" />
       <TextField source="nom" />
