@@ -22,6 +22,7 @@ import { Box, Chip, Typography } from "@mui/material";
 import { useMediaQuery } from "@mui/material";
 
 import AvatarField from "./AvatarField";
+import RowActions from "@/components/admin/common/row-actions";
 
 const listFilters = [
   <SearchInput key="search" source="ref" alwaysOn />,
@@ -170,32 +171,7 @@ export const UserList = () => {
             label="Status"
             render={(record) => <UserStatusField record={record} />}
           />
-          <Box
-            display="flex"
-            gap={1}
-            sx={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "flex-end",
-            }}
-          >
-            <EditButton
-              sx={{
-                borderRadius: 8,
-                "&.MuiButton-root": {
-                  padding: "4px 12px",
-                },
-              }}
-            />
-            <ShowButton
-              sx={{
-                borderRadius: 8,
-                "&.MuiButton-root": {
-                  padding: "4px 12px",
-                },
-              }}
-            />
-          </Box>
+          <RowActions resource="api/users" />
         </Datagrid>
       )}
     </List>
