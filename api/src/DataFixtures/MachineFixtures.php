@@ -29,7 +29,7 @@ class MachineFixtures extends Fixture implements DependentFixtureInterface, Fixt
         for ($i = 0; $i < 12; $i++) {
             $machine = new Machine();
             $machine->setNom($this->faker->word() . '-' . $this->faker->numberBetween(100, 999))
-                ->setStatut(StatutMachine::DISPONIBLE)
+                ->setStatut(StatutMachine::AVAILABLE)
                 ->settype($this->faker->randomElement(TypeMachine::cases())->value)
                 ->setIlot($i < 6 ? $ilots[0] : $ilots[1])
             ;
