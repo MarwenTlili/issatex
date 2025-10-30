@@ -7,16 +7,8 @@ import {
 
 export const EmployeCreate = () => {
   return (
-    <Create>
-      <SimpleForm
-        sx={{
-          "& .RaSimpleForm-form": {
-            backgroundColor: "var(--color-card)",
-            padding: "24px",
-            borderRadius: "8px",
-          },
-        }}
-      >
+    <Create redirect="list">
+      <SimpleForm>
         <TextInput source="nom" label="Nom" required />
         <TextInput source="prenom" label="Prenom" required />
         <TextInput source="poste" label="Poste" required />

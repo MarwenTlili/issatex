@@ -1,3 +1,4 @@
+import { Employe } from "@/types/resources/Employe";
 import {
   Show,
   SimpleShowLayout,
@@ -7,10 +8,16 @@ import {
   ReferenceField,
   BooleanField,
   DateField,
+  useRecordContext,
 } from "react-admin";
 
+const CustomTitle = () => {
+  const record = useRecordContext<Employe>();
+  return `${record?.ref}`;
+};
+
 export const EmployeShow = () => (
-  <Show>
+  <Show title={<CustomTitle />}>
     <SimpleShowLayout>
       <TextField source="ref" label="Reference" />
       <TextField source="nom" label="Nom" />
