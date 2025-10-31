@@ -8,6 +8,7 @@ import {
   SearchInput,
   SelectInput,
   SimpleList,
+  FunctionField,
 } from "react-admin";
 import { useMediaQuery, Theme } from "@mui/material";
 import RowActions from "@/components/admin/common/row-actions";
@@ -48,10 +49,24 @@ export const EmployeList = () => {
         />
       ) : (
         <Datagrid rowClick={false}>
-          <TextField source="ref" label="Ref" />
+          <TextField source="ref" label="Ref" sx={{ whiteSpace: "nowrap" }} />
           <TextField source="nom" label="Nom" />
           <TextField source="prenom" label="Prénom" />
           <TextField source="poste" label="Poste" />
+          <FunctionField
+            label="Affecté?"
+            render={(record: Employe) =>
+              record.affectations && record.affectations.length > 0
+                ? "Oui"
+                : "Non"
+            }
+          />
+          <FunctionField
+            label="Présences"
+            render={(record: Employe) =>
+              record.presences ? record.presences.length : 0
+            }
+          />
           <RowActions<Employe> resource="api/employes" />
         </Datagrid>
       )}
