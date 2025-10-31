@@ -6,11 +6,9 @@ export interface Employe extends Item {
   ref: string;
   nom: string;
   prenom: string;
-  email?: string;
-  telephone?: string;
   poste?: string;
-  dateEmbauche?: string;
-  actif: boolean;
+  affectations?: string[];
+  presences?: string[];
 }
 
 export interface EmployesFilter extends BaseFilters {
