@@ -59,6 +59,7 @@ import {
   AffectationEmployeIlotShow,
 } from "./affectation-employe-ilot";
 import { darkTheme, lightTheme } from "./themes";
+import CustomLayout from "./layout/CustomLayout";
 
 export default function Admin() {
   const { data: session, status } = useSession();
@@ -123,6 +124,7 @@ export default function Admin() {
       theme={lightTheme}
       lightTheme={lightTheme}
       darkTheme={darkTheme}
+      layout={CustomLayout}
     >
       {/* Add more resources as needed */}
       <Resource
