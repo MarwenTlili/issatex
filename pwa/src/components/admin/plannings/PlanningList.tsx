@@ -5,9 +5,6 @@ import {
   DateField,
   ReferenceField,
   BooleanField,
-  EditButton,
-  ShowButton,
-  DeleteButton,
   CreateButton,
   TopToolbar,
   FilterButton,
@@ -16,6 +13,7 @@ import {
   ReferenceInput,
   SelectInput,
 } from "react-admin";
+import RowActions from "../common/row-actions";
 
 const PlanningFilters = [
   <SearchInput key="search" source="ref" alwaysOn />,
@@ -39,7 +37,7 @@ export const PlanningList = () => (
     actions={<PlanningListActions />}
     sort={{ field: "dateCreation", order: "DESC" }}
   >
-    <Datagrid>
+    <Datagrid rowClick={false}>
       <TextField source="ref" />
       <DateField source="dateCreation" />
       <DateField source="dateDebut" />
@@ -55,9 +53,7 @@ export const PlanningList = () => (
         <TextField source="nom" />
       </ReferenceField>
       <BooleanField source="reporte" label="Reporté" />
-      <EditButton />
-      <ShowButton />
-      <DeleteButton />
+      <RowActions resource="api/plannings" />
     </Datagrid>
   </List>
 );
