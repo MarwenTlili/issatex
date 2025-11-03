@@ -21,8 +21,7 @@ import {
   useGetOne,
 } from "react-admin";
 import { Chip, Box, ChipProps, useMediaQuery, useTheme } from "@mui/material";
-import { OrdreFabrication, StatutOF } from "@/types/resources/OrdreFabrication";
-import RowActions from "@/components/admin/common/row-actions";
+import { StatutOF } from "@/types/resources/OrdreFabrication";
 
 const statutChoices = [
   { id: "CREE", name: "Créé" },
@@ -181,7 +180,7 @@ export const OrdreFabricationList = () => {
           rowClick="show"
         />
       ) : (
-        <Datagrid rowClick={false} bulkActionButtons={false}>
+        <Datagrid rowClick={"show"} bulkActionButtons={false}>
           <TextField source="ref" label="Référence" />
           <ReferenceField
             source="client"
@@ -215,10 +214,6 @@ export const OrdreFabricationList = () => {
           />
           <StatutField source="statut" />
           <PriorityField source="urgent" label="Priorité" />
-          <RowActions<OrdreFabrication>
-            resource="api/ordre_fabrications"
-            hideActions={{ edit: true }}
-          />
         </Datagrid>
       )}
     </List>

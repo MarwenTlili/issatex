@@ -4,7 +4,6 @@ import {
   TextInput,
   BooleanInput,
   required,
-  email,
 } from "react-admin";
 
 export const ClientEdit = () => (
