@@ -6,4 +6,7 @@ export interface Client extends Item {
   nom?: string;
   adresse?: string;
   privilegie?: boolean;
+  ordreFabrications?: string[];
+  articles?: string[];
+  account?: string;
 }
