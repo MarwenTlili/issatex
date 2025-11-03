@@ -26,10 +26,12 @@ import {
   Delete as DeleteIcon,
 } from "@mui/icons-material";
 
-export interface RowActionsProps {
-  /** react-admin resource name, e.g. "api/ilots" or "users" */
+/**
+ * Generic props definition
+ */
+export interface RowActionsProps<TRecord extends { id: string | number }> {
   resource: string;
-  /** Optional: override labels (e.g. “View” instead of “Show”) */
+  record?: TRecord;
   labels?: {
     show?: string;
     edit?: string;
@@ -39,7 +41,6 @@ export interface RowActionsProps {
     cancel?: string;
     confirmDelete?: string;
   };
-  /** Optional: hide specific actions */
   hideActions?: {
     show?: boolean;
     edit?: boolean;
@@ -51,12 +52,14 @@ export interface RowActionsProps {
  * Generic RowActions component for react-admin List.
  * Provides show, edit, and delete actions with confirmation dialog.
  */
-export default <TRecord extends { id: string | number }>({
+export default function RowActions<TRecord extends { id: string | number }>({
   resource,
+  record: propRecord,
   labels,
   hideActions,
-}: RowActionsProps) => {
-  const record = useRecordContext<TRecord>();
+}: RowActionsProps<TRecord>) {
+  const contextRecord = useRecordContext<TRecord>();
+  const record = propRecord ?? contextRecord;
   const redirect = useRedirect();
   const notify = useNotify();
   const [deleteRecord] = useDelete();
@@ -181,4 +184,4 @@ export default <TRecord extends { id: string | number }>({
       </Dialog>
     </>
   );
-};
+}
