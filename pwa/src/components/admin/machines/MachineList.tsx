@@ -79,11 +79,9 @@ export const IlotField = ({ record }: { record: Machine }) => {
   }
 
   return (
-    <Box>
-      <Link to={`/api/ilots/${encodeURIComponent(data["@id"])}/show`}>
-        {data.nom}
-      </Link>
-    </Box>
+    <Link to={`/api/ilots/${encodeURIComponent(data["@id"])}/show`}>
+      {data.nom}
+    </Link>
   );
 };
 
