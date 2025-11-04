@@ -9,6 +9,7 @@ import {
   useListContext,
   useGetOne,
   Identifier,
+  Link,
 } from "react-admin";
 import {
   type Theme,
@@ -17,18 +18,21 @@ import {
   Stack,
   Chip,
   CircularProgress,
+  Card,
+  CardHeader,
+  CardContent,
 } from "@mui/material";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import RowActions from "@/components/admin/common/row-actions";
 import { Client } from "@/types/resources/Client";
 import { User } from "@/types/resources/User";
+import { orange } from "@mui/material/colors";
 
 export const AccountUsernameField = ({ record }: { record: Client }) => {
   const { data, isLoading, error } = useGetOne<User>("api/users", {
     id: record?.account as unknown as number | undefined,
   });
 
-  if (!record?.account) {
+  if (!record?.account || !data) {
     return <Box>—</Box>;
   }
 
@@ -40,7 +44,11 @@ export const AccountUsernameField = ({ record }: { record: Client }) => {
     return <Box className="text-destructive text-xs">Error loading</Box>;
   }
 
-  return <Box>{data?.username || "—"}</Box>;
+  return (
+    <Link to={`/api/users/${encodeURIComponent(data["@id"])}/show`}>
+      {data.username}
+    </Link>
+  );
 };
 
 const filters = [
@@ -59,26 +67,29 @@ const MobileClientList = () => {
     <Stack spacing={3} sx={{ p: 2 }}>
       {data?.map((record) => (
         <Card key={record.id} className="border-l-4 border-l-primary">
-          <CardHeader>
-            <div className="flex justify-between items-start gap-4">
-              <div className="flex-1">
-                <h3 className="font-bold text-lg">{record.nom}</h3>
-                <p className="text-sm text-muted-foreground">{record.ref}</p>
-              </div>
-              {record.privilegie && (
-                <Chip
-                  label="Privilégié"
-                  size="small"
-                  color="warning"
-                  variant="outlined"
-                />
-              )}
-              <RowActions<Client & { id: Identifier }>
+          <CardHeader
+            title={record.nom}
+            subheader={record.ref}
+            action={
+              <Stack alignItems="flex-end" spacing={1}>
+                <RowActions<Client & { id: Identifier }>
                   resource="api/clients"
                   record={record}
                 />
-            </div>
-          </CardHeader>
+                {record.privilegie && (
+                  <Chip
+                    label="PRIVILEGIE"
+                    sx={{
+                      backgroundColor: orange[500],
+                      color: "white",
+                      fontWeight: 500,
+                      fontSize: 12,
+                    }}
+                  />
+                )}
+              </Stack>
+            }
+          />
           <CardContent>
             <Stack spacing={2}>
               <div className="grid grid-cols-2 gap-3 text-sm">
@@ -106,7 +117,7 @@ const MobileClientList = () => {
 };
 
 export const ClientList = () => {
-  const isSmall = useMediaQuery<Theme>((theme) => theme.breakpoints.down("md"));
+  const isSmall = useMediaQuery<Theme>((theme) => theme.breakpoints.down("sm"));
 
   return (
     <List filters={filters}>
