@@ -7,10 +7,19 @@ import {
   FilterButton,
   SearchInput,
   SelectInput,
-  SimpleList,
   FunctionField,
+  Identifier,
+  useListContext,
 } from "react-admin";
-import { useMediaQuery, Theme } from "@mui/material";
+import {
+  useMediaQuery,
+  Theme,
+  Box,
+  Stack,
+  Card,
+  CardHeader,
+  CardContent,
+} from "@mui/material";
 import RowActions from "@/components/admin/common/row-actions";
 import { Employe } from "@/types/resources/Employe";
 
@@ -36,17 +45,47 @@ const EmployeListActions = () => (
   </TopToolbar>
 );
 
+const MobileEmployeList = () => {
+  const { data, isLoading } = useListContext<Employe & { id: Identifier }>();
+
+  if (isLoading) {
+    return <Box sx={{ p: 2 }}>Loading...</Box>;
+  }
+
+  return (
+    <Stack spacing={3} sx={{ p: 2 }}>
+      {data?.map((record) => (
+        <Card key={record.id} className="border-l-4 border-l-primary">
+          <CardHeader
+            title={`${record.nom} ${record.prenom}`}
+            subheader={record.ref}
+            action={
+              <Stack alignItems="flex-end" spacing={1}>
+                <RowActions<Employe> resource="api/employes" record={record} />
+              </Stack>
+            }
+          />
+          <CardContent>
+            <Stack spacing={2}>
+              <div>
+                <p className="text-muted-foreground font-medium">POSTE</p>
+                <p className="text-foreground">{record.poste}</p>
+              </div>
+            </Stack>
+          </CardContent>
+        </Card>
+      ))}
+    </Stack>
+  );
+};
+
 export const EmployeList = () => {
   const isSmall = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
 
   return (
     <List filters={EmployeFilters} actions={<EmployeListActions />}>
       {isSmall ? (
-        <SimpleList
-          primaryText={(record: Employe) => record.nom + " " + record.prenom}
-          secondaryText={(record: Employe) => record.poste}
-          tertiaryText={(record: Employe) => record.ref}
-        />
+        <MobileEmployeList />
       ) : (
         <Datagrid rowClick={false}>
           <TextField source="ref" label="Ref" sx={{ whiteSpace: "nowrap" }} />
