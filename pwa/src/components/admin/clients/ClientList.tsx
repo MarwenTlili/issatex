@@ -2,7 +2,6 @@ import {
   List,
   Datagrid,
   TextField,
-  BooleanField,
   ReferenceField,
   BooleanInput,
   SearchInput,
@@ -10,6 +9,7 @@ import {
   useGetOne,
   Identifier,
   Link,
+  FunctionField,
 } from "react-admin";
 import {
   type Theme,
@@ -26,6 +26,11 @@ import RowActions from "@/components/admin/common/row-actions";
 import { Client } from "@/types/resources/Client";
 import { User } from "@/types/resources/User";
 import { orange } from "@mui/material/colors";
+
+const filters = [
+  <SearchInput key="search" source="ref" alwaysOn />,
+  <BooleanInput key="privilegie" source="privilegie" label="Privilégié" />,
+];
 
 export const AccountUsernameField = ({ record }: { record: Client }) => {
   const { data, isLoading, error } = useGetOne<User>("api/users", {
@@ -51,10 +56,26 @@ export const AccountUsernameField = ({ record }: { record: Client }) => {
   );
 };
 
-const filters = [
-  <SearchInput key="search" source="ref" alwaysOn />,
-  <BooleanInput key="privilegie" source="privilegie" label="Privilégié" />,
-];
+const PrivilegieChip = ({
+  isPrivilegie,
+}: {
+  isPrivilegie: boolean | undefined;
+}) => {
+  if (!isPrivilegie) return null;
+
+  return (
+    <Chip
+      label="PRIVILÉGIÉ"
+      sx={{
+        backgroundColor: orange[500],
+        color: "white",
+        fontSize: 12,
+        borderRadius: 10,
+        px: 1,
+      }}
+    />
+  );
+};
 
 const MobileClientList = () => {
   const { data, isLoading } = useListContext<Client & { id: Identifier }>();
@@ -76,33 +97,19 @@ const MobileClientList = () => {
                   resource="api/clients"
                   record={record}
                 />
-                {record.privilegie && (
-                  <Chip
-                    label="PRIVILEGIE"
-                    sx={{
-                      backgroundColor: orange[500],
-                      color: "white",
-                      fontWeight: 500,
-                      fontSize: 12,
-                    }}
-                  />
-                )}
+                <PrivilegieChip isPrivilegie={record.privilegie} />
               </Stack>
             }
           />
           <CardContent>
             <Stack spacing={2}>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">
-                    ADRESSE
-                  </p>
-                  <p className="text-foreground">{record.adresse}</p>
-                </div>
+              <div>
+                <p className="text-muted-foreground font-medium">ADRESSE</p>
+                <p className="text-foreground">{record.adresse}</p>
               </div>
               {record.account && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">
+                  <p className="text-muted-foreground font-medium">
                     COMPTE UTILISATEUR
                   </p>
                   <AccountUsernameField record={record} />
@@ -136,7 +143,12 @@ export const ClientList = () => {
           >
             <TextField source="username" />
           </ReferenceField>
-          <BooleanField source="privilegie" label="Privilégié" />
+          <FunctionField<Client>
+            label="privilegie"
+            render={(record) => (
+              <PrivilegieChip isPrivilegie={record.privilegie} />
+            )}
+          />
           <RowActions resource="api/clients" />
         </Datagrid>
       )}

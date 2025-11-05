@@ -9,9 +9,12 @@ import {
   Datagrid,
   SimpleList,
   useRecordContext,
-  BooleanField,
   DateField,
   FunctionField,
+  ReferenceArrayField,
+  Link,
+  ChipField,
+  WithListContext,
 } from "react-admin";
 import {
   Typography,
@@ -19,8 +22,8 @@ import {
   Grid,
   Chip,
   useMediaQuery,
-  useTheme,
   Paper,
+  Theme,
 } from "@mui/material";
 import {
   People,
@@ -29,10 +32,12 @@ import {
   AccessTime,
   Info,
 } from "@mui/icons-material";
-import { formatDecimalHours } from "@/lib/utils/date";
+import { formatDate } from "@/lib/utils/date";
+import { Planning } from "@/types/resources/Planning";
+import { AffectationEmployeIlot } from "@/types/resources/AffectationEmployeIlot";
 
 // --- Section Title Component ---
-const SectionTitle = ({ icon: Icon, title }: { icon: any; title: string }) => (
+const TitleSection = ({ icon: Icon, title }: { icon: any; title: string }) => (
   <Box
     display="flex"
     alignItems="center"
@@ -146,46 +151,129 @@ const IlotSummary = () => {
   );
 };
 
-// --- Responsive Datagrid wrapper ---
-const ResponsiveReferenceList = ({
-  children,
-  reference,
-  target,
-  sort,
-  renderSimpleListItem,
-}: {
-  children: React.ReactNode;
-  reference: string;
-  target: string;
-  sort?: { field: string; order: string };
-  renderSimpleListItem: (record: any) => React.ReactNode;
-}) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+const ResponsivePresences = () => {
+  const isSmall = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
 
   return (
-    <Box
-      sx={{
-        overflowX: "auto",
-        borderRadius: 1,
-        border: "1px solid",
-        borderColor: "divider",
-        mb: 2,
-      }}
-    >
-      <ReferenceManyField
-        label=""
-        reference={reference}
-        target={target}
-        sort={{ field: "id", order: "ASC" }}
-      >
-        {isMobile ? (
-          <SimpleList primaryText={(record) => renderSimpleListItem(record)} />
-        ) : (
-          <Datagrid bulkActionButtons={false}>{children}</Datagrid>
-        )}
-      </ReferenceManyField>
-    </Box>
+    <ReferenceManyField reference="api/presences" target="ilot">
+      {isSmall ? (
+        <SimpleList
+          primaryText={(record) => record.ref}
+          secondaryText={(record) =>
+            `${record.employe?.nom ?? ""} ${record.employe?.prenom ?? ""}`
+          }
+          tertiaryText={(record) =>
+            `${formatDate(record.datePresence)} — ${record.statut}`
+          }
+          rowClick="show"
+        />
+      ) : (
+        <Datagrid bulkActionButtons={false}>
+          <TextField source="ref" />
+          <DateField source="datePresence" />
+          <FunctionField
+            label="Employé"
+            render={(record) =>
+              `${record.employe?.nom ?? ""} ${record.employe?.prenom ?? ""}`
+            }
+          />
+          <TextField source="statut" />
+        </Datagrid>
+      )}
+    </ReferenceManyField>
+  );
+};
+
+const ResponsiveMachines = () => (
+  <ReferenceArrayField
+    label="Machines"
+    reference="api/machines"
+    source="machines"
+  >
+    <WithListContext
+      render={({ data }) => (
+        <Grid container spacing={2}>
+          {data?.map((machine) => (
+            <Grid key={machine.id} item xs={6} sm={3} md={2}>
+              <Link to={`/api/machines/${encodeURIComponent(machine.id)}/show`}>
+                <ChipField record={machine} source="ref" />
+              </Link>
+            </Grid>
+          ))}
+        </Grid>
+      )}
+    />
+  </ReferenceArrayField>
+);
+
+const ResponsableChip = ({ isResponsable }: { isResponsable: boolean }) => {
+  if (!isResponsable) return null;
+  return <Chip label="Responsable" sx={{ fontWeight: 500, fontSize: 12 }} />;
+};
+
+const ResponsiveAffectations = () => {
+  const isSmall = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
+
+  return (
+    <ReferenceManyField reference="api/affectation_employe_ilots" target="ilot">
+      {isSmall ? (
+        <SimpleList<AffectationEmployeIlot>
+          primaryText={(record) => record.ref}
+          secondaryText={(record) =>
+            `${record.employe.nom} ${record.employe.prenom}`
+          }
+          tertiaryText={(record) => (
+            <ResponsableChip isResponsable={record.responsable} />
+          )}
+          rowClick="show"
+        />
+      ) : (
+        <Datagrid bulkActionButtons={false}>
+          <TextField source="ref" />
+          <FunctionField<AffectationEmployeIlot>
+            label="Employe"
+            render={(record) =>
+              `${record.employe.nom} ${record.employe.prenom}`
+            }
+          />
+          {/* <BooleanField source="responsable" /> */}
+          <FunctionField<AffectationEmployeIlot>
+            label="Responsable"
+            render={(record) => (
+              <ResponsableChip isResponsable={record.responsable} />
+            )}
+          />
+        </Datagrid>
+      )}
+    </ReferenceManyField>
+  );
+};
+
+const ResponsivePlannings = () => {
+  const isSmall = useMediaQuery((theme: Theme) => theme.breakpoints.down("sm"));
+
+  return (
+    <ReferenceManyField reference="api/plannings" target="ilot">
+      {isSmall ? (
+        <SimpleList<Planning>
+          primaryText={(record) => record.ref}
+          secondaryText={(record) =>
+            `de: ${formatDate(record.dateDebut)} à ${formatDate(
+              record.dateFin
+            )}`
+          }
+          tertiaryText={(record) => formatDate(record.dateCreation)}
+          rowClick="show"
+        />
+      ) : (
+        <Datagrid bulkActionButtons={false}>
+          <TextField source="ref" />
+          <DateField source="dateCreation" />
+          <DateField source="dateDebut" />
+          <DateField source="dateFin" />
+        </Datagrid>
+      )}
+    </ReferenceManyField>
   );
 };
 
@@ -201,83 +289,23 @@ export const IlotShow = () => {
       <SimpleShowLayout>
         <IlotSummary />
 
-        {/* Affectations */}
-        <SectionTitle icon={People} title="Affectations (Employés assignés)" />
-        <ResponsiveReferenceList
-          reference="api/affectation_employe_ilots"
-          target="ilot.id"
-          sort={{ field: "id", order: "ASC" }}
-          renderSimpleListItem={(r) =>
-            `${r.employe?.nom ?? ""} ${r.employe?.prenom ?? ""} ${
-              r.responsable ? "⭐ Responsable" : ""
-            }`
-          }
-        >
-          <TextField source="ref" label="ID" />
-          <TextField source="employe.nom" label="Employé" />
-          <TextField source="employe.prenom" label="Prénom" />
-          <BooleanField source="responsable" label="Responsable" />
-        </ResponsiveReferenceList>
-
         {/* Machines */}
-        <SectionTitle icon={Hardware} title="Machines de cet ilot" />
-        <ResponsiveReferenceList
-          reference="api/machines"
-          target="ilot"
-          sort={{ field: "id", order: "ASC" }}
-          renderSimpleListItem={(r) =>
-            `${r.nom ?? ""} (${r.type ?? ""}) - Statut: ${r.statut ?? ""}`
-          }
-        >
-          <TextField source="ref" label="Référence" />
-          <TextField source="nom" label="Nom" />
-          <TextField source="type" label="Type" />
-          <TextField source="statut" label="Statut" />
-        </ResponsiveReferenceList>
+        <TitleSection icon={Hardware} title="Machines dans cet ilot" />
+        <ResponsiveMachines />
+
+        <TitleSection
+          icon={People}
+          title="(Affectation) - Employes dans cet ilot"
+        />
+        <ResponsiveAffectations />
 
         {/* Plannings */}
-        <SectionTitle icon={DateRange} title="Plannings de cet ilot" />
-        <ResponsiveReferenceList
-          reference="api/plannings"
-          target="ilot"
-          sort={{ field: "dateCreation", order: "DESC" }}
-          renderSimpleListItem={(r) =>
-            `${r.ref ?? ""} - ${r.dateDebut ?? ""} → ${r.dateFin ?? ""}`
-          }
-        >
-          <TextField source="ref" label="Référence" />
-          <DateField source="dateCreation" label="Créé le" />
-          <DateField source="dateDebut" label="Début" />
-          <DateField source="dateFin" label="Fin" />
-        </ResponsiveReferenceList>
+        <TitleSection icon={DateRange} title="Plannings dans cet ilot" />
+        <ResponsivePlannings />
 
         {/* Presences */}
-        <SectionTitle icon={AccessTime} title="Présences de cet ilot" />
-        <ResponsiveReferenceList
-          reference="api/presences"
-          target="ilot"
-          sort={{ field: "datePresence", order: "DESC" }}
-          renderSimpleListItem={(r) =>
-            `${r.employe?.nom ?? ""} (${r.ref ?? ""}) - ${formatDecimalHours(
-              r.tempsPresence
-            )}`
-          }
-        >
-          <TextField source="ref" label="Référence" />
-          <DateField source="datePresence" label="Date" />
-          <FunctionField
-            label="Employé"
-            render={(r) =>
-              `${r.employe?.nom ?? ""} ${r.employe?.prenom ?? ""} (${
-                r.employe?.ref ?? ""
-              })`
-            }
-          />
-          <FunctionField
-            label="Temps de présence"
-            render={(r) => formatDecimalHours(r.tempsPresence)}
-          />
-        </ResponsiveReferenceList>
+        <TitleSection icon={AccessTime} title="Présences de cet ilot" />
+        <ResponsivePresences />
       </SimpleShowLayout>
     </Show>
   );
