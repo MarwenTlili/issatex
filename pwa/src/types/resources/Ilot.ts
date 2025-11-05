@@ -8,4 +8,5 @@ export interface Ilot extends Item {
   plannings: string[];
   machines: string[];
   affectations: string[];
+  presences: string[];
 }
