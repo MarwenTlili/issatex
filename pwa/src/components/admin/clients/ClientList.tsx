@@ -2,13 +2,10 @@ import {
   List,
   Datagrid,
   TextField,
-  ReferenceField,
   BooleanInput,
   SearchInput,
   useListContext,
-  useGetOne,
   Identifier,
-  Link,
   FunctionField,
 } from "react-admin";
 import {
@@ -17,44 +14,19 @@ import {
   Box,
   Stack,
   Chip,
-  CircularProgress,
   Card,
   CardHeader,
   CardContent,
 } from "@mui/material";
 import RowActions from "@/components/admin/common/row-actions";
 import { Client } from "@/types/resources/Client";
-import { User } from "@/types/resources/User";
 import { orange } from "@mui/material/colors";
+import { UserReferenceField } from "@/components/admin/common/fields/UserReferenceField";
 
 const filters = [
   <SearchInput key="search" source="ref" alwaysOn />,
   <BooleanInput key="privilegie" source="privilegie" label="Privilégié" />,
 ];
-
-export const AccountUsernameField = ({ record }: { record: Client }) => {
-  const { data, isLoading, error } = useGetOne<User>("api/users", {
-    id: record?.account as unknown as number | undefined,
-  });
-
-  if (!record?.account || !data) {
-    return <Box>—</Box>;
-  }
-
-  if (isLoading) {
-    return <CircularProgress size={16} />;
-  }
-
-  if (error) {
-    return <Box className="text-destructive text-xs">Error loading</Box>;
-  }
-
-  return (
-    <Link to={`/api/users/${encodeURIComponent(data["@id"])}/show`}>
-      {data.username}
-    </Link>
-  );
-};
 
 const PrivilegieChip = ({
   isPrivilegie,
@@ -107,14 +79,10 @@ const MobileClientList = () => {
                 <p className="text-muted-foreground font-medium">ADRESSE</p>
                 <p className="text-foreground">{record.adresse}</p>
               </div>
-              {record.account && (
-                <div>
-                  <p className="text-muted-foreground font-medium">
-                    COMPTE UTILISATEUR
-                  </p>
-                  <AccountUsernameField record={record} />
-                </div>
-              )}
+              <div>
+                <p className="text-muted-foreground font-medium">UTILISATEUR</p>
+                <UserReferenceField label="Utilisateur" record={record} />
+              </div>
             </Stack>
           </CardContent>
         </Card>
@@ -135,14 +103,7 @@ export const ClientList = () => {
           <TextField source="ref" label="Référence" />
           <TextField source="nom" label="Nom" />
           <TextField source="adresse" label="Adresse" />
-          <ReferenceField
-            source="account"
-            reference="api/users"
-            link={false}
-            label="Compte"
-          >
-            <TextField source="username" />
-          </ReferenceField>
+          <UserReferenceField label="Utilisateur" />
           <FunctionField<Client>
             label="privilegie"
             render={(record) => (
