@@ -14,6 +14,7 @@ import {
   useGetOne,
   useRecordContext,
   Link,
+  FieldProps,
 } from "react-admin";
 import RowActions from "@/components/admin/common/row-actions";
 import { Machine, StatutMachine, STATUTS } from "@/types/resources/Machine";
@@ -116,19 +117,13 @@ const MobileMachineList = () => {
           />
           <CardContent>
             <Stack spacing={2}>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">
-                    TYPE
-                  </p>
-                  <p className="text-foreground">{record.type}</p>
-                </div>
+              <div>
+                <p className="text-muted-foreground font-medium">TYPE</p>
+                <p className="text-foreground">{record.type}</p>
               </div>
               {record.ilot && (
                 <div>
-                  <p className="text-xs text-muted-foreground font-medium">
-                    ILOT
-                  </p>
+                  <p className="text-muted-foreground font-medium">ILOT</p>
                   <IlotField record={record} />
                 </div>
               )}
@@ -140,13 +135,12 @@ const MobileMachineList = () => {
   );
 };
 
-const StatutField = () => {
+const StatutField = (props: FieldProps) => {
   const record = useRecordContext<Machine>();
   if (!record) return null;
 
   return (
     <TextField
-      source="statut"
       sx={{
         backgroundColor: STATUT_COLORS[record.statut],
         color: "white",
@@ -154,6 +148,7 @@ const StatutField = () => {
         borderRadius: 10,
         p: 1,
       }}
+      {...props}
     />
   );
 };
@@ -174,7 +169,7 @@ export const MachineList = () => {
           <TextField source="ref" label="Reference" />
           <TextField source="nom" label="Name" />
           <TextField source="type" label="Type" />
-          <StatutField />
+          <StatutField source="statut" />
           <ReferenceField source="ilot" reference="api/ilots" label="Ilot">
             <TextField source="nom" />
           </ReferenceField>
