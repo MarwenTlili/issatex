@@ -10,8 +10,6 @@ import {
   FilterButton,
   useListContext,
   Identifier,
-  Link,
-  FunctionField,
 } from "react-admin";
 import RowActions from "@/components/admin/common/row-actions";
 import {
@@ -19,12 +17,14 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Chip,
   Stack,
   Theme,
   useMediaQuery,
 } from "@mui/material";
 import { AffectationEmployeIlot } from "@/types/resources/AffectationEmployeIlot";
+import { EmployeFunctionField } from "@/components/admin/common/fields/EmployeFunctionField";
+import { IlotFunctionField } from "@/components/admin/common/fields/IlotFunctionField";
+import { ResponsableFunctionField } from "../common/fields/ResponsableFunctionField";
 
 const assignmentFilters = [
   // <SearchInput source="q" alwaysOn key="search" />,
@@ -44,20 +44,7 @@ const AssignmentListActions = () => (
   </TopToolbar>
 );
 
-const ResponsableChip = ({ isResponsable }: { isResponsable: boolean }) => {
-  if (!isResponsable) return null;
-  return <Chip label="Responsable" />;
-};
-
-const IlotField = ({ record }: { record: AffectationEmployeIlot }) => {
-  return (
-    <Link to={`/api/ilots/${encodeURIComponent(record.ilot["@id"])}/show`}>
-      {record.ilot.nom}
-    </Link>
-  );
-};
-
-const MobileEmployeList = () => {
+const MobileAffectationsList = () => {
   const { data, isLoading } = useListContext<
     AffectationEmployeIlot & { id: Identifier }
   >();
@@ -72,14 +59,17 @@ const MobileEmployeList = () => {
         <Card key={record.id} className="border-l-4 border-l-primary">
           <CardHeader
             title={record.ref}
-            subheader={`${record.employe.nom} ${record.employe.prenom}`}
+            subheader={<EmployeFunctionField label="Employe" record={record} />}
             action={
               <Stack alignItems="flex-end" spacing={1}>
                 <RowActions<AffectationEmployeIlot>
                   resource="api/affectation_employe_ilots"
                   record={record}
                 />
-                <ResponsableChip isResponsable={record.responsable} />
+                <ResponsableFunctionField
+                  label="Est Responsable"
+                  record={record}
+                />
               </Stack>
             }
           />
@@ -87,7 +77,7 @@ const MobileEmployeList = () => {
             <Stack spacing={2}>
               <p className="text-muted-foreground font-medium">ILOT</p>
               <p className="text-foreground">
-                <IlotField record={record} />
+                <IlotFunctionField label="Ilot" record={record} />
               </p>
             </Stack>
           </CardContent>
@@ -103,7 +93,7 @@ export const AffectationEmployeIlotList = () => {
   return (
     <List filters={assignmentFilters} actions={<AssignmentListActions />}>
       {isSmall ? (
-        <MobileEmployeList />
+        <MobileAffectationsList />
       ) : (
         <Datagrid rowClick={false}>
           <TextField
@@ -111,19 +101,9 @@ export const AffectationEmployeIlotList = () => {
             label="Reference"
             sx={{ whiteSpace: "nowrap" }}
           />
-          <TextField source="employe.nom" label="Nom Emp" />
-          <TextField source="employe.prenom" label="Prenom Emp" />
-          <TextField source="employe.poste" label="Position" />
-          <FunctionField
-            label="Ilot"
-            render={(record) => <IlotField record={record} />}
-          />
-          <FunctionField
-            label="Est Responsable"
-            render={(record) => (
-              <ResponsableChip isResponsable={record.responsable} />
-            )}
-          />
+          <EmployeFunctionField label="Employe" />
+          <IlotFunctionField label="Ilot" />
+          <ResponsableFunctionField label="Est Responsable" />
           <RowActions resource="api/affectation_employe_ilots" />
         </Datagrid>
       )}
