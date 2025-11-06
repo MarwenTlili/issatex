@@ -1,5 +1,8 @@
 import React from "react";
-import { TextField, BooleanField, Show, SimpleShowLayout } from "react-admin";
+import { TextField, Show, SimpleShowLayout } from "react-admin";
+import { EmployeFunctionField } from "@/components/admin/common/fields/EmployeFunctionField";
+import { IlotFunctionField } from "@/components/admin/common/fields/IlotFunctionField";
+import { ResponsableFunctionField } from "@/components/admin/common/fields/ResponsableFunctionField";
 
 export const AffectationEmployeIlotShow = () => {
   return (
@@ -13,11 +16,9 @@ export const AffectationEmployeIlotShow = () => {
       >
         <TextField source="ref" label="Reference" />
         <TextField source="employe.ref" label="Employe" />
-        <TextField source="employe.nom" label="Nom Emp" />
-        <TextField source="employe.prenom" label="Prenom Emp" />
-        <TextField source="employe.poste" label="Position" />
-        <TextField source="ilot.ref" label="Ilot" />
-        <BooleanField source="responsable" label="Is Responsible" />
+        <EmployeFunctionField label="Employe" />
+        <IlotFunctionField label="Ilot" />
+        <ResponsableFunctionField label="Est Responsable" />
       </SimpleShowLayout>
     </Show>
   );
