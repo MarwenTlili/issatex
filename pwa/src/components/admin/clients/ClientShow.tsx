@@ -8,7 +8,7 @@ import {
 } from "react-admin";
 import { Client } from "@/types/resources/Client";
 import { UserReferenceField } from "@/components/admin/common/fields/UserReferenceField";
-import { ArticlesArrayField } from "@/components/admin/common/fields/ArticlesArrayField";
+import { ArticlesReferenceArrayField } from "@/components/admin/common/fields/ArticlesReferenceArrayField";
 import { OrdreFabricationsReferenceArrayField } from "@/components/admin/common/fields/OrdreFabricationsReferenceArrayField";
 
 const CustomTitle = () => {
@@ -26,7 +26,7 @@ export const ClientShow = () => (
       <UserReferenceField label="Utilisateur" />
 
       <Labeled source="articles">
-        <ArticlesArrayField />
+        <ArticlesReferenceArrayField />
       </Labeled>
 
       <Labeled source="ordreFabrications">
