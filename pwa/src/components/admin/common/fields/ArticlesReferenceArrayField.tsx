@@ -1,6 +1,6 @@
 import { ChipField, ReferenceArrayField, SingleFieldList } from "react-admin";
 
-export const ArticlesArrayField = (props: any) => (
+export const ArticlesReferenceArrayField = (props: any) => (
   <ReferenceArrayField
     label="Articles"
     reference="api/articles"
