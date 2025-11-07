@@ -30,7 +30,7 @@ import {
   useUpdatePresence,
 } from "@/hooks/use-presences";
 import { useIlots } from "@/hooks/use-ilots";
-import { STATUT_PRESENCE_OPTIONS } from "@/types/resources/Presence";
+import { PRESENCE_STATUT } from "@/types/resources/Presence";
 import {
   type ApiError,
   handleApiError,
@@ -241,11 +241,13 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
                       <SelectValue placeholder="Sélectionner un statut" />
                     </SelectTrigger>
                     <SelectContent>
-                      {STATUT_PRESENCE_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </SelectItem>
-                      ))}
+                      {Object.entries(PRESENCE_STATUT).map(
+                        ([value, { label }]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        )
+                      )}
                     </SelectContent>
                   </Select>
                 )}
