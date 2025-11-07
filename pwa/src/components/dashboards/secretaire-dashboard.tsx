@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Users,
@@ -19,7 +18,6 @@ import {
   XCircle,
   Plus,
   Eye,
-  Edit,
 } from "lucide-react";
 import Link from "next/link";
 import { usePresences } from "@/hooks/use-presences";
@@ -29,6 +27,7 @@ import { fr } from "date-fns/locale";
 import type { Presence } from "@/types/resources/Presence";
 import type { Planning } from "@/types/resources/Planning";
 import { APP_ROUTES } from "@/config/app";
+import { PresenceStatutBadge } from "@/components/presences/PresenceStatutBadge";
 
 export function SecretaryDashboard() {
   const { data: presences, isLoading: presencesLoading } = usePresences({
@@ -193,23 +192,7 @@ export function SecretaryDashboard() {
                       </p>
                     </div>
                   </div>
-                  <Badge
-                    variant={
-                      presence.statut === "Present"
-                        ? "default"
-                        : presence.statut === "Absent"
-                        ? "destructive"
-                        : "secondary"
-                    }
-                  >
-                    {presence.statut === "Present"
-                      ? "Présent"
-                      : presence.statut === "Absent"
-                      ? "Absent"
-                      : presence.statut === "Retard"
-                      ? "Retard"
-                      : "Congé"}
-                  </Badge>
+                  <PresenceStatutBadge statut={presence.statut} />
                 </div>
               ))
             ) : (

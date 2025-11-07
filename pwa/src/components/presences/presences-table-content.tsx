@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -31,13 +30,14 @@ import {
   User,
 } from "lucide-react";
 import type { ApiCollection } from "@/types/resources/ApiCollection";
-import type {
-  Presence,
-  PresenceFieldOrder,
-  PresencesFilters,
+import {
+  type Presence,
+  type PresenceFieldOrder,
+  type PresencesFilters,
 } from "@/types/resources/Presence";
 import { APP_ROUTES } from "@/config/app";
 import { formatDate, formatDecimalHours, formatTime } from "@/lib/utils/date";
+import { PresenceStatutBadge } from "./PresenceStatutBadge";
 
 interface PresencesTableContentProps {
   presencesCollection?: ApiCollection<Presence>;
@@ -47,20 +47,6 @@ interface PresencesTableContentProps {
   onDelete: (id: number, ref: string) => void;
   deleteLoading: boolean;
 }
-
-const STATUT_COLORS = {
-  Present: "bg-green-100 text-green-800 border-green-200",
-  Absent: "bg-red-100 text-red-800 border-red-200",
-  Retard: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  Conge: "bg-blue-100 text-blue-800 border-blue-200",
-} as const;
-
-const STATUT_LABELS = {
-  Present: "Présent",
-  Absent: "Absent",
-  Retard: "Retard",
-  Conge: "Congé",
-} as const;
 
 export function PresencesTableContent({
   presencesCollection,
@@ -124,17 +110,7 @@ export function PresencesTableContent({
                   {formatDate(presence.datePresence)}
                 </div>
               </div>
-              <Badge
-                variant="outline"
-                className={`text-xs ${
-                  STATUT_COLORS[
-                    presence.statut as keyof typeof STATUT_COLORS
-                  ] || "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {STATUT_LABELS[presence.statut as keyof typeof STATUT_LABELS] ||
-                  presence.statut}
-              </Badge>
+              <PresenceStatutBadge statut={presence.statut} />
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-xs">
@@ -265,18 +241,7 @@ export function PresencesTableContent({
                 </div>
               </TableCell>
               <TableCell>
-                <Badge
-                  variant="outline"
-                  className={
-                    STATUT_COLORS[
-                      presence.statut as keyof typeof STATUT_COLORS
-                    ] || "bg-gray-100 text-gray-800"
-                  }
-                >
-                  {STATUT_LABELS[
-                    presence.statut as keyof typeof STATUT_LABELS
-                  ] || presence.statut}
-                </Badge>
+                <PresenceStatutBadge statut={presence.statut} />
               </TableCell>
               <TableCell>
                 {formatDecimalHours(presence.tempsPresence)}
@@ -286,7 +251,7 @@ export function PresencesTableContent({
                   "N/A"}
               </TableCell>
               <TableCell>
-                <div>{presence.ilot?.ref || "-"}</div>
+                <div>{presence.ilot?.nom || "-"}</div>
               </TableCell>
               <TableCell className="text-right">
                 <DropdownMenu>

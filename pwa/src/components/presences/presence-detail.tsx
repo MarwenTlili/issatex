@@ -25,9 +25,10 @@ import { usePresence, useDeletePresence } from "@/hooks/use-presences";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { isApiError, getErrorMessage } from "@/lib/api/handle-api-error";
-import { STATUT_PRESENCE_OPTIONS } from "@/types/resources/Presence";
+import { PRESENCE_STATUT } from "@/types/resources/Presence";
 import { APP_ROUTES } from "@/config/app";
 import { formatDate, formatDecimalHours, formatTime } from "@/lib/utils/date";
+import { PresenceStatutBadge } from "./PresenceStatutBadge";
 
 interface PresenceDetailsProps {
   id: number;
@@ -123,10 +124,6 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
     );
   }
 
-  const statutOption = STATUT_PRESENCE_OPTIONS.find(
-    (opt) => opt.value === presence.statut
-  );
-
   return (
     <Card className="mx-4 sm:mx-0">
       <CardHeader className="p-4 sm:p-6">
@@ -134,17 +131,7 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="flex items-center gap-2">
               <span>{presence?.ref || `PRE-${presence?.id}`}</span>
-              <Badge
-                variant="outline"
-                className={`${
-                  STATUT_COLORS[
-                    presence.statut as keyof typeof STATUT_COLORS
-                  ] || "bg-gray-100 text-gray-800"
-                }`}
-              >
-                {STATUT_LABELS[presence.statut as keyof typeof STATUT_LABELS] ||
-                  presence.statut}
-              </Badge>
+              <PresenceStatutBadge statut={presence.statut} />
             </div>
           </div>
         </CardTitle>
@@ -209,20 +196,6 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
             </div>
           </div>
         </div>
-
-        {statutOption && (
-          <div className="bg-muted/50 rounded-lg p-4">
-            <h3 className="font-medium mb-2">Informations sur le statut</h3>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className={statutOption.color}>
-                {statutOption.label}
-              </Badge>
-              <span className="text-sm text-muted-foreground">
-                Statut de présence pour cette journée
-              </span>
-            </div>
-          </div>
-        )}
       </CardContent>
 
       <CardFooter className="flex flex-col sm:flex-row sm:justify-between gap-4 p-4 sm:p-6">
