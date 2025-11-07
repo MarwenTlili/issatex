@@ -1,11 +1,13 @@
-import { Machine } from "@/types/resources/Machine";
 import {
   Show,
   SimpleShowLayout,
   TextField,
   ReferenceField,
   useRecordContext,
+  FunctionField,
 } from "react-admin";
+import { Chip } from "@mui/material";
+import { Machine, MACHINE_STATUT } from "@/types/resources/Machine";
 
 const CustomTitle = () => {
   const record = useRecordContext<Machine>();
@@ -18,7 +20,15 @@ export const MachineShow = () => (
       <TextField source="ref" />
       <TextField source="nom" />
       <TextField source="type" />
-      <TextField source="statut" />
+      <FunctionField<Machine>
+        label="Statut"
+        render={(record) => (
+          <Chip
+            label={record.statut}
+            color={MACHINE_STATUT[record.statut].muiColor}
+          />
+        )}
+      />
       <ReferenceField source="ilot" reference="api/ilots">
         <TextField source="nom" />
       </ReferenceField>
