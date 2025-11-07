@@ -13,8 +13,10 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, X, Filter, Check, ChevronsUpDown } from "lucide-react";
-import type { PresencesFilters } from "@/types/resources/Presence";
-import { STATUT_PRESENCE_OPTIONS } from "@/types/resources/Presence";
+import {
+  PRESENCE_STATUT,
+  type PresencesFilters,
+} from "@/types/resources/Presence";
 import { useEmployes } from "@/hooks/use-employes";
 import {
   Command,
@@ -31,7 +33,6 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useIlots } from "@/hooks/use-ilots";
-import { SelectLabel } from "@radix-ui/react-select";
 
 interface PresencesTableFiltersProps {
   filters: PresencesFilters;
@@ -240,11 +241,15 @@ export function PresencesTableFilters({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Tous les statuts</SelectItem>
-                      {STATUT_PRESENCE_OPTIONS.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
+                      {Object.entries(PRESENCE_STATUT).map(
+                        ([value, statut]) => (
+                          <SelectItem key={value} value={value}>
+                            <div className="flex items-center gap-2">
+                              {statut.label}
+                            </div>
+                          </SelectItem>
+                        )
+                      )}
                     </SelectContent>
                   </Select>
                   {localFilters.statut !== "all" && (
