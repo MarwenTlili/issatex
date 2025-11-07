@@ -3,7 +3,14 @@ import { Employe } from "./Employe";
 import { Ilot } from "./Ilot";
 import type { Item } from "./Item";
 
-export type StatutPresence = "Present" | "Absent" | "Retard" | "Conge";
+export const PRESENCE_STATUT = {
+  Present: { label: "Présent", muiColor: "success", twColor: "green" },
+  Retard: { label: "Retard", muiColor: "warning", twColor: "yellow" },
+  Conge: { label: "Congé", muiColor: "info", twColor: "blue" },
+  Absent: { label: "Absent", muiColor: "error", twColor: "red" },
+} as const;
+
+export type StatutPresence = keyof typeof PRESENCE_STATUT;
 export type PresenceFieldOrder = "ref" | "datePresence" | "statut" | "ilot.nom";
 
 export interface Presence extends Item {
@@ -42,10 +49,3 @@ export interface PresencesFilters extends BaseFilters {
     before?: string;
   };
 }
-
-export const STATUT_PRESENCE_OPTIONS = [
-  { value: "Present", label: "Présent", color: "bg-green-100 text-green-800" },
-  { value: "Absent", label: "Absent", color: "bg-red-100 text-red-800" },
-  { value: "Retard", label: "Retard", color: "bg-yellow-100 text-yellow-800" },
-  { value: "Conge", label: "Congé", color: "bg-blue-100 text-blue-800" },
-] as const;
