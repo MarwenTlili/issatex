@@ -10,7 +10,7 @@ export const PRESENCE_STATUT = {
   Absent: { label: "Absent", muiColor: "error", twColor: "red" },
 } as const;
 
-export type StatutPresence = keyof typeof PRESENCE_STATUT;
+export type PresenceStatutType = keyof typeof PRESENCE_STATUT;
 export type PresenceFieldOrder = "ref" | "datePresence" | "statut" | "ilot.nom";
 
 export interface Presence extends Item {
@@ -19,7 +19,7 @@ export interface Presence extends Item {
   datePresence: string;
   heureDebut: string | null;
   heureFin: string | null;
-  statut: StatutPresence;
+  statut: PresenceStatutType;
   tempsPresence: string | null;
   employe: Employe;
   ilot: Ilot;
@@ -29,7 +29,7 @@ export interface CreatePresenceData {
   datePresence?: string;
   heureDebut?: string | null;
   heureFin?: string | null;
-  statut?: StatutPresence;
+  statut?: PresenceStatutType;
   tempsPresence?: string | null;
   employe?: string;
   ilot?: string;

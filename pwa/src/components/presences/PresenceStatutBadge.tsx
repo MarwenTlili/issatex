@@ -1,4 +1,4 @@
-import { PRESENCE_STATUT, StatutPresence } from "@/types/resources/Presence";
+import { PRESENCE_STATUT, PresenceStatutType } from "@/types/resources/Presence";
 import { Badge } from "@/components/ui/badge";
 import { twMerge } from "tailwind-merge";
 
@@ -6,7 +6,7 @@ export const PresenceStatutBadge = ({
   statut,
   className,
 }: {
-  statut: StatutPresence;
+  statut: PresenceStatutType;
   className?: string;
 }) => {
   const COLOR_VARIANTS = {
