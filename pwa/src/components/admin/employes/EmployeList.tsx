@@ -7,7 +7,6 @@ import {
   FilterButton,
   SearchInput,
   SelectInput,
-  FunctionField,
   Identifier,
   useListContext,
 } from "react-admin";
@@ -22,6 +21,8 @@ import {
 } from "@mui/material";
 import RowActions from "@/components/admin/common/row-actions";
 import { Employe } from "@/types/resources/Employe";
+import { AffectationsReferenceArrayField } from "@/components/admin/common/fields/AffectationsReferenceArrayField";
+import { PresencesFunctionField } from "@/components/admin/common/fields/PresencesFunctionField";
 
 const employePostChoices = [
   { id: "Tisseur", name: "Tisseur" },
@@ -71,6 +72,18 @@ const MobileEmployeList = () => {
                 <p className="text-muted-foreground font-medium">POSTE</p>
                 <p className="text-foreground">{record.poste}</p>
               </div>
+              <div>
+                <p className="text-muted-foreground font-medium">
+                  AFFECTATIONS
+                </p>
+                <AffectationsReferenceArrayField record={record} />
+              </div>
+              <div>
+                <p className="text-muted-foreground font-medium">
+                  NOMBRE DE PRÉSENCES
+                </p>
+                <PresencesFunctionField record={record} />
+              </div>
             </Stack>
           </CardContent>
         </Card>
@@ -92,20 +105,8 @@ export const EmployeList = () => {
           <TextField source="nom" label="Nom" />
           <TextField source="prenom" label="Prénom" />
           <TextField source="poste" label="Poste" />
-          <FunctionField
-            label="Affecté?"
-            render={(record: Employe) =>
-              record.affectations && record.affectations.length > 0
-                ? "Oui"
-                : "Non"
-            }
-          />
-          <FunctionField
-            label="Présences"
-            render={(record: Employe) =>
-              record.presences ? record.presences.length : 0
-            }
-          />
+          <AffectationsReferenceArrayField label="Affectation" />
+          <PresencesFunctionField label="Nombre de Presences" />
           <RowActions<Employe> resource="api/employes" />
         </Datagrid>
       )}
