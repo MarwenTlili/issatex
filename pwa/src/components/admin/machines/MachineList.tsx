@@ -113,6 +113,7 @@ export const MachineList = () => {
           <TextField source="nom" label="Name" />
           <TextField source="type" label="Type" />
           <FunctionField<Machine>
+            label="Statut"
             render={(record) => (
               <Chip
                 label={record.statut}
