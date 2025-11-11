@@ -9,6 +9,8 @@ import {
   SelectInput,
   Identifier,
   useListContext,
+  ReferenceArrayField,
+  SingleFieldList,
 } from "react-admin";
 import {
   useMediaQuery,
@@ -21,7 +23,6 @@ import {
 } from "@mui/material";
 import RowActions from "@/components/admin/common/row-actions";
 import { Employe } from "@/types/resources/Employe";
-import { AffectationsReferenceArrayField } from "@/components/admin/common/fields/AffectationsReferenceArrayField";
 import { PresencesFunctionField } from "@/components/admin/common/fields/PresencesFunctionField";
 
 const employePostChoices = [
@@ -76,7 +77,15 @@ const MobileEmployeList = () => {
                 <p className="text-muted-foreground font-medium">
                   AFFECTATIONS
                 </p>
-                <AffectationsReferenceArrayField record={record} />
+                <ReferenceArrayField
+                  reference="api/affectation_employe_ilots"
+                  source="affectations"
+                  record={record}
+                >
+                  <SingleFieldList>
+                    <TextField source="ref" />
+                  </SingleFieldList>
+                </ReferenceArrayField>
               </div>
               <div>
                 <p className="text-muted-foreground font-medium">
@@ -105,7 +114,14 @@ export const EmployeList = () => {
           <TextField source="nom" label="Nom" />
           <TextField source="prenom" label="Prénom" />
           <TextField source="poste" label="Poste" />
-          <AffectationsReferenceArrayField label="Affectation" />
+          <ReferenceArrayField
+            reference="api/affectation_employe_ilots"
+            source="affectations"
+          >
+            <SingleFieldList linkType="show">
+              <TextField source="ref" />
+            </SingleFieldList>
+          </ReferenceArrayField>
           <PresencesFunctionField label="Nombre de Presences" />
           <RowActions<Employe> resource="api/employes" />
         </Datagrid>

@@ -21,7 +21,10 @@ export const EmployeShow = () => {
         <TextField source="nom" label="Nom" />
         <TextField source="prenom" label="Prénom" />
         <TextField source="poste" label="Poste" />
-        <AffectationsReferenceArrayField label="Affectations" />
+        <AffectationsReferenceArrayField
+          label="Affectations"
+          showEmploye={false}
+        />
         <PresencesReferenceArrayField label="Presences" />
       </SimpleShowLayout>
     </Show>

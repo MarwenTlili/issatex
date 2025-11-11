@@ -103,7 +103,7 @@ export const AffectationEmployeIlotList = () => {
           />
           <EmployeFunctionField label="Employe" />
           <IlotFunctionField label="Ilot" />
-          <ResponsableFunctionField label="Est Responsable" />
+          <ResponsableFunctionField label="Responsable?" />
           <RowActions resource="api/affectation_employe_ilots" />
         </Datagrid>
       )}
