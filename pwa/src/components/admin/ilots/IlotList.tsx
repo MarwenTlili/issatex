@@ -70,22 +70,20 @@ export const IlotList = () => {
   return (
     <List filters={ilotListFilters}>
       {isSmall ? (
-        // Mobile display
         <MobileIlotList />
       ) : (
-        // Desktop display
         <Datagrid rowClick={false}>
-          <TextField source="ref" />
+          <TextField source="ref" style={{whiteSpace: "nowrap"}} />
           <TextField source="nom" />
           <TextField
             source="description"
             sx={{
               display: "-webkit-box",
-              WebkitLineClamp: 1,
+              WebkitLineClamp: 2,
               WebkitBoxOrient: "vertical",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              maxWidth: 250,
+              maxWidth: 800
             }}
           />
           <RowActions<Ilot> resource="api/ilots" />

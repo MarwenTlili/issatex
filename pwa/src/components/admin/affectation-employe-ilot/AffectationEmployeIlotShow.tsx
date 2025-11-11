@@ -18,7 +18,7 @@ export const AffectationEmployeIlotShow = () => {
         <TextField source="employe.ref" label="Employe" />
         <EmployeFunctionField label="Employe" />
         <IlotFunctionField label="Ilot" />
-        <ResponsableFunctionField label="Est Responsable" />
+        <ResponsableFunctionField label="Responsable?" />
       </SimpleShowLayout>
     </Show>
   );
