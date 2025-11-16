@@ -39,19 +39,19 @@ class OrdreFabricationStatusService {
 
   private function getTitle(StatutOF $statut): string {
     return match ($statut) {
-      StatutOF::CREE => 'Ordre de fabrication créé',
-      StatutOF::PLANIFIE => 'Ordre de fabrication planifié',
-      StatutOF::EN_COURS => 'Ordre de fabrication en cours',
-      StatutOF::TERMINE => 'Ordre de fabrication terminé',
-      StatutOF::ANNULE => 'Ordre de fabrication annulé',
+      StatutOF::CREATED => 'Manufacturing order created',
+      StatutOF::PLANNED => 'Manufacturing order planned',
+      StatutOF::IN_PROGRESS => 'Manufacturing order in progress',
+      StatutOF::ENDED => 'Manufacturing order ended',
+      StatutOF::CANCELED => 'Manufacturing order cancelled',
     };
   }
 
   private function getMessage(OrdreFabrication $of, StatutOF $old, StatutOF $new): string {
     return sprintf(
-      'Le statut de votre ordre de fabrication "%s" pour l\'article "%s" est passé de "%s" à "%s".',
+      'The status of your manufacturing order "%s" for item "%s" has changed from "%s" to "%s".',
       $of->getRef(),
-      $of->getArticle()?->getDesignation() ?? 'Article',
+      $of->getArticle()?->getDesignation() ?? 'Unknown',
       $old->name,
       $new->name
     );

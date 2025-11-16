@@ -18,7 +18,6 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\MaxDepth;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Table(
@@ -74,17 +73,17 @@ class Planning {
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
-    private ?\DateTimeInterface $dateCreation = null;
+    private ?\DateTime $dateCreation = null;
 
     #[Assert\GreaterThanOrEqual(propertyPath: "date_creation", message: "La date de debut doit être postérieure à la date de création.")]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
-    private ?\DateTimeInterface $dateDebut = null;
+    private ?\DateTime $dateDebut = null;
 
     #[Assert\GreaterThan(propertyPath: "date_debut", message: "La date de fin doit être postérieure à la date de début.")]
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
-    private ?\DateTimeInterface $dateFin = null;
+    private ?\DateTime $dateFin = null;
 
     #[ORM\Column(type: "boolean", options: ["default" => false])]
     #[Groups(['planning:read', 'planning:write', 'ordreFabrication:read'])]
@@ -124,29 +123,29 @@ class Planning {
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTimeInterface {
+    public function getDateCreation(): ?\DateTime {
         return $this->dateCreation;
     }
 
-    public function setDateCreation(\DateTimeInterface $dateCreation): static {
+    public function setDateCreation(\DateTime $dateCreation): static {
         $this->dateCreation = $dateCreation;
         return $this;
     }
 
-    public function getDateDebut(): ?\DateTimeInterface {
+    public function getDateDebut(): ?\DateTime {
         return $this->dateDebut;
     }
 
-    public function setDateDebut(\DateTimeInterface $dateDebut): static {
+    public function setDateDebut(\DateTime $dateDebut): static {
         $this->dateDebut = $dateDebut;
         return $this;
     }
 
-    public function getDateFin(): ?\DateTimeInterface {
+    public function getDateFin(): ?\DateTime {
         return $this->dateFin;
     }
 
-    public function setDateFin(\DateTimeInterface $dateFin): static {
+    public function setDateFin(\DateTime $dateFin): static {
         $this->dateFin = $dateFin;
         return $this;
     }
