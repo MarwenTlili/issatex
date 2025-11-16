@@ -51,9 +51,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface, DependentFi
             ->setEnabled(true);
 
         $manager->persist($client1);
-
-        $referenceName = "USER_2";
-        $this->addReference($referenceName, $client1);
+        $this->addReference("USER_2", $client1);
 
         // Client 2
         $client2 = new User();
@@ -63,9 +61,7 @@ class UserFixtures extends Fixture implements FixtureGroupInterface, DependentFi
             ->setRoles(["ROLE_CLIENT"]);
 
         $manager->persist($client2);
-
-        $referenceName = "USER_3";
-        $this->addReference($referenceName, $client2);
+        $this->addReference("USER_3", $client2);
 
         $manager->flush();
     }

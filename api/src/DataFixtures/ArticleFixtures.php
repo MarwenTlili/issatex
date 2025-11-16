@@ -25,18 +25,19 @@ class ArticleFixtures extends Fixture implements DependentFixtureInterface, Fixt
         }
 
         $clientCount = count($clients);
-        
-        for ($i = 2; $i < 5; $i++) {
+
+        /**
+         * The reference for the client that owns the article (product) starts from 2, eg. CLIENT_2, ...
+         * objective: create 5 articles to cover the 5 statuses of the manufacturing orders
+         */
+        for ($i = 2; $i < 7; $i++) {
             $article = new Article();
             $article->setDesignation($this->faker->unique()->sentence(3))
                 ->setComposition($this->faker->text())
                 ->setClient($clients[$i % $clientCount]) // round-robin
             ;
-
             $manager->persist($article);
-
-            $referenceName = "ARTICLE_" . $i;
-            $this->addReference($referenceName, $article);
+            $this->addReference("ARTICLE_" . $i, $article);
         }
 
         $manager->flush();

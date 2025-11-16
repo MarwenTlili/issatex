@@ -3,7 +3,6 @@
 namespace App\DataFixtures;
 
 use App\Entity\Client;
-use App\Entity\User;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Bundle\FixturesBundle\FixtureGroupInterface;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -16,6 +15,10 @@ class ClientFixtures extends Fixture implements DependentFixtureInterface, Fixtu
     public function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 
+        /**
+         * The reference for client company users start from 2, eg. USER_2, ...
+         * USER_0 AND USER_1 are reserved for the admin and secretary
+         */
         for ($i = 2; $i < 4; $i++) {
             $client = new Client();
             $company = $this->faker->unique()->word();
@@ -24,9 +27,7 @@ class ClientFixtures extends Fixture implements DependentFixtureInterface, Fixtu
                 ->setPrivilegie($i % 2 === 0)
                 ->setAccount($this->getReference("USER_$i"));
             $manager->persist($client);
-
-            $referenceName = "CLIENT_" . $i;
-            $this->addReference($referenceName, $client);
+            $this->addReference("CLIENT_" . $i, $client);
         }
 
         $manager->flush();

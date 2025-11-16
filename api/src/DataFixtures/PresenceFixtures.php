@@ -17,7 +17,7 @@ class PresenceFixtures extends Fixture implements DependentFixtureInterface, Fix
   public function load(ObjectManager $manager): void {
     $this->faker = Factory::create();
 
-    /** @var AffectationEmployeIlot[] $affectations */
+    /** @var AffectationEmployeIlot[] */
     $affectations = [];
     $i = 0;
     while ($this->hasReference("AFFECTATION_$i")) {
@@ -25,9 +25,9 @@ class PresenceFixtures extends Fixture implements DependentFixtureInterface, Fix
       $i++;
     }
 
-    /** @var Planning[] $plannings */
+    /** @var Planning[] */
     $plannings = [];
-    $j = 0;
+    $j = 1;
     while ($this->hasReference("PLANNING_$j")) {
       $plannings[] = $this->getReference("PLANNING_$j");
       $j++;
@@ -103,13 +103,6 @@ class PresenceFixtures extends Fixture implements DependentFixtureInterface, Fix
             break;
 
           case StatutPresence::PRESENT:
-            /**
-             * Small variations: early leave / slightly late
-             */
-            // $startVariation = $this->faker->numberBetween(-10, 20); // minutes
-            // $endVariation   = $this->faker->numberBetween(-60, 10); // minutes
-            // $heureDebut->modify("+$startVariation minutes");
-            // $heureFin->modify("+$endVariation minutes");
             $tempsPresence = ($heureFin->getTimestamp() - $heureDebut->getTimestamp()) / 3600;
             break;
         }
@@ -136,6 +129,7 @@ class PresenceFixtures extends Fixture implements DependentFixtureInterface, Fix
     return [
       AffectationEmployeIlotFixtures::class,
       PlanningFixtures::class,
+      ProductionFixtures::class
     ];
   }
 
