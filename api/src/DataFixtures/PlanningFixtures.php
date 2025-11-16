@@ -17,44 +17,70 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
     public function load(ObjectManager $manager): void {
         $this->faker = Factory::create();
 
-        /** @var OrdreFabrication[] $ordreFabrications */
-        $ordreFabrications = [];
+        /** @var OrdreFabrication[] */
+        $ofs = [];
         $i = 0;
         while ($this->hasReference("ORDRE_FABRICATION_$i")) {
-            $ordreFabrications[] = $this->getReference("ORDRE_FABRICATION_$i");
+            $ofs[] = $this->getReference("ORDRE_FABRICATION_$i");
             $i++;
         }
 
-        foreach ($ordreFabrications as $key => $of) {
-            $planning = new Planning();
+        foreach ($ofs as $key => $of) {
+            $statut = $of->getStatut();
 
-            if ($key === (count($ordreFabrications) - 1)) {
-                // 👈 Last planning always covers THIS week
-                $dateDebut = new \DateTimeImmutable('last monday');
-                $dateFin   = (clone $dateDebut)->modify('+6 days'); // until Saturday
-                $dateCreation = (clone $dateDebut)->modify('-1 day');
-            } else {
-                // Other plannings can still be random (previous weeks)
-                $dateCreation = $this->faker->dateTimeBetween("-3 week", "-1 week");
-                $dateDebut = (clone $dateCreation)->modify("next monday");
-                $dateFin   = (clone $dateDebut)->modify("+6 days");
+            /**
+             * No plannings for those status
+             */
+            if (in_array($of->getStatut(), [StatutOF::DRAFT])) {
+                continue;
             }
 
-            $planning->setDateCreation($dateCreation)
-                ->setDateDebut($dateDebut)
-                ->setDateFin($dateFin)
+            /**
+             * Compute planning week based on status
+             */
+            if ($statut === StatutOF::PLANNED) {
+                // Future week
+                $monday = (new \DateTime())->modify('+1 week')->modify("Monday this week")->setTime(0, 0);
+                $saturday = (clone $monday)->modify('+5 days');
+            }
+
+            if ($statut === StatutOF::IN_PROGRESS) {
+                // This week
+                $monday = (new \DateTime("now"))->modify("Monday this week")->setTime(0, 0);
+                $saturday = (clone $monday)->modify('+5 days');
+            }
+
+            if ($statut === StatutOF::COMPLETED) {
+                // Past week
+                $monday = (new \DateTime())->modify('-2 weeks')->modify("Monday this week")->setTime(0, 0);
+                $saturday = (clone $monday)->modify('+5 days');
+            }
+
+            if ($statut === StatutOF::CANCELED) {
+                // Random: past or future week
+                if ($this->faker->boolean(50)) {
+                    // past
+                    $monday = (new \DateTime())->modify('-1 weeks')->modify("Monday this week")->setTime(0, 0);
+                } else {
+                    // future
+                    $monday = (new \DateTime())->modify('+2 weeks')->modify("Monday this week")->setTime(0, 0);
+                }
+                $saturday = (clone $monday)->modify('+5 days');
+            }
+
+            /**
+             * Create the Planning entity
+             */
+            $planning = new Planning();
+            $planning->setDateCreation($this->faker->dateTimeBetween('-1 week', 'now'))
+                ->setDateDebut($monday)
+                ->setDateFin($saturday)
                 ->setReporte(false)
                 ->setOrdreFabrication($of)
-                ->setIlot($key < 2 ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"));
+                ->setIlot(($key % 2 === 0) ? $this->getReference("ILOT_0") : $this->getReference("ILOT_1"));
 
-            $of->setLance(true)
-                ->setStatut(StatutOF::PLANIFIE);
-
-            $manager->persist($of);
             $manager->persist($planning);
-
-            $referenceName = "PLANNING_" . $key;
-            $this->addReference($referenceName, $planning);
+            $this->addReference("PLANNING_$key", $planning);
         }
 
         $manager->flush();
