@@ -28,20 +28,34 @@ final class PlanningStateProcessor implements ProcessorInterface {
             return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
         }
 
+        $of = $data->getOrdreFabrication();
+
+        // -----------------------------------------------------------
+        //  CREATE PLANNING → OF = PLANNED
+        // -----------------------------------------------------------
         if ($operation instanceof Post) {
-            $of = $data->getOrdreFabrication();
             $old = $of->getStatut();
-            $new = StatutOF::PLANIFIE;
-            $of->setStatut($new)->setLance(true);
+            $new = StatutOF::PLANNED;
+
+            $of->setStatut($new)
+                ->setLance(false);
+
             $this->statusService->handleStatusChange($of, $old, $new);
             $this->entityManager->persist($of);
+
+            return $this->persistProcessor->process($data, $operation, $uriVariables, $context);
         }
 
+        // -----------------------------------------------------------
+        //  DELETE PLANNING → OF = DRAFT
+        // -----------------------------------------------------------
         if ($operation instanceof Delete) {
-            $of = $data->getOrdreFabrication();
             $old = $of->getStatut();
-            $new = StatutOF::ANNULE;
-            $of->setStatut($new)->setLance(false);
+            $new = StatutOF::DRAFT;
+
+            $of->setStatut($new)
+                ->setLance(false);
+
             $this->statusService->handleStatusChange($of, $old, $new);
             $this->entityManager->persist($of);
             $this->entityManager->flush();

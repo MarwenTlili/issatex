@@ -68,11 +68,11 @@ class OrdreFabrication {
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
-    private ?\DateTimeInterface $dateCreation = null;
+    private ?\DateTime $dateCreation = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
-    private ?\DateTimeInterface $dateCloture = null;
+    private ?\DateTime $dateCloture = null;
 
     #[ORM\Column]
     #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
@@ -140,21 +140,21 @@ class OrdreFabrication {
         return $this;
     }
 
-    public function getDateCreation(): ?\DateTimeInterface {
+    public function getDateCreation(): ?\DateTime {
         return $this->dateCreation;
     }
 
-    public function setDateCreation(\DateTimeInterface $dateCreation): static {
+    public function setDateCreation(\DateTime $dateCreation): static {
         $this->dateCreation = $dateCreation;
 
         return $this;
     }
 
-    public function getDateCloture(): ?\DateTimeInterface {
+    public function getDateCloture(): ?\DateTime {
         return $this->dateCloture;
     }
 
-    public function setDateCloture(\DateTimeInterface $dateCloture): static {
+    public function setDateCloture(\DateTime $dateCloture): static {
         $this->dateCloture = $dateCloture;
 
         return $this;
