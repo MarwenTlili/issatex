@@ -62,7 +62,6 @@ class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterfa
                 ->setQuantiteTotale($this->faker->numberBetween(100, 2500))
                 ->setPrixUnitaire("8.00")
                 ->setTempsUnitaire($tempsUnitaire)
-                ->setLance(false)
                 ->setArticle($article)
                 ->setClient($article->getClient());
 
