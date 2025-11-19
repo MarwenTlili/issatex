@@ -3,7 +3,6 @@ import {
   Datagrid,
   TextField,
   DateField,
-  ReferenceField,
   ReferenceInput,
   AutocompleteInput,
   DateInput,
@@ -17,53 +16,28 @@ import {
   SearchInput,
   FunctionField,
   FieldProps,
-  SimpleList,
-  useGetOne,
+  useListContext,
+  Link,
 } from "react-admin";
-import { Chip, Box, ChipProps, useMediaQuery, useTheme } from "@mui/material";
-import { StatutOF } from "@/types/resources/OrdreFabrication";
-
-const statutChoices = [
-  { id: "CREE", name: "Créé" },
-  { id: "PLANIFIE", name: "Planifié" },
-  { id: "EN_COURS", name: "En cours" },
-  { id: "TERMINE", name: "Terminé" },
-  { id: "ANNULE", name: "Annulé" },
-];
-
-const getStatutColor = (statut: StatutOF): ChipProps["color"] => {
-  switch (statut) {
-    case "Cree":
-      return "default";
-    case "Planifiee":
-      return "info";
-    case "En_cours":
-      return "primary";
-    case "Terminee":
-      return "success";
-    case "Annule":
-      return "error";
-    default:
-      return "default";
-  }
-};
-
-const getStatutLabel = (statut: StatutOF): string => {
-  switch (statut) {
-    case "Cree":
-      return "Créée";
-    case "Planifiee":
-      return "Planifiée";
-    case "En_cours":
-      return "En cours";
-    case "Terminee":
-      return "Terminée";
-    case "Annule":
-      return "Annulée";
-    default:
-      return statut;
-  }
-};
+import {
+  Chip,
+  Box,
+  useMediaQuery,
+  useTheme,
+  Stack,
+  Card,
+  CardHeader,
+  CardContent,
+  Typography,
+  Grid,
+} from "@mui/material";
+import {
+  OF_STATUT,
+  OF_STATUT_CHOICES_RA,
+  OrdreFabrication,
+} from "@/types/resources/OrdreFabrication";
+import RowActions from "@/components/admin/common/row-actions";
+import { formatDate } from "@/lib/utils/date";
 
 const filters = [
   <SearchInput key="search" source="ref" alwaysOn />,
@@ -73,7 +47,7 @@ const filters = [
   <SelectInput
     key="statut"
     source="statut"
-    choices={statutChoices}
+    choices={OF_STATUT_CHOICES_RA}
     label="Statut"
   />,
   <DateInput
@@ -92,50 +66,127 @@ const ListActions = () => (
   </TopToolbar>
 );
 
-const StatutField = (props: FieldProps) => {
-  const record = useRecordContext(props);
-  if (!record) return null;
+interface PartialFieldProps extends Partial<FieldProps> {
+  record?: OrdreFabrication;
+  source?: string;
+  label?: string;
+}
 
-  return (
-    <Chip
-      label={getStatutLabel(record.statut)}
-      color={getStatutColor(record.statut)}
-      size="small"
-      variant="filled"
-    />
-  );
+const StatutField = ({ record, source }: PartialFieldProps) => {
+  const contextRecord = useRecordContext<OrdreFabrication>({ record, source });
+  const ordreFabrication = record ?? contextRecord;
+  if (!ordreFabrication) return null;
+  const { label, muiColor } = OF_STATUT[ordreFabrication.statut];
+  return <Chip label={label} color={muiColor} size="small" variant="filled" />;
 };
 
-const PriorityField = (props: FieldProps) => {
-  const record = useRecordContext(props);
-  if (!record) return null;
-
+const PriorityField = ({ record, source }: PartialFieldProps) => {
+  const contextRecord = useRecordContext<OrdreFabrication>({ record, source });
+  const ordreFabrication = record ?? contextRecord;
+  if (!ordreFabrication || !ordreFabrication.urgent) return null;
   return (
-    <Box display="flex" gap={0.5} flexDirection="column" {...props}>
-      {record.urgent && (
-        <Chip label="URGENT" color="warning" size="small" variant="filled" />
-      )}
+    <Box display="flex" gap={0.5} flexDirection="column">
+      <Chip label="URGENT" size="small" variant="outlined" color="warning" />
     </Box>
   );
 };
 
-const ClientArticleText = ({ record }: { record: any }) => {
-  const { data: client } = useGetOne("api/clients", {
-    id: record?.client,
-  });
-  const { data: article } = useGetOne("api/articles", {
-    id: record?.article,
-  });
+const prixTotaleFR = (ordreFabrication: OrdreFabrication) => {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(
+    ordreFabrication.quantiteTotale *
+      Number.parseFloat(ordreFabrication.prixUnitaire)
+  );
+};
 
-  const clientName = client?.nom ?? "Client inconnu";
-  const articleName = article?.designation ?? "Article inconnu";
+const MobileOrdreFabricationList = () => {
+  const { data, isLoading } = useListContext<OrdreFabrication>();
 
-  return `${clientName} · ${articleName}`;
+  if (isLoading)
+    return (
+      <Box sx={{ textAlign: "center", color: "text.secondary" }}>
+        Chargement...
+      </Box>
+    );
+
+  if (!data || data.length === 0) {
+    return (
+      <Box sx={{ textAlign: "center", color: "text.secondary" }}>
+        Aucun enregistrement trouvé
+      </Box>
+    );
+  }
+
+  return (
+    <Stack spacing={3} sx={{ p: 2 }}>
+      {data?.map((record) => (
+        <Card key={record.id} className="border-l-4 border-l-primary">
+          <CardHeader
+            action={
+              <Stack alignItems="flex-end" spacing={1}>
+                <RowActions<OrdreFabrication>
+                  resource="api/ordre_fabrications"
+                  record={record}
+                  hideActions={{ delete: true, edit: true }}
+                />
+                <PriorityField record={record} />
+                <StatutField record={record} />
+              </Stack>
+            }
+            title={record.ref}
+            subheader={`Crée le: ${formatDate(record.dateCreation)}`}
+          />
+          <CardContent>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <Typography className="text-muted-foreground font-medium">
+                  DATE DE CLOTURE
+                </Typography>
+                <Typography>{formatDate(record.dateCloture ?? "-")}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography className="text-muted-foreground font-medium">
+                  ARTICLE
+                </Typography>
+                <Typography>{`(${record.article.ref}) ${record.article.designation}`}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography className="text-muted-foreground font-medium">
+                  CLIENT
+                </Typography>
+                <Typography>{`(${record.client.ref}) ${record.client.nom}`}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography className="text-muted-foreground font-medium">
+                  QUANTITÉ DEMANDÉE
+                </Typography>
+                <Typography>{record.quantiteTotale}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography className="text-muted-foreground font-medium">
+                  PRIX TOTALE
+                </Typography>
+                <Typography>{prixTotaleFR(record)}</Typography>
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <Typography className="text-muted-foreground font-medium">
+                  TEMPS UNITAIRE (CMN)
+                </Typography>
+                <Typography>{record.tempsUnitaire}</Typography>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      ))}
+    </Stack>
+  );
 };
 
 export const OrdreFabricationList = () => {
   const theme = useTheme();
-  const isSmall = useMediaQuery(theme.breakpoints.down("md"), {
+  const isMedium = useMediaQuery(theme.breakpoints.down("md"), {
     noSsr: true,
   });
 
@@ -145,62 +196,39 @@ export const OrdreFabricationList = () => {
       actions={<ListActions />}
       sort={{ field: "dateCreation", order: "DESC" }}
     >
-      {isSmall ? (
-        <SimpleList
-          primaryText={(record) => (
-            <Box sx={{ display: "flex", gap: 2 }}>
-              {record.ref}
-              <PriorityField source="urgent" label="Priorité" />
-            </Box>
-          )}
-          secondaryText={(record) => <ClientArticleText record={record} />}
-          tertiaryText={(record) => (
-            <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              width="100%"
-            >
-              <Box sx={{ color: "text.secondary" }}>
-                {new Date(record.dateCreation).toLocaleDateString("fr-FR", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                })}
-              </Box>
-              <Chip
-                label={getStatutLabel(record.statut)}
-                color={getStatutColor(record.statut)}
-                size="small"
-                variant="filled"
-                sx={{ ml: 1 }}
-              />
-            </Box>
-          )}
-          rowClick="show"
-        />
+      {isMedium ? (
+        <MobileOrdreFabricationList />
       ) : (
-        <Datagrid rowClick={"show"} bulkActionButtons={false}>
+        <Datagrid rowClick={false} bulkActionButtons={false}>
           <TextField source="ref" label="Référence" />
-          <ReferenceField
-            source="client"
-            reference="api/clients"
-            link="show"
+          <FunctionField<OrdreFabrication>
             label="Client"
-          >
-            <TextField source="nom" />
-          </ReferenceField>
-          <ReferenceField
-            source="article"
-            reference="api/articles"
-            link="show"
+            render={(record) => (
+              <Link
+                to={`/api/clients/${encodeURIComponent(
+                  record.client["@id"]
+                )}/show`}
+              >
+                {record.client.nom}
+              </Link>
+            )}
+          />
+          <FunctionField<OrdreFabrication>
             label="Article"
-          >
-            <TextField source="designation" />
-          </ReferenceField>
+            render={(record) => (
+              <Link
+                to={`/api/articles/${encodeURIComponent(
+                  record.article["@id"]
+                )}/show`}
+              >
+                {record.article.designation}
+              </Link>
+            )}
+          />
           <DateField source="dateCreation" label="Date création" />
           <DateField source="dateCloture" label="Date clôture" />
           <NumberField source="quantiteTotale" label="Quantité demandée" />
+          <TextField source="tempsUnitaire" label="Temps Unitaire (cmn)" />
           <FunctionField
             label="Valeur totale"
             render={(record: any) =>
@@ -214,6 +242,10 @@ export const OrdreFabricationList = () => {
           />
           <StatutField source="statut" />
           <PriorityField source="urgent" label="Priorité" />
+          <RowActions<OrdreFabrication>
+            resource="api/ordre_fabrications"
+            hideActions={{ delete: true, edit: true }}
+          />
         </Datagrid>
       )}
     </List>
