@@ -18,6 +18,7 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Filter\WithoutOrdreFabricationFilter;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
@@ -46,17 +47,21 @@ class Article {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
+    #[Groups(['ordreFabrication:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
+    #[Groups(['ordreFabrication:read'])]
     private ?string $ref = null;
 
     #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank]
+    #[Groups(['ordreFabrication:read'])]
     private ?string $designation = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     #[Assert\NotBlank]
+    #[Groups(['ordreFabrication:read'])]
     private ?string $composition = null;
 
     #[ORM\ManyToOne(inversedBy: 'articles')]

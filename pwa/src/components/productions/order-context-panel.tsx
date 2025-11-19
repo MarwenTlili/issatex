@@ -24,14 +24,10 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useOrdreFabrication } from "@/hooks/use-ordre-fabrications";
-import { useClient } from "@/hooks/use-clients";
-import { useArticle } from "@/hooks/use-articles";
 import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications";
 import { useProductions } from "@/hooks/use-productions";
 import { OrdreFabricationContext } from "@/types/resources/OrdreFabrication";
-import {
-  TailleArticle,
-} from "@/types/resources/TailleOrdreFabrication";
+import { TailleArticle } from "@/types/resources/TailleOrdreFabrication";
 
 interface OrderContextPanelProps {
   planningId: string;
@@ -50,12 +46,6 @@ export function OrderContextPanel({
 
   const { data: ordreFabricationData, isLoading: loadingOrdre } =
     useOrdreFabrication(ordreFabricationUri);
-  const { data: clientData, isLoading: loadingClient } = useClient(
-    ordreFabricationData?.client || ""
-  );
-  const { data: articleData, isLoading: loadingArticle } = useArticle(
-    ordreFabricationData?.article || ""
-  );
   const { data: taillesData, isLoading: loadingTailles } =
     useTaillesByOrdreFabrication(ordreFabricationId);
   const { data: productionsData } = useProductions(planningId);
@@ -80,7 +70,12 @@ export function OrderContextPanel({
 
   // Calculate order context
   const orderContext = useMemo((): OrdreFabricationContext | null => {
-    if (!ordreFabricationData || !clientData || !articleData || !taillesData)
+    if (
+      !ordreFabricationData ||
+      !ordreFabricationData.client ||
+      !ordreFabricationData.article ||
+      !taillesData
+    )
       return null;
 
     const taillesCommande = taillesData["member"] || [];
@@ -105,25 +100,17 @@ export function OrderContextPanel({
     });
 
     return {
-      client: clientData,
+      client: ordreFabricationData.client,
       ordreFabrication: ordreFabricationData,
-      article: articleData,
+      article: ordreFabricationData.article,
       taillesCommande,
       workingDays,
       dailyTargets,
       currentProgress,
     };
-  }, [
-    ordreFabricationData,
-    clientData,
-    articleData,
-    taillesData,
-    productionsData,
-    workingDays,
-  ]);
+  }, [ordreFabricationData, taillesData, productionsData, workingDays]);
 
-  const isLoading =
-    loadingOrdre || loadingClient || loadingArticle || loadingTailles;
+  const isLoading = loadingOrdre || loadingTailles;
 
   if (isLoading) {
     return (

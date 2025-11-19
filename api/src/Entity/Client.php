@@ -9,6 +9,7 @@ use App\Repository\ClientRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
 #[ApiResource(paginationClientItemsPerPage: true)]
@@ -24,18 +25,23 @@ class Client {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     #[ORM\Column(type: "integer")]
+    #[Groups(['ordreFabrication:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
+    #[Groups(['ordreFabrication:read'])]
     private ?string $ref = null;
 
     #[ORM\Column(length: 255, unique: true)]
+    #[Groups(['ordreFabrication:read'])]
     private ?string $nom = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['ordreFabrication:read'])]
     private ?string $adresse = null;
 
     #[ORM\Column]
+    #[Groups(['ordreFabrication:read'])]
     private ?bool $privilegie = null;
 
     /**
