@@ -43,7 +43,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
         "ref" => "ipartial",
         "urgent" => "exact",
         "statut" => "exact",
-        "lance" => "exact",
         "client" => "exact",
         "article" => "exact",
     ]
@@ -79,7 +78,7 @@ class OrdreFabrication {
     private ?bool $urgent = null;
 
     #[ORM\Column(type: Types::STRING, enumType: StatutOF::class)]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read'])]
     private ?StatutOF $statut;
 
     #[ORM\Column]
@@ -93,10 +92,6 @@ class OrdreFabrication {
     #[ORM\Column]
     #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
     private ?int $tempsUnitaire = null;
-
-    #[ORM\Column(type: "boolean", options: ["default" => false])]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
-    private ?bool $lance = null;
 
     #[ORM\ManyToOne(inversedBy: 'ordreFabrications')]
     #[ORM\JoinColumn(nullable: false)]
@@ -231,16 +226,6 @@ class OrdreFabrication {
 
     public function setArticle(?Article $article): static {
         $this->article = $article;
-        return $this;
-    }
-
-    public function isLance(): ?bool {
-        return $this->lance;
-    }
-
-    public function setLance(bool $lance): static {
-        $this->lance = $lance;
-
         return $this;
     }
 

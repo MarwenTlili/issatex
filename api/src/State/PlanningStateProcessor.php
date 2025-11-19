@@ -37,8 +37,7 @@ final class PlanningStateProcessor implements ProcessorInterface {
             $old = $of->getStatut();
             $new = StatutOF::PLANNED;
 
-            $of->setStatut($new)
-                ->setLance(false);
+            $of->setStatut($new);
 
             $this->statusService->handleStatusChange($of, $old, $new);
             $this->entityManager->persist($of);
@@ -53,8 +52,7 @@ final class PlanningStateProcessor implements ProcessorInterface {
             $old = $of->getStatut();
             $new = StatutOF::DRAFT;
 
-            $of->setStatut($new)
-                ->setLance(false);
+            $of->setStatut($new);
 
             $this->statusService->handleStatusChange($of, $old, $new);
             $this->entityManager->persist($of);
