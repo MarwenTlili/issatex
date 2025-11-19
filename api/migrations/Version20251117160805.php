@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20251019094221 extends AbstractMigration
+final class Version20251117160805 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -60,7 +60,7 @@ final class Version20251019094221 extends AbstractMigration
         $this->addSql('CREATE TABLE notification (id INT NOT NULL, account_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, expediteur VARCHAR(255) NOT NULL, titre VARCHAR(255) NOT NULL, message TEXT NOT NULL, date_creation TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, lu BOOLEAN NOT NULL, type VARCHAR(255) NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_BF5476CA146F3EA3 ON notification (ref)');
         $this->addSql('CREATE INDEX IDX_BF5476CA9B6B5FBA ON notification (account_id)');
-        $this->addSql('CREATE TABLE ordre_fabrication (id INT NOT NULL, client_id INT NOT NULL, article_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, date_creation TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, date_cloture TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, urgent BOOLEAN NOT NULL, statut VARCHAR(255) NOT NULL, quantite_totale INT NOT NULL, prix_unitaire NUMERIC(10, 2) NOT NULL, temps_unitaire INT NOT NULL, lance BOOLEAN DEFAULT false NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE ordre_fabrication (id INT NOT NULL, client_id INT NOT NULL, article_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, date_creation TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, date_cloture TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, urgent BOOLEAN NOT NULL, statut VARCHAR(255) NOT NULL, quantite_totale INT NOT NULL, prix_unitaire NUMERIC(10, 2) NOT NULL, temps_unitaire INT NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_7FB222D2146F3EA3 ON ordre_fabrication (ref)');
         $this->addSql('CREATE INDEX IDX_7FB222D219EB6921 ON ordre_fabrication (client_id)');
         $this->addSql('CREATE INDEX IDX_7FB222D27294869C ON ordre_fabrication (article_id)');
@@ -91,7 +91,7 @@ final class Version20251019094221 extends AbstractMigration
         $this->addSql('ALTER TABLE affectation_employe_ilot ADD CONSTRAINT FK_1C3FEDC59A4BD21C FOREIGN KEY (ilot_id) REFERENCES ilot (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE article ADD CONSTRAINT FK_23A0E6619EB6921 FOREIGN KEY (client_id) REFERENCES client (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE client ADD CONSTRAINT FK_C74404559B6B5FBA FOREIGN KEY (account_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        $this->addSql('ALTER TABLE machine ADD CONSTRAINT FK_1505DF849A4BD21C FOREIGN KEY (ilot_id) REFERENCES ilot (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE machine ADD CONSTRAINT FK_1505DF849A4BD21C FOREIGN KEY (ilot_id) REFERENCES ilot (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE notification ADD CONSTRAINT FK_BF5476CA9B6B5FBA FOREIGN KEY (account_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE ordre_fabrication ADD CONSTRAINT FK_7FB222D219EB6921 FOREIGN KEY (client_id) REFERENCES client (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE ordre_fabrication ADD CONSTRAINT FK_7FB222D27294869C FOREIGN KEY (article_id) REFERENCES article (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
