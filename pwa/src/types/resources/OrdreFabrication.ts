@@ -9,12 +9,43 @@ import {
   TailleOrdreFabricationData,
 } from "./TailleOrdreFabrication";
 
-export type StatutOF =
-  | "Cree"
-  | "Planifiee"
-  | "En_cours"
-  | "Terminee"
-  | "Annule";
+export const OF_STATUT = {
+  DRAFT: {
+    label: "DRAFT",
+    muiColor: "primary",
+    twColor: "bg-blue-100 text-blue-800",
+  },
+  PLANNED: {
+    label: "PLANNED",
+    muiColor: "secondary",
+    twColor: "bg-indigo-100 text-indigo-800",
+  },
+  IN_PROGRESS: {
+    label: "IN_PROGRESS",
+    muiColor: "warning",
+    twColor: "bg-amber-100 text-amber-800",
+  },
+  COMPLETED: {
+    label: "COMPLETED",
+    muiColor: "success",
+    twColor: "bg-green-100 text-green-800",
+  },
+  CANCELED: {
+    label: "CANCELED",
+    muiColor: "error",
+    twColor: "bg-red-100 text-red-800",
+  },
+} as const;
+
+export type StatutOF = keyof typeof OF_STATUT;
+
+// Convert to React-Admin compatible choices, eg. to use in <SelectInput ... />
+export const OF_STATUT_CHOICES_RA = Object.entries(OF_STATUT).map(
+  ([key, value]) => ({
+    id: key,
+    name: value.label,
+  })
+);
 
 export interface OrdreFabrication extends Item {
   id: number;
@@ -26,9 +57,8 @@ export interface OrdreFabrication extends Item {
   quantiteTotale: number;
   prixUnitaire: string;
   tempsUnitaire: number;
-  lance: boolean;
-  client: string;
-  article: string;
+  client: Client;
+  article: Article;
   plannings: Planning[];
   tailleOFs: string[];
 }

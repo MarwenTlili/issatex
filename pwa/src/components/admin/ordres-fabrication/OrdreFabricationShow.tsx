@@ -17,7 +17,7 @@ import {
   TopToolbar,
   ListButton,
   CreateButton,
-  useRedirect,
+  Link,
 } from "react-admin";
 import {
   Card,
@@ -33,6 +33,10 @@ import {
   Assignment as AssignmentIcon,
   Straighten as StraightenIcon,
 } from "@mui/icons-material";
+import {
+  OF_STATUT,
+  OrdreFabrication,
+} from "@/types/resources/OrdreFabrication";
 
 const ShowActions = () => {
   return (
@@ -48,59 +52,18 @@ const ShowActions = () => {
 };
 
 const StatutChip = () => {
-  const record = useRecordContext();
+  const record = useRecordContext<OrdreFabrication>();
   if (!record) return null;
-
-  const getStatutColor = (statut: string) => {
-    switch (statut) {
-      case "CREE":
-        return "default";
-      case "EN_COURS":
-        return "primary";
-      case "TERMINE":
-        return "success";
-      case "ANNULE":
-        return "error";
-      case "EN_ATTENTE":
-        return "warning";
-      default:
-        return "default";
-    }
-  };
-
-  const getStatutLabel = (statut: string) => {
-    switch (statut) {
-      case "CREE":
-        return "Créé";
-      case "EN_COURS":
-        return "En cours";
-      case "TERMINE":
-        return "Terminé";
-      case "ANNULE":
-        return "Annulé";
-      case "EN_ATTENTE":
-        return "En attente";
-      default:
-        return statut;
-    }
-  };
-
-  return (
-    <Chip
-      label={getStatutLabel(record.statut)}
-      color={getStatutColor(record.statut)}
-      size="medium"
-      variant="filled"
-    />
-  );
+  const { label, muiColor } = OF_STATUT[record.statut];
+  return <Chip label={label} color={muiColor} size="medium" variant="filled" />;
 };
 
 const OrderSummaryCard = () => {
-  const record = useRecordContext();
+  const record = useRecordContext<OrdreFabrication>();
   if (!record) return null;
 
   const totalValue =
-    record.quantiteTotale * Number.parseFloat(record.prixUnitaire || 0);
+    record.quantiteTotale * Number.parseFloat(record.prixUnitaire || "0");
   const totalTime = record.quantiteTotale * (record.tempsUnitaire / 100 || 0);
 
   return (
@@ -127,7 +90,7 @@ const OrderSummaryCard = () => {
               {new Intl.NumberFormat("fr-FR", {
                 style: "currency",
                 currency: "EUR",
-              }).format(Number.parseFloat(record.prixUnitaire || 0))}
+              }).format(Number.parseFloat(record.prixUnitaire || "0"))}
             </Typography>
           </Grid>
           <Grid item xs={6} md={2}>
@@ -162,21 +125,6 @@ const OrderSummaryCard = () => {
         <Box mt={2} display="flex" gap={1} flexWrap="wrap">
           {record.urgent && (
             <Chip label="URGENT" color="error" size="small" variant="filled" />
-          )}
-          {record.lance ? (
-            <Chip
-              label="EN PRODUCTION"
-              color="success"
-              size="small"
-              variant="filled"
-            />
-          ) : (
-            <Chip
-              label="EN ATTENTE DE LANCEMENT"
-              color="default"
-              size="small"
-              variant="outlined"
-            />
           )}
         </Box>
       </CardContent>
@@ -219,8 +167,13 @@ const TailleOrdreFabricationDatagrid = () => {
   );
 };
 
+const CustomTitle = () => {
+  const record = useRecordContext<OrdreFabrication>();
+  return `${record?.ref}`;
+};
+
 export const OrdreFabricationShow = () => (
-  <Show actions={<ShowActions />}>
+  <Show actions={<ShowActions />} title={<CustomTitle />}>
     <SimpleShowLayout>
       <Grid container spacing={3}>
         {/* Header Information */}
@@ -245,29 +198,35 @@ export const OrdreFabricationShow = () => (
                   <Typography variant="body2" color="textSecondary">
                     Client
                   </Typography>
-                  <ReferenceField
-                    source="client"
-                    reference="api/clients"
-                    link="show"
-                  >
-                    <Typography variant="h6">
-                      <TextField source="nom" />
-                    </Typography>
-                  </ReferenceField>
+                  <FunctionField<OrdreFabrication>
+                    label="Client"
+                    render={(record) => (
+                      <Link
+                        to={`/api/clients/${encodeURIComponent(
+                          record.client["@id"]
+                        )}/show`}
+                      >
+                        {record.client.nom}
+                      </Link>
+                    )}
+                  />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" color="textSecondary">
                     Article
                   </Typography>
-                  <ReferenceField
-                    source="article"
-                    reference="api/articles"
-                    link="show"
-                  >
-                    <Typography variant="h6">
-                      <TextField source="designation" />
-                    </Typography>
-                  </ReferenceField>
+                  <FunctionField<OrdreFabrication>
+                    label="Article"
+                    render={(record) => (
+                      <Link
+                        to={`/api/articles/${encodeURIComponent(
+                          record.article["@id"]
+                        )}/show`}
+                      >
+                        {record.article.designation}
+                      </Link>
+                    )}
+                  />
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Typography variant="body2" color="textSecondary">
