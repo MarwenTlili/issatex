@@ -30,6 +30,7 @@ import { useCurrentClient } from "@/hooks/use-clients";
 import { formatDate } from "@/lib/utils/date";
 import { formatNumber } from "@/lib/utils/format";
 import { APP_ROUTES } from "@/config/app";
+import { OF_STATUT } from "@/types/resources/OrdreFabrication";
 
 interface QuickAction {
   title: string;
@@ -38,23 +39,6 @@ interface QuickAction {
   href: string;
   color: string;
 }
-
-const getStatusColor = (statut: string): string => {
-  switch (statut) {
-    case "Cree":
-      return "bg-blue-100 text-blue-800";
-    case "En_cours":
-      return "bg-yellow-100 text-yellow-800";
-    case "Terminee":
-      return "bg-green-100 text-green-800";
-    case "Annule":
-      return "bg-red-100 text-red-800";
-    case "Planifiee":
-      return "bg-purple-100 text-purple-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
 
 export default function ClientDashboard() {
   const { data: session, status } = useSession();
@@ -110,16 +94,16 @@ export default function ClientDashboard() {
 
     const urgentOrders = ordreFabrications.filter((of) => of.urgent).length;
     const completedOrders = ordreFabrications.filter(
-      (of) => of.statut === "Terminee"
+      (of) => of.statut === "COMPLETED"
     ).length;
     const inProgressOrders = ordreFabrications.filter(
-      (of) => of.statut === "En_cours"
+      (of) => of.statut === "IN_PROGRESS"
     ).length;
     const plannedOrders = ordreFabrications.filter(
-      (of) => of.statut === "Planifiee"
+      (of) => of.statut === "PLANNED"
     ).length;
     const createdOrders = ordreFabrications.filter(
-      (of) => of.statut === "Cree"
+      (of) => of.statut === "DRAFT"
     ).length;
 
     return {
@@ -406,7 +390,7 @@ export default function ClientDashboard() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <Badge className={`text-xs ${getStatusColor(of.statut)}`}>
+                      <Badge className={`text-xs ${OF_STATUT[of.statut].twColor}`}>
                         {of.statut}
                       </Badge>
                       <div className="text-sm text-muted-foreground mt-1">
