@@ -26,8 +26,8 @@ Le projet permet la **gestion complète du cycle de production**, de la **prise 
         -   Gestion des formulaires : `react-hook-form`
         -   Gestion des requêtes : `react-query`
         -   Validation : `zod`
-        -   UI : `tailwindcss`, `shadcn`
-    -   **Notifications en temps réel** : via Mercure ou WebSocket client
+        -   UI : `tailwindcss`
+    -   **Notifications en temps réel** : via pe protocole Mercure
 
 ---
 
@@ -37,7 +37,7 @@ ISSATEX souhaite moderniser son système de gestion de production pour :
 
 -   Automatiser la **gestion des ordres de fabrication (OF)**
 -   Suivre la **production journalière et le rendement**
--   Gérer les **expéditions et factures**
+-   ~~Gérer les **expéditions et factures**~~
 -   Permettre aux **donneurs d’ordre** de suivre en temps réel l’état de leurs commandes
 
 ---
@@ -49,33 +49,34 @@ ISSATEX souhaite moderniser son système de gestion de production pour :
 -   Gestion des **îlots** (unités autonomes de production)
 -   Gestion des **machines** (type, marque, référence)
 -   Gestion des **employés** (catégorie, date de recrutement, matricule)
+-   Gestion des **Clients** (privilégié ou non)
 
 ### 🧾 Gestion des Ordres de Fabrication (OF)
 
--   Création, consultation, mise à jour et suppression d’OF
+-   Création, consultation, mise à jour et suppression d’OF (non lancé)
 -   Gestion des **OF urgents**
 -   Planification hebdomadaire de production par îlot
 
 ### 📊 Suivi de la Production
 
 -   Saisie des quantités journalières (par taille et qualité)
--   Calcul automatique du **rendement** :
-    Rendement (%) = Temps productif / Temps de présence
--   Statistiques par îlot : journalières, hebdomadaires, mensuelles, annuelles
+-   ~~Calcul automatique du **rendement** :  
+    Rendement (%) = Temps productif / Temps de présence~~
+-   ~~Statistiques par îlot : journalières, hebdomadaires, mensuelles, annuelles~~
 
 ### 📱 Notifications
 
--   Notifications push sur changement d’état d’un OF : Planifié, Annulé
+-   Notifications sur changement d’état d’un OF : Planifié, Annulé
 
 ---
 
 ## 🔐 Rôles Utilisateurs
 
-| Rôle           | Permissions principales                                                 |
-| -------------- | ----------------------------------------------------------------------- |
-| **Gérant**     | Gestion complète (îlots, OF, employés, machines, plannings, rendements) |
-| **Secrétaire** | Suivi production, saisie des présences, éditions PDF                    |
-| **Client**     | Lancement & suivi de ces Ordres de Fabrication                          |
+| Rôle           | Permissions principales                                                            |
+| -------------- | ---------------------------------------------------------------------------------- |
+| **Gérant**     | Gestion complète (îlots, employés, machines, OF, plannings, Présences, rendements) |
+| **Secrétaire** | Suivi production, saisie des présences                                             |
+| **Client**     | Lancement & suivi de ces Ordres de Fabrication, Gérer ces articles                 |
 
 ---
 
@@ -83,10 +84,8 @@ ISSATEX souhaite moderniser son système de gestion de production pour :
 
 -   Cahier des charges : _Mini Projet ISSATEX – Pr. Chiheb CHAIEB (ISET Sousse, 2022)_
 -   Technologies :
-    -   [Api-Platform](https://api-platform.com/)
-    -   [Next.js](https://nextjs.org/)
-    -   [React Admin](https://marmelab.com/react-admin/)
-    -   [TailwindCSS](https://tailwindcss.com/)
+    -   [Api-Platform](https://api-platform.com/) (back-end Restful API)
+    -   [Next.js](https://nextjs.org/) (front-end PWA)
 
 ---
 
