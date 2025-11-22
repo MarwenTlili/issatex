@@ -22,8 +22,7 @@ class CreateOrdreFabricationProcessor implements ProcessorInterface {
 
         // Example: initialize default values on creation
         $data->setStatut(StatutOF::DRAFT)
-            ->setDateCreation(new \DateTime)
-            ->setLance(false);
+            ->setDateCreation(new \DateTime);
 
         // Persist entity
         $result = $this->persistProcessor->process($data, $operation, $uriVariables, $context);
