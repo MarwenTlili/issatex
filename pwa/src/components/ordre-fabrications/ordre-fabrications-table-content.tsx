@@ -164,7 +164,7 @@ export const OrdreFabricationsTableContent = memo(
                     </TableCell>
                     <TableCell>€{of.prixUnitaire}</TableCell>
                     <TableCell className="max-w-xs truncate">
-                      {of.article && of.article.split("/").pop()}
+                      {of.article.ref}
                     </TableCell>
                     <TableCell>
                       {of.urgent && (

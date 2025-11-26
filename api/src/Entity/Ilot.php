@@ -25,19 +25,19 @@ class Ilot {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
-    #[Groups(['presence', 'affectation:read'])]
+    #[Groups(['presence', 'affectation:read', 'planning:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
-    #[Groups(['presence', 'affectation:read'])]
+    #[Groups(['presence', 'affectation:read', 'planning:read'])]
     private ?string $ref = null;
 
     #[ORM\Column(length: 255, unique: true)]
-    #[Groups(['presence', 'affectation:read'])]
+    #[Groups(['presence', 'affectation:read', 'planning:read'])]
     private ?string $nom = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    #[Groups(['presence', 'affectation:read'])]
+    #[Groups(['presence', 'affectation:read', 'planning:read'])]
     private ?string $description = null;
 
     /**

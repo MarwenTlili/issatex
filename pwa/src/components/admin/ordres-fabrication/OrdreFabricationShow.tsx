@@ -8,7 +8,6 @@ import {
   TextField,
   DateField,
   BooleanField,
-  ReferenceField,
   ReferenceManyField,
   Datagrid,
   NumberField,
@@ -18,6 +17,7 @@ import {
   ListButton,
   CreateButton,
   Link,
+  SimpleList,
 } from "react-admin";
 import {
   Card,
@@ -27,16 +27,18 @@ import {
   Typography,
   Box,
   Chip,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   Schedule as ScheduleIcon,
   Assignment as AssignmentIcon,
   Straighten as StraightenIcon,
 } from "@mui/icons-material";
-import {
-  OF_STATUT,
-  OrdreFabrication,
-} from "@/types/resources/OrdreFabrication";
+import { OrdreFabrication } from "@/types/resources/OrdreFabrication";
+import { OrdreFabricationStatutChip } from "@/components/admin/common/OrdreFabricationStatutChip";
+import { Planning } from "@/types/resources/Planning";
+import { TailleOrdreFabrication } from "@/types/resources/TailleOrdreFabrication";
 
 const ShowActions = () => {
   return (
@@ -49,13 +51,6 @@ const ShowActions = () => {
       />
     </TopToolbar>
   );
-};
-
-const StatutChip = () => {
-  const record = useRecordContext<OrdreFabrication>();
-  if (!record) return null;
-  const { label, muiColor } = OF_STATUT[record.statut];
-  return <Chip label={label} color={muiColor} size="medium" variant="filled" />;
 };
 
 const OrderSummaryCard = () => {
@@ -132,38 +127,72 @@ const OrderSummaryCard = () => {
   );
 };
 
-const TailleOrdreFabricationDatagrid = () => {
-  const ordreFabrication = useRecordContext();
+const TailleOF_Responsive = () => {
+  const ordreFabricationContext = useRecordContext<OrdreFabrication>();
+  const theme = useTheme();
+  const isMedium = useMediaQuery(theme.breakpoints.down("md"));
+
+  if (!ordreFabricationContext) {
+    return null;
+  }
+
+  const renderSizePercent = (tailleOF: TailleOrdreFabrication) => {
+    const percent =
+      ordreFabricationContext?.quantiteTotale > 0
+        ? (
+            (tailleOF.quantite / ordreFabricationContext.quantiteTotale) *
+            100
+          ).toFixed(1)
+        : "0.0";
+    return `${percent}%`;
+  };
+
+  const renderSizePrice = (tailleOF: TailleOrdreFabrication) => {
+    const prix = parseFloat(ordreFabricationContext?.prixUnitaire || "0");
+    const value = tailleOF.quantite * prix;
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+    }).format(value);
+  };
 
   return (
-    <Datagrid bulkActionButtons={false}>
-      <TextField source="tailleArticle" label="Taille" />
-      <NumberField source="quantite" label="Quantité" />
-      <FunctionField
-        label="Pourcentage"
-        render={(tailleOF: any) => {
-          const percent =
-            ordreFabrication?.quantiteTotale > 0
-              ? (
-                  (tailleOF.quantite / ordreFabrication?.quantiteTotale) *
-                  100
-                ).toFixed(1)
-              : "0.0";
-          return `${percent}%`;
-        }}
-      />
-      <FunctionField
-        label="Valeur"
-        render={(tailleOF: any) => {
-          const prix = parseFloat(ordreFabrication?.prixUnitaire || "0");
-          const value = tailleOF.quantite * prix;
-          return new Intl.NumberFormat("fr-FR", {
-            style: "currency",
-            currency: "EUR",
-          }).format(value);
-        }}
-      />
-    </Datagrid>
+    <ReferenceManyField
+      reference="api/taille_ordre_fabrications"
+      target="ordreFabrication"
+      sort={{ field: "tailleArticle", order: "ASC" }}
+    >
+      {isMedium ? (
+        <SimpleList
+          primaryText={(tailleOF: TailleOrdreFabrication) => (
+            <span>{tailleOF.tailleArticle}</span>
+          )}
+          secondaryText={(tailleOF: TailleOrdreFabrication) => (
+            <Typography
+              variant="body2" // Standard text style
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              <span>Quantité: {tailleOF.quantite}</span>
+              <span>{renderSizePercent(tailleOF)}</span>
+            </Typography>
+          )}
+          tertiaryText={(tailleOF: TailleOrdreFabrication) =>
+            renderSizePrice(tailleOF)
+          }
+        />
+      ) : (
+        <Datagrid bulkActionButtons={false}>
+          <TextField source="tailleArticle" label="Taille" />
+          <NumberField source="quantite" label="Quantité" />
+          <FunctionField label="Pourcentage" render={renderSizePercent} />
+          <FunctionField label="Prix" render={renderSizePrice} />
+        </Datagrid>
+      )}
+    </ReferenceManyField>
   );
 };
 
@@ -190,7 +219,7 @@ export const OrdreFabricationShow = () => (
                   Ordre de Fabrication #
                   {<TextField source="ref" component="span" />}
                 </Typography>
-                <StatutChip />
+                <OrdreFabricationStatutChip />
               </Box>
 
               <Grid container spacing={2}>
@@ -262,21 +291,7 @@ export const OrdreFabricationShow = () => (
               avatar={<StraightenIcon color="primary" />}
             />
             <CardContent>
-              <ReferenceManyField
-                label=""
-                reference="api/taille_ordre_fabrications"
-                target="ordreFabrication"
-                sort={{ field: "tailleArticle", order: "ASC" }}
-              >
-                <ReferenceManyField
-                  label=""
-                  reference="api/taille_ordre_fabrications"
-                  target="ordreFabrication"
-                  sort={{ field: "tailleArticle", order: "ASC" }}
-                >
-                  <TailleOrdreFabricationDatagrid />
-                </ReferenceManyField>
-              </ReferenceManyField>
+              <TailleOF_Responsive />
             </CardContent>
           </Card>
         </Grid>
@@ -290,12 +305,11 @@ export const OrdreFabricationShow = () => (
             />
             <CardContent>
               <ReferenceManyField
-                label=""
                 reference="api/plannings"
                 target="ordreFabrication"
                 sort={{ field: "dateDebut", order: "ASC" }}
               >
-                <Datagrid rowClick="show" bulkActionButtons={false}>
+                <Datagrid rowClick={false} bulkActionButtons={false}>
                   <TextField source="ref" label="Référence Planning" />
                   <DateField source="dateDebut" label="Date début" />
                   <DateField source="dateFin" label="Date fin" />
@@ -314,14 +328,18 @@ export const OrdreFabricationShow = () => (
                       return `${diffDays} jour${diffDays > 1 ? "s" : ""}`;
                     }}
                   />
-                  <ReferenceField
-                    source="ilot"
-                    reference="api/ilots"
-                    link="show"
+                  <FunctionField<Planning>
                     label="Ilot"
-                  >
-                    <TextField source="nom" />
-                  </ReferenceField>
+                    render={(record) => (
+                      <Link
+                        to={`/api/ilots/${encodeURIComponent(
+                          record.ilot["@id"]
+                        )}/show`}
+                      >
+                        {record.ilot.nom}
+                      </Link>
+                    )}
+                  />
                   <BooleanField source="reporte" label="Reporté" />
                 </Datagrid>
               </ReferenceManyField>
