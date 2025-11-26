@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   BooleanInput,
   Create,
@@ -7,7 +7,6 @@ import {
   SelectInput,
   SimpleForm,
 } from "react-admin";
-import { useWatch } from "react-hook-form";
 
 const getNextMonday = () => {
   const today = new Date();
@@ -24,18 +23,6 @@ const addDays = (date: Date, days: number) => {
   return result;
 };
 
-const WatchPlanning = () => {
-  const dateDebutWatch = useWatch({ name: "dateDebut" });
-  const dateFinWatch = useWatch({ name: "dateFin" });
-
-  useEffect(() => {
-    console.log("dateDebutWatch:", dateDebutWatch);
-    console.log("dateFinWatch:", dateFinWatch);
-  }, [dateDebutWatch, dateFinWatch]);
-
-  return <></>;
-};
-
 const PlanningCreate = () => {
   const dateDebut = getNextMonday();
   const dateFin = addDays(dateDebut, 6);
@@ -50,8 +37,6 @@ const PlanningCreate = () => {
       })}
     >
       <SimpleForm>
-        {/* <WatchPlanning /> */}
-
         <DateInput source="dateCreation" defaultValue={new Date()} />
         <DateInput source="dateDebut" defaultValue={dateDebut.toISOString()} />
         <DateInput source="dateFin" defaultValue={dateFin.toISOString()} />

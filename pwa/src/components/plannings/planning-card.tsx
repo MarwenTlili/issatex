@@ -18,10 +18,7 @@ import {
   Factory,
   MapPin,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
 import type { Planning } from "@/types/resources/Planning";
-import { useOrdreFabrication } from "@/hooks/use-ordre-fabrications";
-import { useIlot } from "@/hooks/use-ilots";
 import { ProductionList } from "../productions/production-list";
 
 interface PlanningCardProps {
@@ -35,10 +32,6 @@ export function PlanningCard({
   isOpen,
   onToggle,
 }: PlanningCardProps) {
-  const { data: ordreFabrication, isLoading: loadingOrdre } =
-    useOrdreFabrication(planning.ordreFabrication);
-  const { data: ilot, isLoading: loadingIlot } = useIlot(planning.ilot);
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("fr-FR");
   };
@@ -84,13 +77,9 @@ export function PlanningCard({
                       Ordre de fabrication:
                     </span>
                   </div>
-                  {loadingOrdre ? (
-                    <Skeleton className="h-4 w-32" />
-                  ) : (
-                    <p className="text-sm text-muted-foreground ml-6">
-                      {ordreFabrication?.ref || "Chargement..."}
-                    </p>
-                  )}
+                  <p className="text-sm text-muted-foreground ml-6">
+                    {planning.ordreFabrication.ref || "Chargement..."}
+                  </p>
                 </div>
 
                 <div className="space-y-2">
@@ -98,20 +87,16 @@ export function PlanningCard({
                     <MapPin className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Îlot:</span>
                   </div>
-                  {loadingIlot ? (
-                    <Skeleton className="h-4 w-32" />
-                  ) : (
-                    <p className="text-sm text-muted-foreground ml-6">
-                      {ilot?.nom || "Chargement..."}
-                    </p>
-                  )}
+                  <p className="text-sm text-muted-foreground ml-6">
+                    {planning.ilot?.nom || "Chargement..."}
+                  </p>
                 </div>
               </div>
 
               {/* Productions */}
               <ProductionList
                 planningId={planning.id.toString()}
-                ordreFabricationUri={planning.ordreFabrication}
+                ordreFabricationUri={planning.ordreFabrication["@id"]}
                 dateDebut={planning.dateDebut}
                 dateFin={planning.dateFin}
               />
