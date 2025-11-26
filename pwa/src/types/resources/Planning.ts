@@ -1,5 +1,8 @@
 import { BaseFilters } from "../common/BaseFilters";
+import { Ilot } from "./Ilot";
 import { Item } from "./Item";
+import { OrdreFabrication } from "./OrdreFabrication";
+import { Production } from "./Production";
 
 export interface Planning extends Item {
   id: number;
@@ -8,9 +11,9 @@ export interface Planning extends Item {
   dateDebut: string;
   dateFin: string;
   reporte: boolean;
-  ordreFabrication: string;
-  ilot: string;
-  productions: string[];
+  ordreFabrication: OrdreFabrication;
+  ilot: Ilot;
+  productions: Production[];
 }
 
 export interface PlanningsFilters extends BaseFilters {
