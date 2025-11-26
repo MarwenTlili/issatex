@@ -32,12 +32,12 @@ import {
   Grid,
 } from "@mui/material";
 import {
-  OF_STATUT,
   OF_STATUT_CHOICES_RA,
   OrdreFabrication,
 } from "@/types/resources/OrdreFabrication";
 import RowActions from "@/components/admin/common/row-actions";
 import { formatDate } from "@/lib/utils/date";
+import { OrdreFabricationStatutChip } from "../common/OrdreFabricationStatutChip";
 
 const filters = [
   <SearchInput key="search" source="ref" alwaysOn />,
@@ -71,14 +71,6 @@ interface PartialFieldProps extends Partial<FieldProps> {
   source?: string;
   label?: string;
 }
-
-const StatutField = ({ record, source }: PartialFieldProps) => {
-  const contextRecord = useRecordContext<OrdreFabrication>({ record, source });
-  const ordreFabrication = record ?? contextRecord;
-  if (!ordreFabrication) return null;
-  const { label, muiColor } = OF_STATUT[ordreFabrication.statut];
-  return <Chip label={label} color={muiColor} size="small" variant="filled" />;
-};
 
 const PriorityField = ({ record, source }: PartialFieldProps) => {
   const contextRecord = useRecordContext<OrdreFabrication>({ record, source });
@@ -132,7 +124,7 @@ const MobileOrdreFabricationList = () => {
                   hideActions={{ delete: true, edit: true }}
                 />
                 <PriorityField record={record} />
-                <StatutField record={record} />
+                <OrdreFabricationStatutChip record={record} />
               </Stack>
             }
             title={record.ref}
@@ -229,9 +221,9 @@ export const OrdreFabricationList = () => {
           <DateField source="dateCloture" label="Date clôture" />
           <NumberField source="quantiteTotale" label="Quantité demandée" />
           <TextField source="tempsUnitaire" label="Temps Unitaire (cmn)" />
-          <FunctionField
+          <FunctionField<OrdreFabrication>
             label="Valeur totale"
-            render={(record: any) =>
+            render={(record) =>
               new Intl.NumberFormat("fr-FR", {
                 style: "currency",
                 currency: "EUR",
@@ -240,7 +232,11 @@ export const OrdreFabricationList = () => {
               )
             }
           />
-          <StatutField source="statut" />
+          <FunctionField<OrdreFabrication>
+            label="Statut"
+            source="statut"
+            render={(record) => <OrdreFabricationStatutChip record={record} />}
+          />
           <PriorityField source="urgent" label="Priorité" />
           <RowActions<OrdreFabrication>
             resource="api/ordre_fabrications"

@@ -58,49 +58,49 @@ class OrdreFabrication {
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
-    #[Groups(['ordreFabrication:read'])]
+    #[Groups(['ordreFabrication:read', 'planning:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true, unique: true)]
-    #[Groups(['ordreFabrication:read'])]
+    #[Groups(['ordreFabrication:read', 'planning:read'])]
     private ?string $ref = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write', 'planning:read'])]
     private ?\DateTime $dateCreation = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write', 'planning:read'])]
     private ?\DateTime $dateCloture = null;
 
     #[ORM\Column]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write', 'planning:read'])]
     private ?bool $urgent = null;
 
     #[ORM\Column(type: Types::STRING, enumType: StatutOF::class)]
-    #[Groups(['ordreFabrication:read'])]
+    #[Groups(['ordreFabrication:read', 'planning:read'])]
     private ?StatutOF $statut;
 
     #[ORM\Column]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write', 'planning:read'])]
     private ?int $quantiteTotale = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write', 'planning:read'])]
     private ?string $prixUnitaire = null;
 
     #[ORM\Column]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write', 'planning:read'])]
     private ?int $tempsUnitaire = null;
 
     #[ORM\ManyToOne(inversedBy: 'ordreFabrications')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write', 'planning:read'])]
     private ?Client $client = null;
 
     #[ORM\ManyToOne(inversedBy: 'ordreFabrications')]
     #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['ordreFabrication:read', 'ordreFabrication:write'])]
+    #[Groups(['ordreFabrication:read', 'ordreFabrication:write', 'planning:read'])]
     private ?Article $article = null;
 
     /**
