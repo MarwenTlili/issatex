@@ -138,13 +138,25 @@ const MobileOrdreFabricationList = () => {
                 <Typography className="text-muted-foreground font-medium">
                   ARTICLE
                 </Typography>
-                <Typography>{`(${record.article.ref}) ${record.article.designation}`}</Typography>
+                <Link
+                  to={`/api/articles/${encodeURIComponent(
+                    record.article["@id"]
+                  )}/show`}
+                >
+                  <Typography>{`(${record.article.ref}) ${record.article.designation}`}</Typography>
+                </Link>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography className="text-muted-foreground font-medium">
                   CLIENT
                 </Typography>
-                <Typography>{`(${record.client.ref}) ${record.client.nom}`}</Typography>
+                <Link
+                  to={`/api/clients/${encodeURIComponent(
+                    record.client["@id"]
+                  )}/show`}
+                >
+                  <Typography>{`(${record.client.ref}) ${record.client.nom}`}</Typography>
+                </Link>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <Typography className="text-muted-foreground font-medium">
@@ -197,7 +209,7 @@ export const OrdreFabricationList = () => {
                   record.client["@id"]
                 )}/show`}
               >
-                {record.client.nom}
+                {`(${record.client.ref}) ${record.client.nom}`}
               </Link>
             )}
           />
@@ -209,7 +221,7 @@ export const OrdreFabricationList = () => {
                   record.article["@id"]
                 )}/show`}
               >
-                {record.article.designation}
+                {`(${record.article.ref}) ${record.article.designation}`}
               </Link>
             )}
           />
@@ -218,7 +230,7 @@ export const OrdreFabricationList = () => {
           <NumberField source="quantiteTotale" label="Quantité demandée" />
           <TextField source="tempsUnitaire" label="Temps Unitaire (cmn)" />
           <FunctionField<OrdreFabrication>
-            label="Valeur totale"
+            label="Prix totale"
             render={(record) =>
               new Intl.NumberFormat("fr-FR", {
                 style: "currency",
