@@ -53,7 +53,6 @@ const filters = [
   <DateInput source="dateCreation.after" label="Date de création (min)" />,
   <DateInput source="dateCreation.before" label="Date de création (max)" />,
   <BooleanInput key="urgent" source="urgent" label="Urgent" />,
-  <BooleanInput key="lance" source="lance" label="Lancé en production" />,
 ];
 
 const ListActions = () => (
