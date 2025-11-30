@@ -50,11 +50,8 @@ const filters = [
     choices={OF_STATUT_CHOICES_RA}
     label="Statut"
   />,
-  <DateInput
-    key="dateCreation"
-    source="dateCreation"
-    label="Date de création"
-  />,
+  <DateInput source="dateCreation.after" label="Date de création (min)" />,
+  <DateInput source="dateCreation.before" label="Date de création (max)" />,
   <BooleanInput key="urgent" source="urgent" label="Urgent" />,
   <BooleanInput key="lance" source="lance" label="Lancé en production" />,
 ];
