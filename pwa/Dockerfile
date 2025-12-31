@@ -7,7 +7,7 @@ FROM node:20.19-alpine AS node_upstream
 FROM node_upstream AS base
 
 # Install required dependencies
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache gcompat=1.1.0-r4
 
 WORKDIR /srv/app
 
