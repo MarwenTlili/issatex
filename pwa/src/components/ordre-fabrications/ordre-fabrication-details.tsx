@@ -26,7 +26,6 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications";
-import { useArticle } from "@/hooks/use-articles";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { APP_ROUTES, MESSAGES } from "@/config/app";
@@ -58,7 +57,6 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
   const { data: ordreFabrication, isLoading, error } = useOrdreFabrication(id);
   const { data: tailleOFsResponse } = useTaillesByOrdreFabrication(id);
   const deleteOrdreFabrication = useDeleteOrdreFabrication();
-  const { data: article } = useArticle(ordreFabrication?.article);
   const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
   const [dialogData, setDialogData] = useState<{
     title: string;
@@ -225,7 +223,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
           <h3 className="text-base sm:text-lg font-medium mb-2">Article</h3>
           <div className="bg-muted/50 rounded-lg p-3 sm:p-4">
             <Badge className="text-md">
-              {`${article?.ref} - ${article?.designation}`}
+              {`${ordreFabrication.article?.ref} - ${ordreFabrication.article?.designation}`}
             </Badge>
           </div>
         </div>
