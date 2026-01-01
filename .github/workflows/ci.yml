@@ -16,13 +16,18 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     env:
+      APP_ENV: test
+      APP_RUNTIME_ENV: test
+
       POSTGRES_USER: ${{secrets.POSTGRES_USER}}
       POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
       POSTGRES_DB: ${{secrets.POSTGRES_DB}}
       POSTGRES_VERSION: ${{secrets.POSTGRES_VERSION}}
       POSTGRES_CHARSET: ${{secrets.POSTGRES_CHARSET}}
+
       SERVER_NAME: ${{secrets.SERVER_NAME}}
       CADDY_MERCURE_JWT_SECRET: ${{secrets.CADDY_MERCURE_JWT_SECRET}}
+
       TRUSTED_PROXIES: 127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16
       TRUSTED_HOSTS: ^localhost|php$
       CORS_ALLOW_ORIGIN: '^https?://(localhost|127\.0\.0\.1)(:[0-9]+)?$'
