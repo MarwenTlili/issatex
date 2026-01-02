@@ -18,6 +18,7 @@ jobs:
     env:
       APP_ENV: test
       APP_RUNTIME_ENV: test
+      SYMFONY_DOTENV_VARS: 0
 
       POSTGRES_USER: ${{secrets.POSTGRES_USER}}
       POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
