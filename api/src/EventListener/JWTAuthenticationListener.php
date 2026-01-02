@@ -12,13 +12,16 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class JWTAuthenticationListener {
     private EntityManagerInterface $entityManager;
     private MercureJwtProvider $mercureJwtProvider;
+    private int $accessTokenTtl;
 
     public function __construct(
         EntityManagerInterface $entityManager,
-        MercureJwtProvider $mercureJwtProvider
+        MercureJwtProvider $mercureJwtProvider,
+        int $accessTokenTtl
     ) {
         $this->entityManager = $entityManager;
         $this->mercureJwtProvider = $mercureJwtProvider;
+        $this->accessTokenTtl = $accessTokenTtl;
     }
 
     /**
@@ -28,24 +31,23 @@ class JWTAuthenticationListener {
         /** @var User */
         $user = $event->getUser();
 
-        // default data: { "token": "..." }
         $data = $event->getData();
 
         if (!$user instanceof UserInterface) {
             return;
         }
 
-        // Base response payload
-        $payload = [
+        // Authentication response body (HTTP / API contract)
+        $response = [
+            'token_type' => 'Bearer',
+            'expires_in' => $this->accessTokenTtl, // in seconds
             'access_token' => $data['token'],
             'refresh_token' => '', // handled by gesdinet/jwt-refresh-token-bundle
-            'expires_in' => 3600, // seconds
-            'token_type' => 'Bearer',
         ];
 
         // Add Mercure token for private subscriptions
         if ($user instanceof User) {
-            $payload['mercureJwt'] = $this->mercureJwtProvider->createForUser($user);
+            $response['mercureJwt'] = $this->mercureJwtProvider->createForUser($user);
 
             // Optionally update last login timestamp
             $user->setLastLoginAt(new \DateTimeImmutable());
@@ -54,7 +56,7 @@ class JWTAuthenticationListener {
         }
 
         // Update the final login response
-        $event->setData($payload);
+        $event->setData($response);
     }
 
     /**

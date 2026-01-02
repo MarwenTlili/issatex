@@ -53,7 +53,10 @@ services:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
 
     App\EventListener\JWTAuthenticationListener:
-        arguments: [ '@doctrine.orm.entity_manager' ]
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $mercureJwtProvider: '@App\Service\MercureJwtProvider'
+            $accessTokenTtl: '%env(int:JWT_ACCESS_TOKEN_TTL)%'
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess }
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_failure, method: onAuthenticationFailure }
