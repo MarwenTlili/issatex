@@ -1,0 +1,175 @@
+<?php
+
+namespace App\Entity;
+
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiResource;
+use App\Repository\ClientRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+
+#[ORM\Entity(repositoryClass: ClientRepository::class)]
+#[ApiResource(paginationClientItemsPerPage: true)]
+#[ApiFilter(
+    SearchFilter::class,
+    properties: [
+        "ref" => "ipartial",
+        "privilegie" => "exact",
+        "account" => "exact"
+    ]
+)]
+class Client {
+    #[ORM\Id]
+    #[ORM\GeneratedValue(strategy: 'AUTO')]
+    #[ORM\Column(type: "integer")]
+    #[Groups(['ordreFabrication:read'])]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255, nullable: true, unique: true)]
+    #[Groups(['ordreFabrication:read'])]
+    private ?string $ref = null;
+
+    #[ORM\Column(length: 255, unique: true)]
+    #[Groups(['ordreFabrication:read'])]
+    private ?string $nom = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['ordreFabrication:read'])]
+    private ?string $adresse = null;
+
+    #[ORM\Column]
+    #[Groups(['ordreFabrication:read'])]
+    private ?bool $privilegie = null;
+
+    /**
+     * @var Collection<int, OrdreFabrication>
+     */
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: OrdreFabrication::class, orphanRemoval: true)]
+    private Collection $ordreFabrications;
+
+    /**
+     * @var Collection<int, Article>
+     */
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Article::class, orphanRemoval: true)]
+    private Collection $articles;
+
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?User $account = null;
+
+    public function __construct() {
+        $this->ordreFabrications = new ArrayCollection();
+        $this->articles = new ArrayCollection();
+    }
+
+    public function getId(): ?int {
+        return $this->id;
+    }
+
+    public function getRef(): ?string {
+        return $this->ref;
+    }
+
+    public function setRef(string $ref): static {
+        $this->ref = $ref;
+
+        return $this;
+    }
+
+    public function getNom(): ?string {
+        return $this->nom;
+    }
+
+    public function setNom(string $nom): static {
+        $this->nom = $nom;
+
+        return $this;
+    }
+
+    public function getAdresse(): ?string {
+        return $this->adresse;
+    }
+
+    public function setAdresse(?string $adresse): static {
+        $this->adresse = $adresse;
+
+        return $this;
+    }
+
+    public function isPrivilegie(): ?bool {
+        return $this->privilegie;
+    }
+
+    public function setPrivilegie(bool $privilegie): static {
+        $this->privilegie = $privilegie;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, OrdreFabrication>
+     */
+    public function getOrdreFabrications(): Collection {
+        return $this->ordreFabrications;
+    }
+
+    public function addOrdreFabrication(OrdreFabrication $ordreFabrication): static {
+        if (!$this->ordreFabrications->contains($ordreFabrication)) {
+            $this->ordreFabrications->add($ordreFabrication);
+            $ordreFabrication->setClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrdreFabrication(OrdreFabrication $ordreFabrication): static {
+        if ($this->ordreFabrications->removeElement($ordreFabrication)) {
+            // set the owning side to null (unless already changed)
+            if ($ordreFabrication->getClient() === $this) {
+                $ordreFabrication->setClient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Article>
+     */
+    public function getArticles(): Collection {
+        return $this->articles;
+    }
+
+    public function addArticle(Article $article): static {
+        if (!$this->articles->contains($article)) {
+            $this->articles->add($article);
+            $article->setClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeArticle(Article $article): static {
+        if ($this->articles->removeElement($article)) {
+            // set the owning side to null (unless already changed)
+            if ($article->getClient() === $this) {
+                $article->setClient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getAccount(): ?User {
+        return $this->account;
+    }
+
+    public function setAccount(User $account): static {
+        $this->account = $account;
+
+        return $this;
+    }
+}

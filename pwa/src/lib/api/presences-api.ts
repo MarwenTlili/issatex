@@ -1,0 +1,32 @@
+import { apiRequest, ApiService, buildQueryParams } from "./base";
+import { API_ENDPOINTS } from "@/config/api";
+import { ApiCollection } from "@/types/resources/ApiCollection";
+import type {
+  Presence,
+  CreatePresenceData,
+  UpdatePresenceData,
+  PresencesFilters,
+} from "@/types/resources/Presence";
+
+class PresencesApiService extends ApiService<
+  Presence,
+  CreatePresenceData,
+  UpdatePresenceData
+> {
+  constructor() {
+    super(API_ENDPOINTS.PRESENCES);
+  }
+
+  async getByEmployee(employeeId: string | number) {
+    return this.getAll({ employe: employeeId });
+  }
+
+  async getByDateRange(startDate: string, endDate: string) {
+    return this.getAll({
+      "datePresence[after]": startDate,
+      "datePresence[before]": endDate,
+    });
+  }
+}
+
+export const presencesApi = new PresencesApiService();

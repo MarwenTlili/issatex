@@ -1,47 +1,94 @@
-<h1 align="center"><a href="https://api-platform.com"><img src="https://api-platform.com/images/logos/Logo_Circle%20webby%20text%20blue.png" alt="API Platform" width="250" height="250"></a></h1>
+# 🧵 Mini Project Issatex
 
-API Platform is a next-generation web framework designed to easily create API-first projects without compromising extensibility
-and flexibility:
+Système de **Gestion de Production Assistée par Ordinateur (GPAO)** pour la société **ISSATEX**, spécialisée dans la confection de prêt-à-porter et linge de maison.  
+Le projet permet la **gestion complète du cycle de production**, de la **prise d’ordre de fabrication (OF)** jusqu’à l’**expédition** et la **facturation**, tout en intégrant des rôles multiples (gérant, secrétaire, client, magasinier, etc.).
 
-* Design your own data model as plain old PHP classes or [**import an existing ontology**](https://api-platform.com/docs/schema-generator).
-* **Expose in minutes a hypermedia REST or a GraphQL API** with pagination, data validation, access control, relation embedding,
-  filters, and error handling...
-* Benefit from Content Negotiation: [GraphQL](https://api-platform.com/docs/core/graphql/), [JSON-LD](https://json-ld.org), [Hydra](https://hydra-cg.com),
-  [HAL](https://github.com/mikekelly/hal_specification/blob/master/hal_specification.md), [JSON:API](https://jsonapi.org/), [YAML](https://yaml.org/), [JSON](https://www.json.org/), [XML](https://www.w3.org/XML/) and [CSV](https://www.ietf.org/rfc/rfc4180.txt) are supported out of the box.
-* Enjoy the **beautiful automatically generated API documentation** ([OpenAPI](https://api-platform.com/docs/core/openapi/)).
-* Add [**a convenient Material Design administration interface**](https://api-platform.com/docs/admin) built with [React](https://reactjs.org/)
-  without writing a line of code.
-* **Scaffold fully functional Progressive-Web-Apps and mobile apps** built with [Next.js](https://api-platform.com/docs/client-generator/nextjs/) (React),
-[Nuxt.js](https://api-platform.com/docs/client-generator/nuxtjs/) (Vue.js) or [React Native](https://api-platform.com/docs/client-generator/react-native/)
-thanks to [the client generator](https://api-platform.com/docs/client-generator/) (a Vue.js generator is also available).
-* Install a development environment and deploy your project in production using **[Docker](https://api-platform.com/docs/distribution)**
-and [Kubernetes](https://api-platform.com/docs/deployment/kubernetes).
-* Easily add **[OAuth](https://oauth.net/) authentication**.
-* Create specs and tests with **[a developer friendly API testing tool](https://api-platform.com/docs/distribution/testing/)**.
+---
 
-The official project documentation is available **[on the API Platform website](https://api-platform.com)**.
+## 🚀 Stack Technique
 
-API Platform embraces open web standards and the
-[Linked Data](https://www.w3.org/standards/semanticweb/data) movement. Your API will automatically expose structured data.
-It means that your API Platform application is usable **out of the box** with technologies of
-the semantic web.
+### 🧩 Back-End
 
-It also means that **your SEO will be improved** because **[Google leverages these formats](https://developers.google.com/search/docs/guides/intro-structured-data)**.
+-   **Framework** : [Symfony](https://symfony.com/) avec **API Platform**
+-   **Packages principaux :**
+    -   `lexik/jwt-authentication-bundle` — Authentification par JWT
+    -   `gesdinet/jwt-refresh-token-bundle` — Rafraîchissement de tokens
+    -   `vich/uploader-bundle` — Gestion de l’upload de fichiers (document technique de l'article)
+    -   `mercure-bundle` — Notifications temps réel (changement d'état des OF)
+-   **Base de données** : PostgreSQL
+-   **Architecture** : REST + Temps réel via Mercure
 
-Last but not least, the server component of API Platform is built on top of the [Symfony](https://symfony.com) framework,
-while client components leverage [React](https://reactjs.org/) ([Vue.js](https://vuejs.org/) flavors are also available).
-It means that you can:
+### 💻 Front-End
 
-* Use **thousands of Symfony bundles and React components** with API Platform.
-* Integrate API Platform in **any existing Symfony, React, or Vue application**.
-* Reuse **all your Symfony and JavaScript skills**, and benefit from the incredible amount of documentation available.
-* Enjoy the popular [Doctrine ORM](https://www.doctrine-project.org/projects/orm.html) (used by default, but fully optional:
-  you can use the data provider you want, including but not limited to MongoDB and Elasticsearch)
+-   **Next.js (TypeScript)** — Front-end et interface d’administration
+    -   **Admin** : [React Admin](https://marmelab.com/react-admin/) + [MUI](https://mui.com/)
+    -   **Secrétaire / Client** :
+        -   Gestion des formulaires : `react-hook-form`
+        -   Gestion des requêtes : `react-query`
+        -   Validation : `zod`
+        -   UI : `tailwindcss`
+    -   **Notifications en temps réel** : via pe protocole Mercure
 
-## Install
+---
 
-[Read the official "Getting Started" guide](https://api-platform.com/docs/distribution/).
+## 🧠 Contexte du Projet
 
-## Credits
+ISSATEX souhaite moderniser son système de gestion de production pour :
 
-Created by [Kévin Dunglas](https://dunglas.fr). Commercial support is available at [Les-Tilleuls.coop](https://les-tilleuls.coop).
+-   Automatiser la **gestion des ordres de fabrication (OF)**
+-   Suivre la **production journalière et le rendement**
+-   ~~Gérer les **expéditions et factures**~~
+-   Permettre aux **donneurs d’ordre** de suivre en temps réel l’état de leurs commandes
+
+---
+
+## ⚙️ Fonctionnalités Principales
+
+### 🧱 Données de base
+
+-   Gestion des **îlots** (unités autonomes de production)
+-   Gestion des **machines** (type, marque, référence)
+-   Gestion des **employés** (catégorie, date de recrutement, matricule)
+-   Gestion des **Clients** (privilégié ou non)
+
+### 🧾 Gestion des Ordres de Fabrication (OF)
+
+-   Création, consultation, mise à jour et suppression d’OF (non lancé)
+-   Gestion des **OF urgents**
+-   Planification hebdomadaire de production par îlot
+
+### 📊 Suivi de la Production
+
+-   Saisie des quantités journalières (par taille et qualité)
+-   ~~Calcul automatique du **rendement** :  
+    Rendement (%) = Temps productif / Temps de présence~~
+-   ~~Statistiques par îlot : journalières, hebdomadaires, mensuelles, annuelles~~
+
+### 📱 Notifications
+
+-   Notifications sur changement d’état d’un OF : Planifié, Annulé
+
+---
+
+## 🔐 Rôles Utilisateurs
+
+| Rôle           | Permissions principales                                                            |
+| -------------- | ---------------------------------------------------------------------------------- |
+| **Gérant**     | Gestion complète (îlots, employés, machines, OF, plannings, Présences, rendements) |
+| **Secrétaire** | Suivi production, saisie des présences                                             |
+| **Client**     | Lancement & suivi de ces Ordres de Fabrication, Gérer ces articles                 |
+
+---
+
+## 📄 Documentation & Références
+
+-   Cahier des charges : _Mini Projet ISSATEX – Pr. Chiheb CHAIEB (ISET Sousse, 2022)_
+-   Technologies :
+    -   [Api-Platform](https://api-platform.com/) (back-end Restful API)
+    -   [Next.js](https://nextjs.org/) (front-end PWA)
+
+---
+
+## 📦 Licence
+
+Projet académique – Usage éducatif uniquement.
