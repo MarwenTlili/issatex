@@ -20,9 +20,10 @@
       "@/config/*": ["./src/config/*"],
       "@/hooks/*": ["./src/hooks/*"],
       "@/mercure/*": ["./src/mercure/*"],
+      "@/providers/*": ["./src/providers/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/styles/*": ["./src/styles/*"],
-      "@/types/*": ["./src/types/*"],
+      "@/types/*": ["./src/types/*"]
     },
     "plugins": [{ "name": "next" }]
   },
