@@ -34,11 +34,14 @@ import {
   Schedule as ScheduleIcon,
   Assignment as AssignmentIcon,
   Straighten as StraightenIcon,
+  Clear,
+  Done,
 } from "@mui/icons-material";
 import { OrdreFabrication } from "@/types/resources/OrdreFabrication";
 import { OrdreFabricationStatutChip } from "@/components/admin/common/OrdreFabricationStatutChip";
 import { Planning } from "@/types/resources/Planning";
 import { TailleOrdreFabrication } from "@/types/resources/TailleOrdreFabrication";
+import { formatDate } from "@/lib/utils/date";
 
 const ShowActions = () => {
   return (
@@ -196,6 +199,131 @@ const TailleOF_Responsive = () => {
   );
 };
 
+const PlanningsResponsive = () => {
+  const OFContext = useRecordContext<OrdreFabrication>();
+  const theme = useTheme();
+  const isMedium = useMediaQuery(theme.breakpoints.down("md"));
+
+  if (!OFContext) {
+    return null;
+  }
+
+  return (
+    <ReferenceManyField
+      reference="api/plannings"
+      target="ordreFabrication"
+      sort={{ field: "dateDebut", order: "ASC" }}
+    >
+      {isMedium ? (
+        <Card>
+          <CardHeader>Plannings pour cette OF</CardHeader>
+          <CardContent>
+            {OFContext.plannings.length == 0 ? (
+              <Typography>Pas de plannings pour le moment</Typography>
+            ) : (
+              OFContext.plannings.map((planning) => (
+                <Grid key={planning.id} container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Réf
+                    </Typography>
+                    <FunctionField<Planning>
+                      record={planning}
+                      render={(planningRecord) => (
+                        <Link
+                          to={`/api/plannings/${encodeURIComponent(
+                            planningRecord["@id"]
+                          )}/show`}
+                        >
+                          {planningRecord.ref}
+                        </Link>
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Date de creation
+                    </Typography>
+                    <Typography>{formatDate(planning.dateCreation)}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Date de début
+                    </Typography>
+                    <Typography>{formatDate(planning.dateDebut)}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Date de fin
+                    </Typography>
+                    <Typography>{formatDate(planning.dateFin)}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Ilot
+                    </Typography>
+                    <FunctionField<Planning>
+                      record={planning}
+                      render={(planningRecord) => (
+                        <Link
+                          to={`/api/ilots/${encodeURIComponent(
+                            planningRecord.ilot["@id"]
+                          )}/show`}
+                        >
+                          {planningRecord.ilot.nom}
+                        </Link>
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Reporté
+                    </Typography>
+                    <Typography>
+                      {planning.reporte ? <Done /> : <Clear />}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Datagrid rowClick={false} bulkActionButtons={false}>
+          <FunctionField<Planning>
+            label="Réf"
+            render={(planning) => (
+              <Link
+                to={`/api/plannings/${encodeURIComponent(
+                  planning["@id"]
+                )}/show`}
+              >
+                {planning.ref}
+              </Link>
+            )}
+          />
+          <DateField source="dateCreation" label="Date Création" />
+          <DateField source="dateDebut" label="Date début" />
+          <DateField source="dateFin" label="Date fin" />
+          <FunctionField<Planning>
+            label="Ilot"
+            render={(planning) => (
+              <Link
+                to={`/api/ilots/${encodeURIComponent(
+                  planning.ilot["@id"]
+                )}/show`}
+              >
+                {planning.ilot.nom}
+              </Link>
+            )}
+          />
+          <BooleanField source="reporte" label="Reporté" />
+        </Datagrid>
+      )}
+    </ReferenceManyField>
+  );
+};
+
 const CustomTitle = () => {
   const record = useRecordContext<OrdreFabrication>();
   return `${record?.ref}`;
@@ -304,45 +432,7 @@ export const OrdreFabricationShow = () => (
               avatar={<ScheduleIcon color="primary" />}
             />
             <CardContent>
-              <ReferenceManyField
-                reference="api/plannings"
-                target="ordreFabrication"
-                sort={{ field: "dateDebut", order: "ASC" }}
-              >
-                <Datagrid rowClick={false} bulkActionButtons={false}>
-                  <TextField source="ref" label="Référence Planning" />
-                  <DateField source="dateDebut" label="Date début" />
-                  <DateField source="dateFin" label="Date fin" />
-                  <FunctionField
-                    label="Durée"
-                    render={(record: any) => {
-                      if (!record.dateDebut || !record.dateFin) return "-";
-                      const start = new Date(record.dateDebut);
-                      const end = new Date(record.dateFin);
-                      const diffTime = Math.abs(
-                        end.getTime() - start.getTime()
-                      );
-                      const diffDays = Math.ceil(
-                        diffTime / (1000 * 60 * 60 * 24)
-                      );
-                      return `${diffDays} jour${diffDays > 1 ? "s" : ""}`;
-                    }}
-                  />
-                  <FunctionField<Planning>
-                    label="Ilot"
-                    render={(record) => (
-                      <Link
-                        to={`/api/ilots/${encodeURIComponent(
-                          record.ilot["@id"]
-                        )}/show`}
-                      >
-                        {record.ilot.nom}
-                      </Link>
-                    )}
-                  />
-                  <BooleanField source="reporte" label="Reporté" />
-                </Datagrid>
-              </ReferenceManyField>
+              <PlanningsResponsive />
             </CardContent>
           </Card>
         </Grid>
