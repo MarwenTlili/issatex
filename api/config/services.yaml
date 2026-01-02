@@ -20,5 +20,47 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    App\State\UserPasswordHasher:
+        bind:
+            $processor: '@api_platform.doctrine.orm.state.persist_processor'
+    
+    App\EventListener\GenericPostPersistEventListener:
+        arguments:
+            $prefixes:
+                App\Entity\AffectationEmployeIlot: 'AIE'
+                App\Entity\Article: 'ART'
+                App\Entity\Client: 'CLI'
+                App\Entity\Employe: 'EMP'
+                App\Entity\Ilot: 'ILO'
+                App\Entity\Machine: 'MAC'
+                App\Entity\OrdreFabrication: 'ORD'
+                App\Entity\Planning: 'PLA'
+                App\Entity\Presence: 'PRE'
+                App\Entity\Production: 'PRO'
+                App\Entity\TailleOrdreFabrication: 'TOF'
+                App\Entity\User: 'USR'
+                App\Entity\Avatar: 'AVA'
+                App\Entity\Notification: 'NOT'
+        tags:
+            - { name: doctrine.entity_listener }
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    App\EventListener\JWTCreatedListener:
+        arguments: [ '@request_stack' ]
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
+
+    App\EventListener\JWTAuthenticationListener:
+        arguments:
+            $entityManager: '@doctrine.orm.entity_manager'
+            $mercureJwtProvider: '@App\Service\MercureJwtProvider'
+            $accessTokenTtl: '%env(int:JWT_ACCESS_TOKEN_TTL)%'
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_success, method: onAuthenticationSuccess }
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_authentication_failure, method: onAuthenticationFailure }
+
+    App\Service\MercureJwtProvider:
+        arguments:
+            $secret: '%env(MERCURE_JWT_SECRET)%'

@@ -1,0 +1,442 @@
+"use client";
+
+import React from "react";
+
+import {
+  Show,
+  SimpleShowLayout,
+  TextField,
+  DateField,
+  BooleanField,
+  ReferenceManyField,
+  Datagrid,
+  NumberField,
+  FunctionField,
+  useRecordContext,
+  TopToolbar,
+  ListButton,
+  CreateButton,
+  Link,
+  SimpleList,
+} from "react-admin";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  Grid,
+  Typography,
+  Box,
+  Chip,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import {
+  Schedule as ScheduleIcon,
+  Assignment as AssignmentIcon,
+  Straighten as StraightenIcon,
+  Clear,
+  Done,
+} from "@mui/icons-material";
+import { OrdreFabrication } from "@/types/resources/OrdreFabrication";
+import { OrdreFabricationStatutChip } from "@/components/admin/common/OrdreFabricationStatutChip";
+import { Planning } from "@/types/resources/Planning";
+import { TailleOrdreFabrication } from "@/types/resources/TailleOrdreFabrication";
+import { formatDate } from "@/lib/utils/date";
+
+const ShowActions = () => {
+  return (
+    <TopToolbar>
+      <ListButton />
+      <CreateButton
+        resource="api/plannings"
+        label="Créer Planning"
+        icon={<ScheduleIcon />}
+      />
+    </TopToolbar>
+  );
+};
+
+const OrderSummaryCard = () => {
+  const record = useRecordContext<OrdreFabrication>();
+  if (!record) return null;
+
+  const totalValue =
+    record.quantiteTotale * Number.parseFloat(record.prixUnitaire || "0");
+  const totalTime = record.quantiteTotale * (record.tempsUnitaire / 100 || 0);
+
+  return (
+    <Card>
+      <CardHeader
+        title="Résumé de l'Ordre De Fabrication"
+        avatar={<AssignmentIcon color="primary" />}
+      />
+      <CardContent>
+        <Grid container spacing={2}>
+          <Grid item xs={6} md={2}>
+            <Typography variant="body2" color="textSecondary">
+              Quantité totale
+            </Typography>
+            <Typography variant="h6">
+              {record.quantiteTotale?.toLocaleString()} pièces
+            </Typography>
+          </Grid>
+          <Grid item xs={6} md={2}>
+            <Typography variant="body2" color="textSecondary">
+              Prix unitaire
+            </Typography>
+            <Typography variant="h6">
+              {new Intl.NumberFormat("fr-FR", {
+                style: "currency",
+                currency: "EUR",
+              }).format(Number.parseFloat(record.prixUnitaire || "0"))}
+            </Typography>
+          </Grid>
+          <Grid item xs={6} md={2}>
+            <Typography variant="body2" color="textSecondary">
+              Valeur totale
+            </Typography>
+            <Typography variant="h6" color="primary">
+              {new Intl.NumberFormat("fr-FR", {
+                style: "currency",
+                currency: "EUR",
+              }).format(totalValue)}
+            </Typography>
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <Typography variant="body2" color="textSecondary">
+              Temps Unitaire (cmn)
+            </Typography>
+            <Typography variant="h6" color="primary">
+              {record.tempsUnitaire}
+            </Typography>
+          </Grid>
+          <Grid item xs={6} md={3}>
+            <Typography variant="body2" color="textSecondary">
+              Temps total estimé (h)
+            </Typography>
+            <Typography variant="h6">
+              {Math.round(totalTime / 60)} heures
+            </Typography>
+          </Grid>
+        </Grid>
+
+        <Box mt={2} display="flex" gap={1} flexWrap="wrap">
+          {record.urgent && (
+            <Chip label="URGENT" color="error" size="small" variant="filled" />
+          )}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+};
+
+const TailleOF_Responsive = () => {
+  const ordreFabricationContext = useRecordContext<OrdreFabrication>();
+  const theme = useTheme();
+  const isMedium = useMediaQuery(theme.breakpoints.down("md"));
+
+  if (!ordreFabricationContext) {
+    return null;
+  }
+
+  const renderSizePercent = (tailleOF: TailleOrdreFabrication) => {
+    const percent =
+      ordreFabricationContext?.quantiteTotale > 0
+        ? (
+            (tailleOF.quantite / ordreFabricationContext.quantiteTotale) *
+            100
+          ).toFixed(1)
+        : "0.0";
+    return `${percent}%`;
+  };
+
+  const renderSizePrice = (tailleOF: TailleOrdreFabrication) => {
+    const prix = parseFloat(ordreFabricationContext?.prixUnitaire || "0");
+    const value = tailleOF.quantite * prix;
+    return new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: "EUR",
+    }).format(value);
+  };
+
+  return (
+    <ReferenceManyField
+      reference="api/taille_ordre_fabrications"
+      target="ordreFabrication"
+      sort={{ field: "tailleArticle", order: "ASC" }}
+    >
+      {isMedium ? (
+        <SimpleList
+          primaryText={(tailleOF: TailleOrdreFabrication) => (
+            <span>{tailleOF.tailleArticle}</span>
+          )}
+          secondaryText={(tailleOF: TailleOrdreFabrication) => (
+            <Typography
+              variant="body2" // Standard text style
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              <span>Quantité: {tailleOF.quantite}</span>
+              <span>{renderSizePercent(tailleOF)}</span>
+            </Typography>
+          )}
+          tertiaryText={(tailleOF: TailleOrdreFabrication) =>
+            renderSizePrice(tailleOF)
+          }
+        />
+      ) : (
+        <Datagrid bulkActionButtons={false}>
+          <TextField source="tailleArticle" label="Taille" />
+          <NumberField source="quantite" label="Quantité" />
+          <FunctionField label="Pourcentage" render={renderSizePercent} />
+          <FunctionField label="Prix" render={renderSizePrice} />
+        </Datagrid>
+      )}
+    </ReferenceManyField>
+  );
+};
+
+const PlanningsResponsive = () => {
+  const OFContext = useRecordContext<OrdreFabrication>();
+  const theme = useTheme();
+  const isMedium = useMediaQuery(theme.breakpoints.down("md"));
+
+  if (!OFContext) {
+    return null;
+  }
+
+  return (
+    <ReferenceManyField
+      reference="api/plannings"
+      target="ordreFabrication"
+      sort={{ field: "dateDebut", order: "ASC" }}
+    >
+      {isMedium ? (
+        <Card>
+          <CardHeader>Plannings pour cette OF</CardHeader>
+          <CardContent>
+            {OFContext.plannings.length == 0 ? (
+              <Typography>Pas de plannings pour le moment</Typography>
+            ) : (
+              OFContext.plannings.map((planning) => (
+                <Grid key={planning.id} container spacing={2}>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Réf
+                    </Typography>
+                    <FunctionField<Planning>
+                      record={planning}
+                      render={(planningRecord) => (
+                        <Link
+                          to={`/api/plannings/${encodeURIComponent(
+                            planningRecord["@id"]
+                          )}/show`}
+                        >
+                          {planningRecord.ref}
+                        </Link>
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Date de creation
+                    </Typography>
+                    <Typography>{formatDate(planning.dateCreation)}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Date de début
+                    </Typography>
+                    <Typography>{formatDate(planning.dateDebut)}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Date de fin
+                    </Typography>
+                    <Typography>{formatDate(planning.dateFin)}</Typography>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Ilot
+                    </Typography>
+                    <FunctionField<Planning>
+                      record={planning}
+                      render={(planningRecord) => (
+                        <Link
+                          to={`/api/ilots/${encodeURIComponent(
+                            planningRecord.ilot["@id"]
+                          )}/show`}
+                        >
+                          {planningRecord.ilot.nom}
+                        </Link>
+                      )}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Typography variant="body2" color="textSecondary">
+                      Reporté
+                    </Typography>
+                    <Typography>
+                      {planning.reporte ? <Done /> : <Clear />}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              ))
+            )}
+          </CardContent>
+        </Card>
+      ) : (
+        <Datagrid rowClick={false} bulkActionButtons={false}>
+          <FunctionField<Planning>
+            label="Réf"
+            render={(planning) => (
+              <Link
+                to={`/api/plannings/${encodeURIComponent(
+                  planning["@id"]
+                )}/show`}
+              >
+                {planning.ref}
+              </Link>
+            )}
+          />
+          <DateField source="dateCreation" label="Date Création" />
+          <DateField source="dateDebut" label="Date début" />
+          <DateField source="dateFin" label="Date fin" />
+          <FunctionField<Planning>
+            label="Ilot"
+            render={(planning) => (
+              <Link
+                to={`/api/ilots/${encodeURIComponent(
+                  planning.ilot["@id"]
+                )}/show`}
+              >
+                {planning.ilot.nom}
+              </Link>
+            )}
+          />
+          <BooleanField source="reporte" label="Reporté" />
+        </Datagrid>
+      )}
+    </ReferenceManyField>
+  );
+};
+
+const CustomTitle = () => {
+  const record = useRecordContext<OrdreFabrication>();
+  return `${record?.ref}`;
+};
+
+export const OrdreFabricationShow = () => (
+  <Show actions={<ShowActions />} title={<CustomTitle />}>
+    <SimpleShowLayout>
+      <Grid container spacing={3}>
+        {/* Header Information */}
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={2}
+              >
+                <Typography variant="h5" component="h1">
+                  Ordre de Fabrication #
+                  {<TextField source="ref" component="span" />}
+                </Typography>
+                <OrdreFabricationStatutChip />
+              </Box>
+
+              <Grid container spacing={2}>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" color="textSecondary">
+                    Client
+                  </Typography>
+                  <FunctionField<OrdreFabrication>
+                    label="Client"
+                    render={(record) => (
+                      <Link
+                        to={`/api/clients/${encodeURIComponent(
+                          record.client["@id"]
+                        )}/show`}
+                      >
+                        {record.client.nom}
+                      </Link>
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" color="textSecondary">
+                    Article
+                  </Typography>
+                  <FunctionField<OrdreFabrication>
+                    label="Article"
+                    render={(record) => (
+                      <Link
+                        to={`/api/articles/${encodeURIComponent(
+                          record.article["@id"]
+                        )}/show`}
+                      >
+                        {record.article.designation}
+                      </Link>
+                    )}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" color="textSecondary">
+                    Date de création
+                  </Typography>
+                  <Typography variant="body1">
+                    <DateField source="dateCreation" />
+                  </Typography>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <Typography variant="body2" color="textSecondary">
+                    Date de clôture prévue
+                  </Typography>
+                  <Typography variant="body1">
+                    <DateField source="dateCloture" />
+                  </Typography>
+                </Grid>
+              </Grid>
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Summary Cards */}
+        <Grid item xs={12} md={12}>
+          <OrderSummaryCard />
+        </Grid>
+
+        {/* Tailles (Sizes) Section */}
+        <Grid item xs={12}>
+          <Card>
+            <CardHeader
+              title="Répartition par tailles"
+              avatar={<StraightenIcon color="primary" />}
+            />
+            <CardContent>
+              <TailleOF_Responsive />
+            </CardContent>
+          </Card>
+        </Grid>
+
+        {/* Planning Section */}
+        <Grid item xs={12}>
+          <Card>
+            <CardHeader
+              title="Planification de production"
+              avatar={<ScheduleIcon color="primary" />}
+            />
+            <CardContent>
+              <PlanningsResponsive />
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </SimpleShowLayout>
+  </Show>
+);
