@@ -11,7 +11,6 @@ import {
   DateInput,
   ReferenceInput,
   SelectInput,
-  Identifier,
   useListContext,
   Link,
   FunctionField,
@@ -78,11 +77,13 @@ const MobilePlanningList = () => {
                 <p className="text-muted-foreground font-medium">
                   DATE DE DEBUT
                 </p>
-                <p className="text-foreground">{record.dateDebut}</p>
+                <p className="text-foreground">
+                  {formatDate(record.dateDebut)}
+                </p>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <p className="text-muted-foreground font-medium">DATE DE FIN</p>
-                <p className="text-foreground">{record.dateFin}</p>
+                <p className="text-foreground">{formatDate(record.dateFin)}</p>
               </Grid>
               <Grid item xs={12} sm={6}>
                 <p className="text-muted-foreground font-medium">

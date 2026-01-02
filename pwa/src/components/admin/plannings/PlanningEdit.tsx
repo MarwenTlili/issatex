@@ -1,3 +1,6 @@
+import { Ilot } from "@/types/resources/Ilot";
+import { OrdreFabrication } from "@/types/resources/OrdreFabrication";
+import { Planning } from "@/types/resources/Planning";
 import React from "react";
 import {
   BooleanInput,
@@ -6,24 +9,48 @@ import {
   ReferenceInput,
   SelectInput,
   SimpleForm,
+  useRecordContext,
 } from "react-admin";
 
+const CustomTitle = () => {
+  const record = useRecordContext<OrdreFabrication>();
+  return `${record?.ref}`;
+};
+
 const PlanningEdit = () => {
+  const transform = (data: Planning, options?: { previousData: Planning }) => ({
+    ...data,
+    ordreFabrication: data.ordreFabrication["@id"],
+    ilot: data.ilot["@id"],
+  });
+
   return (
-    <Edit>
+    <Edit<Planning> title={<CustomTitle />} transform={transform}>
       <SimpleForm>
         <DateInput source="dateDebut" />
         <DateInput source="dateFin" />
-        <BooleanInput source="reporte" />
         <ReferenceInput
-          source="ordreFabrication"
+          source="ordreFabrication.@id"
           reference="api/ordre_fabrications"
         >
-          <SelectInput optionText="ref" />
+          <SelectInput
+            label="Ordre Fabrication"
+            optionValue="@id"
+            optionText={(record) =>
+              `${record.ref} - ${new Date(
+                record.dateCreation
+              ).toLocaleDateString()}`
+            }
+          />
         </ReferenceInput>
-        <ReferenceInput source="ilot" reference="api/ilots">
-          <SelectInput optionText="nom" />
+        <ReferenceInput source="ilot.@id" reference="api/ilots">
+          <SelectInput
+            label="Ilot"
+            optionValue="@id"
+            optionText={(record: Ilot) => `${record.ref} - ${record.nom}`}
+          />
         </ReferenceInput>
+        <BooleanInput source="reporte" />
       </SimpleForm>
     </Edit>
   );
