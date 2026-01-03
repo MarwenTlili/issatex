@@ -51,10 +51,10 @@ jobs:
             pwa.cache-from=type=gha,scope=pwa-${{github.ref}}
             pwa.cache-from=type=gha,scope=pwa-refs/heads/main
             pwa.cache-to=type=gha,scope=pwa-${{github.ref}},mode=max
-      - name: Create dummy .env file (bypass DetEnv package needs to .env)
-        run: touch .env
       - name: Start services
         run: docker compose up --wait --no-build
+      - name: Create dummy .env file (bypass DetEnv package needs to .env)
+        run: docker compose exec -T php touch .env
       - name: Check HTTP reachability
         run: curl -v --fail-with-body http://localhost
       - name: Check API reachability
