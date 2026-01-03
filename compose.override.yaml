@@ -16,10 +16,6 @@ services:
       MERCURE_EXTRA_DIRECTIVES: demo
       # See https://xdebug.org/docs/all_settings#mode
       XDEBUG_MODE: "${XDEBUG_MODE:-off}"
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
-      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
-      JWT_ACCESS_TOKEN_TTL: ${JWT_ACCESS_TOKEN_TTL:-86400}
     extra_hosts:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
