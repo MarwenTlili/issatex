@@ -26,9 +26,9 @@ jobs:
       POSTGRES_VERSION: ${{secrets.POSTGRES_VERSION}}
       POSTGRES_CHARSET: ${{secrets.POSTGRES_CHARSET}}
 
-      JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
-      JWT_PUBLIC_KEY: ${{secrets.JWT_PUBLIC_KEY}}
-      JWT_PASSPHRASE: ${{secrets.JWT_PASSPHRASE}}
+      JWT_SECRET_KEY: '%kernel.project_dir%/config/jwt/private-test.pem'
+      JWT_PUBLIC_KEY: '%kernel.project_dir%/config/jwt/public-test.pem'
+
       JWT_ACCESS_TOKEN_TTL: ${{secrets.JWT_ACCESS_TOKEN_TTL}}
 
       SERVER_NAME: ${{secrets.SERVER_NAME}}
