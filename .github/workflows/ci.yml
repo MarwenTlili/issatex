@@ -25,10 +25,10 @@ jobs:
       POSTGRES_VERSION: ${{secrets.POSTGRES_VERSION}}
       POSTGRES_CHARSET: ${{secrets.POSTGRES_CHARSET}}
 
-      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-      JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
-      JWT_PASSPHRASE: ${{ secrets.JWT_PASSPHRASE }}
-      JWT_ACCESS_TOKEN_TTL: ${{ secrets.JWT_ACCESS_TOKEN_TTL }}
+      JWT_SECRET_KEY: ${{secrets.JWT_SECRET_KEY}}
+      JWT_PUBLIC_KEY: ${{secrets.JWT_PUBLIC_KEY}}
+      JWT_PASSPHRASE: ${{secrets.JWT_PASSPHRASE}}
+      JWT_ACCESS_TOKEN_TTL: ${{secrets.JWT_ACCESS_TOKEN_TTL}}
 
       SERVER_NAME: ${{secrets.SERVER_NAME}}
       CADDY_MERCURE_JWT_SECRET: ${{secrets.CADDY_MERCURE_JWT_SECRET}}
@@ -74,6 +74,13 @@ jobs:
         run: docker compose exec -T php bin/console -e test doctrine:migrations:migrate --no-interaction
       - name: Load fixtures
         run: docker compose exec -T php bin/console -e test doctrine:fixtures:load --group=load --no-interaction
+      - name: Generate JWT Keys (No Passphrase)
+        run: |
+          docker compose exec -T php mkdir -p config/jwt
+          docker compose exec -T php sh -c '
+            openssl genrsa -out config/jwt/private-test.pem 4096 && \
+            openssl rsa -pubout -in config/jwt/private-test.pem -out config/jwt/public-test.pem
+          '
       - name: Run PHPUnit
         run: docker compose exec -T php bin/phpunit
       - name: Doctrine Schema Validator
