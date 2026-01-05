@@ -15,7 +15,15 @@ FROM dunglas/frankenphp:1-php8.3 AS frankenphp_upstream
 # Base FrankenPHP image
 FROM frankenphp_upstream AS frankenphp_base
 
+ARG APP_ENV
+
 WORKDIR /app
+
+RUN if [ "$APP_ENV" = "test" ]; then \
+	mkdir -p config/jwt && \
+	openssl genrsa -out config/jwt/private-test.pem 4096 && \
+	openssl rsa -pubout -in config/jwt/private-test.pem -out config/jwt/public-test.pem ; \
+	fi
 
 # persistent / runtime deps
 # hadolint ignore=DL3008
@@ -31,11 +39,11 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN set -eux; \
 	install-php-extensions \
-		@composer \
-		apcu \
-		intl \
-		opcache \
-		zip \
+	@composer \
+	apcu \
+	intl \
+	opcache \
+	zip \
 	;
 
 ###> recipes ###
@@ -64,7 +72,7 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 RUN set -eux; \
 	install-php-extensions \
-		xdebug \
+	xdebug \
 	;
 
 COPY --link frankenphp/conf.d/app.dev.ini $PHP_INI_DIR/conf.d/
