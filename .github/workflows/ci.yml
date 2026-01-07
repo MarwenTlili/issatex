@@ -15,6 +15,7 @@ jobs:
   tests:
     name: Backend & PWA Tests
     runs-on: ubuntu-latest
+    environment: test
     env:
       APP_ENV: test
       APP_RUNTIME_ENV: test
