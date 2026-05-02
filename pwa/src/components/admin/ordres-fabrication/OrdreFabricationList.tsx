@@ -50,8 +50,16 @@ const filters = [
     choices={OF_STATUT_CHOICES_RA}
     label="Statut"
   />,
-  <DateInput source="dateCreation.after" label="Date de création (min)" />,
-  <DateInput source="dateCreation.before" label="Date de création (max)" />,
+  <DateInput
+    key="date_after"
+    source="dateCreation.after"
+    label="Date de création (min)"
+  />,
+  <DateInput
+    key="date_before"
+    source="dateCreation.before"
+    label="Date de création (max)"
+  />,
   <BooleanInput key="urgent" source="urgent" label="Urgent" />,
 ];
 
@@ -85,7 +93,7 @@ const prixTotaleFR = (ordreFabrication: OrdreFabrication) => {
     currency: "EUR",
   }).format(
     ordreFabrication.quantiteTotale *
-      Number.parseFloat(ordreFabrication.prixUnitaire)
+      Number.parseFloat(ordreFabrication.prixUnitaire),
   );
 };
 
@@ -140,7 +148,7 @@ const MobileOrdreFabricationList = () => {
                 </Typography>
                 <Link
                   to={`/api/articles/${encodeURIComponent(
-                    record.article["@id"]
+                    record.article["@id"],
                   )}/show`}
                 >
                   <Typography>{`(${record.article.ref}) ${record.article.designation}`}</Typography>
@@ -152,7 +160,7 @@ const MobileOrdreFabricationList = () => {
                 </Typography>
                 <Link
                   to={`/api/clients/${encodeURIComponent(
-                    record.client["@id"]
+                    record.client["@id"],
                   )}/show`}
                 >
                   <Typography>{`(${record.client.ref}) ${record.client.nom}`}</Typography>
@@ -206,7 +214,7 @@ export const OrdreFabricationList = () => {
             render={(record) => (
               <Link
                 to={`/api/clients/${encodeURIComponent(
-                  record.client["@id"]
+                  record.client["@id"],
                 )}/show`}
               >
                 {`(${record.client.ref}) ${record.client.nom}`}
@@ -218,7 +226,7 @@ export const OrdreFabricationList = () => {
             render={(record) => (
               <Link
                 to={`/api/articles/${encodeURIComponent(
-                  record.article["@id"]
+                  record.article["@id"],
                 )}/show`}
               >
                 {`(${record.article.ref}) ${record.article.designation}`}
@@ -231,14 +239,7 @@ export const OrdreFabricationList = () => {
           <TextField source="tempsUnitaire" label="Temps Unitaire (cmn)" />
           <FunctionField<OrdreFabrication>
             label="Prix totale"
-            render={(record) =>
-              new Intl.NumberFormat("fr-FR", {
-                style: "currency",
-                currency: "EUR",
-              }).format(
-                record.quantiteTotale * Number.parseFloat(record.prixUnitaire)
-              )
-            }
+            render={(record) => prixTotaleFR(record)}
           />
           <FunctionField<OrdreFabrication>
             label="Statut"

@@ -108,7 +108,7 @@ export function ProfileSettings() {
   }, [user, reset]);
 
   const handlePasswordInputChange = (
-    fieldName: keyof PasswordChangeFormData
+    fieldName: keyof PasswordChangeFormData,
   ) => {
     if (passwordApiErrors[fieldName]) {
       setPasswordApiErrors((prev) => {
@@ -178,7 +178,7 @@ export function ProfileSettings() {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Échec du téléchargement de l'avatar"
+          : "Échec du téléchargement de l'avatar",
       );
     } finally {
       setIsUploading(false);
@@ -368,8 +368,9 @@ export function ProfileSettings() {
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Nouvelle photo sélectionnée. Cliquez sur "Télécharger" pour
-                    enregistrer.
+                    {
+                      'Nouvelle photo sélectionnée. Cliquez sur "Télécharger" pour enregistrer.'
+                    }
                   </AlertDescription>
                 </Alert>
               )}

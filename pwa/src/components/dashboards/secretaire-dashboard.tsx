@@ -43,17 +43,17 @@ export function SecretaryDashboard() {
 
   const todayPresences =
     presences?.member?.filter((p: Presence) =>
-      isToday(new Date(p.datePresence))
+      isToday(new Date(p.datePresence)),
     ) || [];
 
   const presentCount = todayPresences.filter(
-    (p: Presence) => p.statut === "Present"
+    (p: Presence) => p.statut === "Present",
   ).length;
   const absentCount = todayPresences.filter(
-    (p: Presence) => p.statut === "Absent"
+    (p: Presence) => p.statut === "Absent",
   ).length;
   const lateCount = todayPresences.filter(
-    (p: Presence) => p.statut === "Retard"
+    (p: Presence) => p.statut === "Retard",
   ).length;
 
   const activePlannings = plannings?.member || [];
@@ -153,7 +153,7 @@ export function SecretaryDashboard() {
                   Présences Récentes
                 </CardTitle>
                 <CardDescription>
-                  Dernières présences enregistrées aujourd'hui
+                  {"Dernières présences enregistrées aujourd'hui"}
                 </CardDescription>
               </div>
               <Button variant="outline" size="sm" asChild>
@@ -198,7 +198,7 @@ export function SecretaryDashboard() {
             ) : (
               <div className="text-center py-8 text-slate-500">
                 <Users className="mx-auto h-12 w-12 text-slate-300 mb-4" />
-                <p>Aucune présence enregistrée aujourd'hui</p>
+                <p>{"Aucune présence enregistrée aujourd'hui"}</p>
               </div>
             )}
           </CardContent>

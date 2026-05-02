@@ -91,7 +91,7 @@ export function OrdreFabricationForm({
     itemsPerPage: PAGINATION.MAX_PAGE_SIZE,
     order: { ref: "desc" },
     // withoutOrdreFabrication: true,
-    currentArticle: ordreFabrication?.article?.split("/").pop(),
+    currentArticle: ordreFabrication?.article?.["@id"],
   });
 
   const {
@@ -123,7 +123,7 @@ export function OrdreFabricationForm({
         urgent: ordreFabrication.urgent,
         prixUnitaire: ordreFabrication.prixUnitaire,
         tempsUnitaire: ordreFabrication.tempsUnitaire,
-        article: ordreFabrication.article || "",
+        article: ordreFabrication.article["@id"] || "",
         tailleOFs,
       };
 
@@ -145,7 +145,7 @@ export function OrdreFabricationForm({
   const totalQuantity =
     watchedTailleOFs?.reduce(
       (sum, taille) => sum + (taille.quantite || 0),
-      0
+      0,
     ) || 0;
 
   // Check if form should be disabled
@@ -192,7 +192,7 @@ export function OrdreFabricationForm({
     const currentFormValues = form.getValues("tailleOFs");
     const usedSizes = currentFormValues
       .map((item, index) =>
-        index !== currentIndex ? item.tailleArticle : null
+        index !== currentIndex ? item.tailleArticle : null,
       )
       .filter((size): size is TailleArticle => size !== null);
 
@@ -203,7 +203,7 @@ export function OrdreFabricationForm({
     const currentFormValues = form.getValues("tailleOFs");
     const usedSizes = currentFormValues.map((item) => item.tailleArticle);
     const availableSizes = TAILLE_ARTICLE_OPTIONS.filter(
-      (size) => !usedSizes.includes(size)
+      (size) => !usedSizes.includes(size),
     );
 
     if (availableSizes.length > 0) {
@@ -421,7 +421,7 @@ export function OrdreFabricationForm({
                 {fields.map((field, index) => {
                   const availableSizes = getAvailableSizes(index);
                   const currentSize = form.watch(
-                    `tailleOFs.${index}.tailleArticle`
+                    `tailleOFs.${index}.tailleArticle`,
                   );
 
                   return (

@@ -55,12 +55,18 @@ export function PresencesTableFilters({
     ilot: filters.ilot || "",
   });
 
-  const employes = employesCollection?.member || [];
+  const employes = useMemo(
+    () => employesCollection?.member || [],
+    [employesCollection?.member],
+  );
   const selectedEmploye = employes.find(
-    (emp) => emp.id === Number.parseInt(localFilters.employe)
+    (emp) => emp.id === Number.parseInt(localFilters.employe),
   );
 
-  const ilots = ilotsCollection?.member || [];
+  const ilots = useMemo(
+    () => ilotsCollection?.member || [],
+    [ilotsCollection?.member],
+  );
 
   const [showFilters, setShowFilters] = useState(false);
 
@@ -115,7 +121,7 @@ export function PresencesTableFilters({
       (employe) =>
         employe.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
         employe.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        employe.ref.toLowerCase().includes(searchTerm.toLowerCase())
+        employe.ref.toLowerCase().includes(searchTerm.toLowerCase()),
     );
   }, [employes, searchTerm]);
 
@@ -199,7 +205,7 @@ export function PresencesTableFilters({
                       key !== "page" &&
                       key !== "itemsPerPage" &&
                       key !== "order" &&
-                      filters[key as keyof PresencesFilters]
+                      filters[key as keyof PresencesFilters],
                   ).length
                 }
               </span>
@@ -248,7 +254,7 @@ export function PresencesTableFilters({
                               {statut.label}
                             </div>
                           </SelectItem>
-                        )
+                        ),
                       )}
                     </SelectContent>
                   </Select>
@@ -315,7 +321,7 @@ export function PresencesTableFilters({
                         aria-expanded={open}
                         className={cn(
                           "w-full justify-between",
-                          selectedEmploye && "pr-10"
+                          selectedEmploye && "pr-10",
                         )}
                       >
                         {selectedEmploye
@@ -351,7 +357,7 @@ export function PresencesTableFilters({
                                   "mr-2 h-4 w-4",
                                   localFilters.employe === ""
                                     ? "opacity-100"
-                                    : "opacity-0"
+                                    : "opacity-0",
                                 )}
                               />
                               Tous les employés
@@ -380,7 +386,7 @@ export function PresencesTableFilters({
                                     localFilters.employe ===
                                       employe.id.toString()
                                       ? "opacity-100"
-                                      : "opacity-0"
+                                      : "opacity-0",
                                   )}
                                 />
                                 {`${employe.nom} ${employe.prenom} (${employe.ref})`}
