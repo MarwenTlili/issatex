@@ -20,6 +20,13 @@ services:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
     tty: true
+    healthcheck:
+      test: [ "CMD-SHELL", "php -v || exit 1" ]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+  ###> symfony/mercure-bundle ###
+  ###< symfony/mercure-bundle ###
 
   pwa:
     build:
@@ -27,6 +34,8 @@ services:
       target: dev
     volumes:
       - ./pwa:/srv/app
+    env_file:
+      - ./pwa/.env.development.local
     environment:
       API_PLATFORM_CREATE_CLIENT_ENTRYPOINT: http://php
       API_PLATFORM_CREATE_CLIENT_OUTPUT: .
@@ -46,7 +55,5 @@ services:
       - target: 5432
         published: 5432
         protocol: tcp
-###< doctrine/doctrine-bundle ###
+  ###< doctrine/doctrine-bundle ###
 
-###> symfony/mercure-bundle ###
-###< symfony/mercure-bundle ###

@@ -1,12 +1,11 @@
-/.env
+# local env files
+.env*.local
+
 /helm/api-platform/charts/*
 !/helm/api-platform/charts/.gitignore
 
 # vscode settings
 .vscode
-
-# ignore envs
-**/.env
 
 # personal temp folder
 **/tmp

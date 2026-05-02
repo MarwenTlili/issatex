@@ -1,18 +1,24 @@
 # Production environment override
 services:
   php:
+    image: ${IMAGES_PREFIX}-php:prod
     build:
       context: ./api
       target: frankenphp_prod
     environment:
-      APP_SECRET: ${APP_SECRET}
+      # APP_SECRET: ${APP_SECRET}
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
-
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
   pwa:
+    image: ${IMAGES_PREFIX}-pwa:prod
     build:
       context: ./pwa
       target: prod
+    env_file:
+      - ./pwa/.env.production.local
 
   database:
     environment:
