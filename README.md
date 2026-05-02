@@ -5,7 +5,7 @@ Le projet permet la **gestion complète du cycle de production**, de la **prise 
 
 ---
 
-## 🚀 Stack Technique
+## 🛠️ Stack Technique
 
 ### 🧩 Back-End
 
@@ -86,6 +86,10 @@ ISSATEX souhaite moderniser son système de gestion de production pour :
 -   Technologies :
     -   [Api-Platform](https://api-platform.com/) (back-end Restful API)
     -   [Next.js](https://nextjs.org/) (front-end PWA)
+
+## 🧭 Pour Commencer
+
+👉 Voir [Guide d'installation](docs/SETUP.md)
 
 ---
 
