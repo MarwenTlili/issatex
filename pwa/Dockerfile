@@ -32,13 +32,14 @@ CMD ["sh", "-c", "pnpm install; pnpm dev"]
 # Builder stage
 FROM base AS builder
 
-COPY --link pnpm-lock.yaml ./
-RUN pnpm fetch --prod
+COPY --link package.json pnpm-lock.yaml ./
+# Install ALL dependencies (including devDeps so build succeeds)
+# RUN pnpm fetch --prod # ISSUE in prod
+RUN pnpm install --frozen-lockfile
 
 COPY --link . .
 
-RUN pnpm install --frozen-lockfile --offline --prod && \
-    pnpm run build
+RUN pnpm run build
 
 # Production image
 FROM node_upstream AS prod
