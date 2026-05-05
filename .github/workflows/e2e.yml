@@ -43,6 +43,7 @@ jobs:
 
       - name: Generate JWT Keys
         run: |
+          docker compose exec -T php mkdir -p config/jwt
           docker compose exec -T php sh -c '
             openssl genrsa -out config/jwt/private.pem 4096 && \
             openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem && \
