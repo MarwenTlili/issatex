@@ -14,8 +14,6 @@ services:
     build:
       context: ./pwa
       target: prod
-    env_file:
-      - ./pwa/.env.production.local
 
   database:
     environment:

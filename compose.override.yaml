@@ -32,8 +32,6 @@ services:
       target: dev
     volumes:
       - ./pwa:/srv/app
-    env_file:
-      - ./pwa/.env.development.local
     environment:
       API_PLATFORM_CREATE_CLIENT_ENTRYPOINT: http://php
       API_PLATFORM_CREATE_CLIENT_OUTPUT: .
