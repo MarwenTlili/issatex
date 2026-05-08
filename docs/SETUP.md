@@ -1,6 +1,6 @@
 # Issatex
 
-A modern textil's CAPM application built with:
+A modern textile manufacturing CAPM application built with:
 
 - ⚙️ API Platform (Symfony) — backend API
 - ⚛️ Next.js (PWA) — frontend & admin UI
@@ -8,32 +8,90 @@ A modern textil's CAPM application built with:
 - 📡 Mercure — real-time updates
 - 🗄 PostgreSQL — database
 
+## 📋 Prerequisites
+
+- Docker >= 29
+- Docker Compose >= 2.9
+- Git
+
+## 🏗 Project Structure
+
+```bash
+issatex/
+├── api/        # Symfony API Platform
+├── pwa/        # Next.js frontend
+├── compose.yaml
+└── ...
+```
+
 ## 🚀 Quick Start
+
+1. Clone repository
 
 ```bash
 git clone https://github.com/MarwenTlili/issatex
 cd issatex
+```
 
-# Setup environment
+2. Create local env file (dev only)
+
+```bash
 cp .env .env.development.local
+```
 
-# use "openssl rand -base64 32" to generate SECRETs and place them in your 
-# .env.<environment>.local
+3. Generate secrets
 
-# Start application
-docker compose --env-file .env.development.local up -d --build --no-cache
+Generate application secrets with `openssl rand -base64 32`
 
-# Init/Reset DB
-docker compose exec php bash -lc make reset
+example:
+
+```bash
+# issatex/.env.development.local
+CADDY_MERCURE_JWT_SECRET=
+
+# issatex/api/.env.dev.local
+APP_SECRET=
+MERCURE_JWT_SECRET=
+JWT_PASSPHRASE=
+
+# issatex/pwa/.env.development.local
+NEXTAUTH_SECRET=
+```
+
+4. Build containers
+
+```bash
+docker compose --env-file .env.development.local build --no-cache
+```
+
+5. Start services
+
+```bash
+docker compose --env-file .env.development.local up -d --wait
+```
+
+6. Initialize database (if needed)
+
+```bash
+# Init/Reset DB: drop + create + migrate + load fixtures
+docker compose exec php bash -lc "make reset"
 ```
 
 ## 🌐 Access the Application
 
 | Service  | URL                      |
 | -------- | ------------------------ |
-| API Docs | https://localhost/docs/  |
 | Frontend | https://localhost/       |
+| API Docs | https://localhost/docs/  |
 | Admin    | https://localhost/admin/ |
+
+JWT endpoints
+
+| Service                  | URL                                    | Body                                                       |
+| ------------------------ | -------------------------------------- | ---------------------------------------------------------- |
+| login                    | https://localhost/api/token/login      | {"username": "{{IDENTIFIER}}", "password": "{{PASSWORD}}"} |
+| refresh token            | https://localhost/api/token/refresh    | {"refresh_token": "..."}                                   |
+| invalidate refresh token | https://localhost/api/token/invalidate | {"refresh_token": "..."}                                   |
 
 > ⚠️ Uses self-signed HTTPS certificates (see below if needed)
 
@@ -44,6 +102,8 @@ Build
 ```bash
 # dev
 docker compose --env-file .env.development.local build --no-cache
+# re-build only one service
+docker compose --env-file .env.development.local build --no-cache php
 
 # prod
 docker compose --env-file .env.production.local -f compose.yaml -f compose.prod.yaml build --no-cache
@@ -64,15 +124,8 @@ docker compose --env-file .env.production.local -f compose.yaml -f compose.prod.
 Logs
 
 ```bash
-docker compose logs -f
-docker compose logs -f php
-```
-
-Full Reset
-
-```bash
-docker compose down -v
-docker compose --env-file .env.development.local up -d --build
+docker compose --env-file .env.development.local logs -f
+docker compose --env-file .env.development.local logs -f php
 ```
 
 ## ⚙️ Backend (Symfony / API Platform)
@@ -101,7 +154,6 @@ php bin/console cache:clear
 php bin/console debug:dotenv
 php bin/console debug:container --env-vars
 php bin/console debug:router
-
 ```
 
 ## 📡 API Usage
@@ -173,7 +225,8 @@ Setup
 
 ```bash
 docker compose exec php php bin/console doctrine:database:create --env=test
-docker compose exec php php bin/console doctrine:migrations:migrate -n --env=test
+docker compose exec php php bin/console doctrine:migrations:migrate --env=test -n
+docker compose exec php php bin/console doctrine:fixtures:load --env=test -n
 ```
 
 Run
@@ -187,7 +240,7 @@ docker compose exec php php bin/phpunit
 This project uses self-signed certificates via Caddy.
 
 ```bash
-docker cp issatex-php-1:/data/caddy/pki/authorities/local/root.crt api/frankenphp/certs/
+docker compose cp php:/data/caddy/pki/authorities/local/root.crt api/frankenphp/certs/
 
 # chrome://certificate-manager/-> Custom-> (Trusted Certificates) import -> select root.crt-> restart chrome
 # about:preferences#privacy ->Certificats -> View Certificates -> (Authorities) import -> select root.crt
