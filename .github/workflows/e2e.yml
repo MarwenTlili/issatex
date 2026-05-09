@@ -43,13 +43,11 @@ jobs:
 
       - name: Generate JWT Keys
         run: |
-          docker compose exec -T php mkdir -p config/jwt
-          docker compose exec -T php sh -c '
-            openssl genrsa -out config/jwt/private.pem 4096 && \
-            openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem && \
-            chmod 644 config/jwt/*.pem && \
-            chown -R www-data:www-data config/jwt
-          '
+          php bin/console lexik:jwt:generate-keypair --skip-if-exists
+
+      - name: Healthcheck
+        run: |
+          curl -k -I https://localhost/docs
 
       - name: Playwright
         run: docker run --network host -w /app -v ./e2e:/app --rm --ipc=host mcr.microsoft.com/playwright:v1.48.1-noble /bin/sh -c 'npm i; npx playwright test;'
