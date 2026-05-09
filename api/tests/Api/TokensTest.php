@@ -3,6 +3,7 @@
 namespace App\Tests;
 
 use ApiPlatform\Symfony\Bundle\Test\ApiTestCase;
+use ApiPlatform\Symfony\Bundle\Test\Client;
 use Symfony\Component\HttpFoundation\Response;
 
 class TokensTest extends ApiTestCase {
@@ -57,7 +58,7 @@ class TokensTest extends ApiTestCase {
         $this->assertJsonContains(['message' => 'JWT Refresh Token Not Found']);
     }
 
-    private function authenticate($client, string $username, string $password): array {
+    private function authenticate(Client $client, string $username, string $password): array {
         $response = $client->request('POST', self::AUTH_URL, [
             'headers' => ['Content-Type' => 'application/json'],
             'json' => ['username' => $username, 'password' => $password]
@@ -67,7 +68,7 @@ class TokensTest extends ApiTestCase {
         return $response->toArray();
     }
 
-    private function requestRefreshToken($client, string $refresh_token): array {
+    private function requestRefreshToken(Client $client, string $refresh_token): array {
         $response = $client->request('POST', self::TOKEN_REFRESH, [
             'json' => ['refresh_token' => $refresh_token]
         ]);
@@ -76,7 +77,7 @@ class TokensTest extends ApiTestCase {
         return $response->toArray();
     }
 
-    private function invalidateRefreshToken($client, string $refresh_token): void {
+    private function invalidateRefreshToken(Client $client, string $refresh_token): void {
         $client->request('POST', self::TOKEN_INVALIDATE, [
             'json' => ['refresh_token' => $refresh_token]
         ]);
@@ -88,7 +89,7 @@ class TokensTest extends ApiTestCase {
             $this->assertJsonContains(['message' => 'The supplied refresh_token has been invalidated.']);
     }
 
-    private function assertAuthorizedAccess($client, string $access_token): void {
+    private function assertAuthorizedAccess(Client $client, string $access_token): void {
         $client->request('GET', '/api/users', ['auth_bearer' => $access_token]);
 
         $this->assertResponseIsSuccessful();
