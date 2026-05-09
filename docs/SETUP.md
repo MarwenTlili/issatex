@@ -72,9 +72,16 @@ docker compose --env-file .env.development.local up -d --wait
 
 6. Initialize database (if needed)
 
+Init/Reset DB: drop + create + migrate + load fixtures
+
 ```bash
-# Init/Reset DB: drop + create + migrate + load fixtures
+# From host
 docker compose exec php bash -lc "make reset"
+
+# OR
+
+# From php container
+./scripts/reset.sh
 ```
 
 ## 🌐 Access the Application
