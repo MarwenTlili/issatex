@@ -43,6 +43,7 @@ jobs:
 
       - name: Generate JWT Keys
         run: |
+          docker compose exec -T php \
           php bin/console lexik:jwt:generate-keypair --skip-if-exists
 
       - name: Healthcheck
