@@ -1,5 +1,12 @@
 // @ts-check
-const { test, expect } = require('@playwright/test');
+const { test, expect, defineConfig } = require('@playwright/test');
+
+module.exports = defineConfig({
+  use: {
+    baseURL: 'https://localhost',
+    ignoreHTTPSErrors: true,
+  },
+});
 
 test('homepage', async ({ page }) => {
   await page.goto('https://localhost/');
