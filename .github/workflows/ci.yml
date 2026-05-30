@@ -26,8 +26,6 @@ jobs:
       POSTGRES_VERSION: ${{vars.POSTGRES_VERSION}}
 
       JWT_PASSPHRASE: ""
-      JWT_SECRET_KEY: /app/config/jwt/private-test.pem
-      JWT_PUBLIC_KEY: /app/config/jwt/public-test.pem
       JWT_ACCESS_TOKEN_TTL: ${{vars.JWT_ACCESS_TOKEN_TTL}}
 
       SERVER_NAME: ${{secrets.SERVER_NAME}}
@@ -61,21 +59,6 @@ jobs:
 
       - name: Start services
         run: docker compose up --wait --no-build
-
-      - name: Generate JWT Keys (No Passphrase)
-        run: |
-          docker compose exec -T php sh -c '
-            bin/console lexik:jwt:generate-keypair --skip-if-exists
-          '
-
-      - name: Inspect JWT keys (DEBUG)
-        run: |
-          docker compose exec -T php ls -la /app/config/jwt
-          docker compose exec -T php head -2 /app/config/jwt/private-test.pem
-
-      - name: Verify files (DEBUG)
-        run: |
-          docker compose exec -T php ls -la /app/config/jwt
 
       - name: Check HTTP reachability
         run: curl -v --fail-with-body http://localhost
