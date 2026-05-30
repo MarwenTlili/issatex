@@ -68,6 +68,15 @@ jobs:
             bin/console lexik:jwt:generate-keypair --skip-if-exists
           '
 
+      - name: Inspect JWT keys (DEBUG)
+        run: |
+          docker compose exec -T php ls -la /app/config/jwt
+          docker compose exec -T php head -2 /app/config/jwt/private-test.pem
+
+      - name: Verify files (DEBUG)
+        run: |
+          docker compose exec -T php ls -la /app/config/jwt
+
       - name: Check HTTP reachability
         run: curl -v --fail-with-body http://localhost
 
