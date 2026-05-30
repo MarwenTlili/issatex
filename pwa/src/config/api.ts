@@ -1,7 +1,7 @@
 export const ENTRYPOINT =
   typeof window === "undefined"
-    ? process.env.NEXT_PUBLIC_ENTRYPOINT // http://php
-    : process.env.NEXT_PUBLIC_API_URL; // https://localhost
+    ? process.env.NEXT_PUBLIC_ENTRYPOINT || "http://php" // Server-side
+    : process.env.NEXT_PUBLIC_API_URL || "https://localhost"; // Client-side
 
 // "development" | "production" | "test"
 export const NODE_ENV = process.env.NODE_ENV;
