@@ -24,11 +24,10 @@ jobs:
       POSTGRES_PASSWORD: ${{secrets.POSTGRES_PASSWORD}}
       POSTGRES_DB: ${{secrets.POSTGRES_DB}}
       POSTGRES_VERSION: ${{vars.POSTGRES_VERSION}}
-      POSTGRES_CHARSET: ${{vars.POSTGRES_CHARSET}}
 
       JWT_SECRET_KEY: /app/config/jwt/private-test.pem
       JWT_PUBLIC_KEY: /app/config/jwt/public-test.pem
-      JWT_PASSPHRASE: ""
+      JWT_PASSPHRASE: ${{secrets.JWT_PASSPHRASE}}
       JWT_ACCESS_TOKEN_TTL: ${{vars.JWT_ACCESS_TOKEN_TTL}}
 
       SERVER_NAME: ${{secrets.SERVER_NAME}}
@@ -63,26 +62,11 @@ jobs:
       - name: Start services
         run: docker compose up --wait --no-build
 
-      - name: Inspect Unhealthy PHP Container
-        if: failure() || cancelled()
-        run: |
-          echo "=== CONTAINER STATUS ==="
-          docker compose ps -a
-
-          echo "=== HEALTHCHECK ERROR ==="
-          docker inspect --format='{{json .State.Health}}' issatex-php-1 || true
-
-          echo "=== PHP CONTAINER LOGS ==="
-          docker compose logs php
-
       - name: Generate JWT Keys (No Passphrase)
         run: |
           docker compose exec -T php sh -c '
             bin/console lexik:jwt:generate-keypair --skip-if-exists
           '
-
-      - name: Create dummy .env file (bypass DetEnv package needs to .env)
-        run: docker compose exec -T php touch .env
 
       - name: Check HTTP reachability
         run: curl -v --fail-with-body http://localhost
