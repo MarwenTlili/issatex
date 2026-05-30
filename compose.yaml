@@ -1,19 +1,18 @@
 services:
   php:
-    image: ${IMAGES_PREFIX}-php:dev
+    image: ${IMAGES_PREFIX:-issatex}-php:dev
     depends_on:
       database:
         condition: service_healthy
     restart: unless-stopped
     environment:
       PWA_UPSTREAM: pwa:3000
-      SERVER_NAME: ${SERVER_NAME}, php:80
-      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
-      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
-      DATABASE_URL: ${DATABASE_URL}
-      MERCURE_URL: ${CADDY_MERCURE_URL}
-      MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL}
-      MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET}
+      SERVER_NAME: ${SERVER_NAME:-localhost}, php:80
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
+      MERCURE_URL: ${CADDY_MERCURE_URL:-http://php/.well-known/mercure}
+      MERCURE_PUBLIC_URL: ${CADDY_MERCURE_PUBLIC_URL:-https://${SERVER_NAME:-localhost}:${HTTPS_PORT:-443}/.well-known/mercure}
+      MERCURE_JWT_SECRET: ${CADDY_MERCURE_JWT_SECRET:-!ChangeThisMercureHubJWTSecretKey!}
       MERCURE_EXTRA_DIRECTIVES: ${MERCURE_EXTRA_DIRECTIVES:-transport bolt /data/caddy/mercure.db}
     volumes:
       - caddy_data:/data
@@ -21,37 +20,38 @@ services:
     ports:
       # HTTP
       - target: 80
-        published: ${HTTP_PORT}
+        published: ${HTTP_PORT:-80}
         protocol: tcp
       # # HTTPS
       - target: 443
-        published: ${HTTPS_PORT}
+        published: ${HTTPS_PORT:-443}
         protocol: tcp
       # # HTTP/3
       - target: 443
-        published: ${HTTP3_PORT}
+        published: ${HTTP3_PORT:-443}
         protocol: udp
-    # Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
-    ###> symfony/mercure-bundle ###
-    ###< symfony/mercure-bundle ###
+
+  # Mercure is installed as a Caddy module, prevent the Flex recipe from installing another service
+  ###> symfony/mercure-bundle ###
+  ###< symfony/mercure-bundle ###
 
   pwa:
-    image: ${IMAGES_PREFIX}-pwa:dev
+    image: ${IMAGES_PREFIX:-issatex}-pwa:dev
     environment:
       NEXT_PUBLIC_ENTRYPOINT: http://php
 
   ###> doctrine/doctrine-bundle ###
   database:
-    image: postgres:${POSTGRES_VERSION}-alpine
+    image: postgres:${POSTGRES_VERSION:-16}-alpine
     environment:
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_DB=${POSTGRES_DB:-issatex}
       # You should definitely change the password in production
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-app}
+      - POSTGRES_USER=${POSTGRES_USER:-app}
     volumes:
       - database_data:/var/lib/postgresql/data:rw
     healthcheck:
-      test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}" ]
+      test: [ "CMD", "pg_isready", "-d", "${POSTGRES_DB:-issatex}", "-U", "${POSTGRES_USER:-app}" ]
       timeout: 5s
       retries: 5
       start_period: 60s
@@ -59,6 +59,5 @@ services:
 
 volumes:
   caddy_data:
-  caddy_config: ###> doctrine/doctrine-bundle ###
+  caddy_config:
   database_data:
-

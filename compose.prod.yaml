@@ -1,19 +1,25 @@
 # Production environment override
 services:
   php:
-    image: ${IMAGES_PREFIX}-php:prod
+    image: ${IMAGES_PREFIX:-issatex}-php:prod
     build:
       context: ./api
       target: frankenphp_prod
     environment:
+      APP_SECRET: ${APP_SECRET}
+      APP_DEBUG: 0
       MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
       MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
-
+      JWT_PASSPHRASE: ${JWT_PASSPHRASE}
   pwa:
-    image: ${IMAGES_PREFIX}-pwa:prod
+    image: ${IMAGES_PREFIX:-issatex}-pwa:prod
     build:
       context: ./pwa
       target: prod
+    environment:
+      NODE_TLS_REJECT_UNAUTHORIZED: 1
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      NEXTAUTH_URL: https://localhost
 
   database:
     environment:
