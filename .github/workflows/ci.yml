@@ -25,6 +25,7 @@ jobs:
       POSTGRES_DB: ${{secrets.POSTGRES_DB}}
       POSTGRES_VERSION: ${{vars.POSTGRES_VERSION}}
 
+      JWT_PASSPHRASE: ""
       JWT_SECRET_KEY: /app/config/jwt/private-test.pem
       JWT_PUBLIC_KEY: /app/config/jwt/public-test.pem
       JWT_ACCESS_TOKEN_TTL: ${{vars.JWT_ACCESS_TOKEN_TTL}}
