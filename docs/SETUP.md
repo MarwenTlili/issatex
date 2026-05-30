@@ -11,139 +11,82 @@ A modern textile manufacturing CAPM application built with:
 ## 📋 Prerequisites
 
 - Docker >= 29
-- Docker Compose >= 2.9
 - Git
 
 ## 🏗 Project Structure
 
 ```bash
 issatex/
-├── api/        # Symfony API Platform
-├── pwa/        # Next.js frontend
+├── api/            # API Platform (Symfony)
+├── pwa/            # Next.js frontend
 ├── compose.yaml
 └── ...
 ```
 
-## 🚀 Quick Start
+> `.env` contains safe committed defaults only.  
+> Sensitive values must be stored in `.env.*.local`.
 
-1. Clone repository
+## 🚀 Quick Start (Development Only)
 
 ```bash
+# 1. Clone the project & navigate into it
 git clone https://github.com/MarwenTlili/issatex
 cd issatex
+
+# 2. Build docker containers
+docker compose build --no-cache
+
+# 3. Start docker services
+docker compose up -d --wait
+
+# 4. Initialize database, migrations, and fixtures
+docker compose exec php bash scripts/reset.sh
 ```
-
-2. Create local env file (dev only)
-
-```bash
-cp .env .env.development.local
-```
-
-3. Generate secrets
-
-Generate application secrets with `openssl rand -base64 32`
-
-example:
-
-```bash
-# issatex/.env.development.local
-CADDY_MERCURE_JWT_SECRET=
-
-# issatex/api/.env.dev.local
-APP_SECRET=
-MERCURE_JWT_SECRET=
-JWT_PASSPHRASE=
-
-# issatex/pwa/.env.development.local
-NEXTAUTH_SECRET=
-```
-
-4. Build containers
-
-```bash
-docker compose --env-file .env.development.local build --no-cache
-```
-
-5. Start services
-
-```bash
-docker compose --env-file .env.development.local up -d --wait
-```
-
-6. Initialize database (if needed)
-
-Init/Reset DB: drop + create + migrate + load fixtures
-
-```bash
-# From host
-docker compose exec php bash -lc "make reset"
-
-# OR
-
-# From php container
-./scripts/reset.sh
-```
-
-## 🌐 Access the Application
-
-| Service  | URL                      |
-| -------- | ------------------------ |
-| Frontend | https://localhost/       |
-| API Docs | https://localhost/docs/  |
-| Admin    | https://localhost/admin/ |
-
-JWT endpoints
-
-| Service                  | URL                                    | Body                                                       |
-| ------------------------ | -------------------------------------- | ---------------------------------------------------------- |
-| login                    | https://localhost/api/token/login      | {"username": "{{IDENTIFIER}}", "password": "{{PASSWORD}}"} |
-| refresh token            | https://localhost/api/token/refresh    | {"refresh_token": "..."}                                   |
-| invalidate refresh token | https://localhost/api/token/invalidate | {"refresh_token": "..."}                                   |
-
-> ⚠️ Uses self-signed HTTPS certificates (see below if needed)
 
 ## 🐳 Docker Usage
 
-Build
+### Production
+
+Build / Start / Stop
 
 ```bash
-# dev
-docker compose --env-file .env.development.local build --no-cache
-# re-build only one service
-docker compose --env-file .env.development.local build --no-cache php
+docker compose \
+  --env-file .env.production.local \
+  -f compose.yaml -f compose.prod.yaml \
+  build --no-cache
 
-# prod
-docker compose --env-file .env.production.local -f compose.yaml -f compose.prod.yaml build --no-cache
+docker compose \
+  --env-file .env.production.local \
+  -f compose.yaml -f compose.prod.yaml \
+  up -d --wait
+
+docker compose \
+  --env-file .env.production.local \
+  -f compose.yaml -f compose.prod.yaml \
+  down
 ```
 
-Start / Stop
+Initialize the admin user
 
 ```bash
-# dev
-docker compose --env-file .env.development.local up -d --wait
-docker compose --env-file .env.development.local down
-
-# prod
-docker compose --env-file .env.production.local -f compose.yaml -f compose.prod.yaml up -d --wait
-docker compose --env-file .env.production.local -f compose.yaml -f compose.prod.yaml down
+docker compose exec php php bin/console app:create-admin \
+  --email=admin@example.com \
+  --username=admin \
+  --password='admin'
 ```
 
-Logs
+## ⚙️ Common Commands
+
+### Backend (Symfony)
+
+Execute commands inside the running PHP container:
 
 ```bash
-docker compose --env-file .env.development.local logs -f
-docker compose --env-file .env.development.local logs -f php
-```
+# Enter the PHP container's terminal
+docker compose exec php bash
 
-## ⚙️ Backend (Symfony / API Platform)
+# --- Run these inside the container ---
 
-```bash
-docker compose exec -it php bash
-```
-
-Common Commands
-
-```bash
 # Create entity
 php bin/console make:entity
 
@@ -157,89 +100,49 @@ php bin/console doctrine:fixtures:load -n
 # Cache
 php bin/console cache:clear
 
-# Debug
+# Debugging
+printenv
 php bin/console debug:dotenv
+php bin/console debug:dotenv --env=test
 php bin/console debug:container --env-vars
 php bin/console debug:router
 ```
 
-## 📡 API Usage
-
-> ⚠️ Use --insecure because HTTPS is self-signed locally.
-
-Login
+### Database (PostgreSQL)
 
 ```bash
-curl --insecure \
-  -X POST https://localhost/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "<email>",
-    "password": "<password>"
-  }'
-```
-
-Authenticated Request
-
-```bash
-curl --insecure \
-  https://localhost/api/users \
-  -H "Authorization: Bearer <JWT_TOKEN>"
-```
-
-## 📊 Example Endpoints
-
-```bash
-# Daily
-curl --insecure https://localhost/api/rendements/2025-01-27?periode=jour
-
-# Weekly
-curl --insecure https://localhost/api/rendements/2025-01-27?periode=semaine
-
-# Monthly
-curl --insecure https://localhost/api/rendements/2025-01
-
-# Yearly
-curl --insecure https://localhost/api/rendements/2025
-```
-
-## 📡 Real-time (Mercure)
-
-```bash
-curl -v --insecure \
-  "https://localhost/.well-known/mercure?topic=https://localhost/ordre_fabrications"
-```
-
-## 🗄 Database
-
-```bash
-# Inside the container
+# Connect inside the container
 docker compose exec database psql -U app -d issatex
 
-# From host
-psql -h localhost -U app -d issatex
+# Connect from the host machine (requires psql client installed locally)
+psql -h localhost -p 5433 -U app -d issatex
 ```
 
 ## 🧪 Testing
 
-Configure
+### Configure
+
+Create the test environment configuration if it doesn't exist:
 
 ```bash
-DATABASE_URL="postgresql://app:app@database:5432/issatex_test?serverVersion=16&charset=utf8"
+# api/.env.test.local
+JWT_PASSPHRASE="!ChangeThisJWTPassphrase!"
 ```
 
-Setup
+### Setup & Run
+
+Execute the testing suite inside the PHP container:
 
 ```bash
-docker compose exec php php bin/console doctrine:database:create --env=test
-docker compose exec php php bin/console doctrine:migrations:migrate --env=test -n
-docker compose exec php php bin/console doctrine:fixtures:load --env=test -n
-```
+docker compose exec php bash
 
-Run
+# Inside the container:
+php bin/console doctrine:database:create --env=test
+php bin/console doctrine:migrations:migrate --env=test -n
+php bin/console doctrine:fixtures:load --env=test -n
 
-```bash
-docker compose exec php php bin/phpunit
+# Run the test suite
+php bin/phpunit
 ```
 
 ## 🔐 HTTPS (Local Development)
@@ -247,29 +150,58 @@ docker compose exec php php bin/phpunit
 This project uses self-signed certificates via Caddy.
 
 ```bash
-docker compose cp php:/data/caddy/pki/authorities/local/root.crt api/frankenphp/certs/
+docker compose cp php:/data/caddy/pki/authorities/local/root.crt \
+	api/frankenphp/certs/
 
-# chrome://certificate-manager/-> Custom-> (Trusted Certificates) import -> select root.crt-> restart chrome
-# about:preferences#privacy ->Certificats -> View Certificates -> (Authorities) import -> select root.crt
+# chrome://certificate-manager/localcerts/usercerts
 ```
 
-Install (Chrome)
+## 🌐 Access the Application
 
-- **Open**: chrome://settings/security
-- **Manage certificates** → Import root.crt
+| Service         | URL                     |
+| --------------- | ----------------------- |
+| Frontend        | https://localhost       |
+| API Docs        | https://localhost/docs  |
+| Admin Dashboard | https://localhost/admin |
 
-Android
+JWT endpoints
 
-- Transfer certificate
-- Install as trusted credential
+| Service                  | URL                                    | Body                                                       |
+| ------------------------ | -------------------------------------- | ---------------------------------------------------------- |
+| login                    | https://localhost/api/token/login      | {"username": "{{IDENTIFIER}}", "password": "{{PASSWORD}}"} |
+| refresh token            | https://localhost/api/token/refresh    | {"refresh_token": "..."}                                   |
+| invalidate refresh token | https://localhost/api/token/invalidate | {"refresh_token": "..."}                                   |
 
-## 🌍 Environments
+## 📡 API Usage
 
-| Environment | File                   |
-| ----------- | ---------------------- |
-| Development | .env.development.local |
-| Testing     | .env.test              |
-| Production  | .env.production.local  |
+```bash
+# 1. Login to retrieve the JWT token
+curl --insecure \
+  -X POST https://localhost/api/token/login \
+  -H "Content-Type: application/json" \
+  -d '{"username": "admin","password": "admin"}'
+
+# 2. Make an authenticated request
+curl --insecure \
+  https://localhost/api/machines \
+  -H "Authorization: Bearer <JWT_TOKEN>"
+```
+
+## 📊 Example Endpoints
+
+```bash
+# Daily Performance
+curl --insecure https://localhost/api/rendements/2025-01-27?periode=jour
+
+# Weekly Performance
+curl --insecure https://localhost/api/rendements/2025-01-27?periode=semaine
+
+# Monthly Performance
+curl --insecure https://localhost/api/rendements/2025-01
+
+# Yearly Performance
+curl --insecure https://localhost/api/rendements/2025
+```
 
 ## 📄 License
 
