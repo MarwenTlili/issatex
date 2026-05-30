@@ -9,11 +9,11 @@ RESET="\033[0m"
 RED="\033[0;31m"
 
 log() {
-  echo -e "${BLUE}➡️  $1${RESET}"
+  echo "\n${BLUE}➡️  $1${RESET}"
 }
 
 error() {
-  echo -e "${RED}❌ $1${RESET}"
+  echo "\n${RED}❌ $1${RESET}"
 }
 
 if [ "$APP_ENV" != "dev" ]; then
@@ -31,13 +31,13 @@ log "Cleaning migration files ..."
 rm -f migrations/*.php || true
 
 # 3. GENERATE MIGRATIONS
-echo ➡️ Generating fresh migration ...
+log "Generating fresh migration ..."
 php bin/console make:migration --no-interaction # > add "/dev/null" (to not print the output)
 
 # 4. RUN MIGRATIONS
-echo ➡️ Executing migrations ...
+log "Executing migrations ..."
 php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
 # 5. LOAD FIXTURES
-echo ➡️ Loading fixtures ...
+log "Loading fixtures ..."
 php bin/console doctrine:fixtures:load -n --group=load

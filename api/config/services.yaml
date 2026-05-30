@@ -64,9 +64,3 @@ services:
     App\Service\MercureJwtProvider:
         arguments:
             $secret: '%env(MERCURE_JWT_SECRET)%'
-
-    App\Command\CreateAdminCommand:
-        arguments:
-            $adminEmail: '%env(string:ADMIN_EMAIL)%'
-            $adminUsername: '%env(string:ADMIN_USERNAME)%'
-            $adminPassword: '%env(string:ADMIN_PASSWORD)%'
