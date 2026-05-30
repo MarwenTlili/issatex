@@ -27,7 +27,7 @@ jobs:
 
       JWT_SECRET_KEY: /app/config/jwt/private-test.pem
       JWT_PUBLIC_KEY: /app/config/jwt/public-test.pem
-      JWT_PASSPHRASE: ${{secrets.JWT_PASSPHRASE}}
+      JWT_PASSPHRASE: ""
       JWT_ACCESS_TOKEN_TTL: ${{vars.JWT_ACCESS_TOKEN_TTL}}
 
       SERVER_NAME: ${{secrets.SERVER_NAME}}
@@ -65,7 +65,7 @@ jobs:
       - name: Generate JWT Keys (No Passphrase)
         run: |
           docker compose exec -T php sh -c '
-            bin/console lexik:jwt:generate-keypair --skip-if-exists
+            bin/console lexik:jwt:generate-keypair --skip-if-exists --no-encryption
           '
 
       - name: Check HTTP reachability
