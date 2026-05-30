@@ -18,11 +18,6 @@ services:
       # Ensure that host.docker.internal is correctly defined on Linux
       - host.docker.internal:host-gateway
     tty: true
-    healthcheck:
-      test: [ "CMD-SHELL", "php -v || exit 1" ]
-      interval: 10s
-      retries: 5
-      start_period: 10s
   ###> symfony/mercure-bundle ###
   ###< symfony/mercure-bundle ###
 
