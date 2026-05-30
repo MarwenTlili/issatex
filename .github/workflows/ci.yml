@@ -62,6 +62,18 @@ jobs:
 
       - name: Start services
         run: docker compose up --wait --no-build
+      
+      - name: Inspect Unhealthy PHP Container
+        if: failure() || cancelled()
+        run: |
+          echo "=== CONTAINER STATUS ==="
+          docker compose ps -a
+          
+          echo "=== HEALTHCHECK ERROR ==="
+          docker inspect --format='{{json .State.Health}}' issatex-php-1 || true
+          
+          echo "=== PHP CONTAINER LOGS ==="
+          docker compose logs php
 
       - name: Generate JWT Keys (No Passphrase)
         run: |
