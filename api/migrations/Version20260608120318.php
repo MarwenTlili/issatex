@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260529204202 extends AbstractMigration
+final class Version20260608120318 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -44,7 +44,7 @@ final class Version20260529204202 extends AbstractMigration
         $this->addSql('CREATE UNIQUE INDEX UNIQ_23A0E668947610D ON article (designation)');
         $this->addSql('CREATE INDEX IDX_23A0E6619EB6921 ON article (client_id)');
         $this->addSql('CREATE TABLE avatar (id INT NOT NULL, file_path VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
-        $this->addSql('CREATE TABLE client (id INT NOT NULL, account_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, nom VARCHAR(255) NOT NULL, adresse VARCHAR(255) DEFAULT NULL, privilegie BOOLEAN NOT NULL, PRIMARY KEY(id))');
+        $this->addSql('CREATE TABLE client (id INT NOT NULL, account_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, nom VARCHAR(255) NOT NULL, prenom_responsable VARCHAR(255) NOT NULL, nom_responsable VARCHAR(255) NOT NULL, taille_entreprise VARCHAR(255) NOT NULL, type_entreprise VARCHAR(255) NOT NULL, category_textile VARCHAR(255) NOT NULL, adresse VARCHAR(255) DEFAULT NULL, ville VARCHAR(255) NOT NULL, gouvernemental VARCHAR(255) DEFAULT NULL, code_postal VARCHAR(255) NOT NULL, pays VARCHAR(255) NOT NULL, numero_telephone VARCHAR(255) DEFAULT NULL, focus_marche JSON NOT NULL, informations_complementaires TEXT DEFAULT NULL, privilegie BOOLEAN DEFAULT false NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_C7440455146F3EA3 ON client (ref)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_C74404556C6E55B5 ON client (nom)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_C74404559B6B5FBA ON client (account_id)');
@@ -82,15 +82,15 @@ final class Version20260529204202 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_345AC7DE6A91B091 ON taille_ordre_fabrication (ordre_fabrication_id)');
         $this->addSql('CREATE TABLE "user" (id INT NOT NULL, avatar_id INT DEFAULT NULL, ref VARCHAR(255) DEFAULT NULL, username VARCHAR(30) NOT NULL, email VARCHAR(180) NOT NULL, password VARCHAR(255) NOT NULL, roles JSON NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, last_login_at TIMESTAMP(0) WITHOUT TIME ZONE DEFAULT NULL, enabled BOOLEAN DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_8D93D649146F3EA3 ON "user" (ref)');
+        $this->addSql('CREATE UNIQUE INDEX UNIQ_8D93D649F85E0677 ON "user" (username)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_8D93D649E7927C74 ON "user" (email)');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_8D93D64986383B10 ON "user" (avatar_id)');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_IDENTIFIER ON "user" (email, username)');
         $this->addSql('COMMENT ON COLUMN "user".created_at IS \'(DC2Type:datetime_immutable)\'');
         $this->addSql('COMMENT ON COLUMN "user".last_login_at IS \'(DC2Type:datetime_immutable)\'');
         $this->addSql('ALTER TABLE affectation_employe_ilot ADD CONSTRAINT FK_1C3FEDC51B65292 FOREIGN KEY (employe_id) REFERENCES employe (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE affectation_employe_ilot ADD CONSTRAINT FK_1C3FEDC59A4BD21C FOREIGN KEY (ilot_id) REFERENCES ilot (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE article ADD CONSTRAINT FK_23A0E6619EB6921 FOREIGN KEY (client_id) REFERENCES client (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
-        $this->addSql('ALTER TABLE client ADD CONSTRAINT FK_C74404559B6B5FBA FOREIGN KEY (account_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('ALTER TABLE client ADD CONSTRAINT FK_C74404559B6B5FBA FOREIGN KEY (account_id) REFERENCES "user" (id) ON DELETE CASCADE NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE machine ADD CONSTRAINT FK_1505DF849A4BD21C FOREIGN KEY (ilot_id) REFERENCES ilot (id) ON DELETE SET NULL NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE notification ADD CONSTRAINT FK_BF5476CA9B6B5FBA FOREIGN KEY (account_id) REFERENCES "user" (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
         $this->addSql('ALTER TABLE ordre_fabrication ADD CONSTRAINT FK_7FB222D219EB6921 FOREIGN KEY (client_id) REFERENCES client (id) NOT DEFERRABLE INITIALLY IMMEDIATE');

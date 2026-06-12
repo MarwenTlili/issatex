@@ -37,5 +37,6 @@ export const API_ENDPOINTS = {
   USERS: "/api/users",
   AVATARS: "/api/avatars",
   NOTIFICATIONS: "/api/notifications",
+  REGISTER_CLIENT: "/api/register-client",
   HEALTH: "/api/health",
 } as const;

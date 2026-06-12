@@ -18,5 +18,6 @@ export interface UpdateUserData {
   username?: string;
   email?: string;
   avatar?: string | null;
-  plainPassword?: string
+  plainPassword?: string;
+  confirmPassword?: string;
 }

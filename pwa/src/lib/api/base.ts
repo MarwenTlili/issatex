@@ -40,6 +40,56 @@ const fetchWithTimeout = async (
 };
 
 /**
+ * Sends an UNAUTHENTICATED request to the API (Perfect for registration/login)
+ */
+export async function publicApiRequest<T>(
+  endpoint: string,
+  options: RequestConfig = {},
+): Promise<T> {
+  const url = `${ENTRYPOINT}${endpoint}`;
+
+  const headers = new Headers(options.headers);
+  if (
+    !headers.has("Content-Type") &&
+    options.body &&
+    typeof options.body === "string"
+  ) {
+    headers.set("Content-Type", "application/ld+json");
+  }
+
+  let response;
+  try {
+    response = await fetchWithTimeout(url, { ...options, headers });
+  } catch (error) {
+    throw {
+      networkError: true,
+      title: "Erreur réseau",
+      detail: (error as Error).message,
+    };
+  }
+
+  const contentType = response.headers.get("content-type") ?? "";
+  if (
+    contentType.includes("application/json") ||
+    contentType.includes("application/ld+json") ||
+    contentType.includes("application/problem+json")
+  ) {
+    const data = await response.json();
+    if (!response.ok) {
+      throw {
+        status: response.status,
+        title: data.title ?? "Erreur API",
+        detail: data.detail ?? JSON.stringify(data),
+        violations: data.violations,
+      };
+    }
+    return data as T;
+  }
+
+  return (await response.text()) as unknown as T;
+}
+
+/**
  * Performs a fetch request with JWT-based authentication and enhanced error handling
  */
 export async function fetchWithAuth(

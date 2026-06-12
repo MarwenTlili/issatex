@@ -17,6 +17,7 @@ use App\State\UserPasswordHasher;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -52,8 +53,11 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 ])]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER', fields: ['email', 'username'])]
+#[UniqueEntity(fields: ['username'])]
+#[UniqueEntity(fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface {
+    public const USERNAME_REGEX = '/^[a-z0-9_]{3,30}$/';
+
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
     #[ORM\Column(type: "integer")]
@@ -66,12 +70,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
 
     #[Assert\NotBlank(groups: ['user:create'])]
     #[Assert\Length(min: 3, max: 30)]
-    #[Assert\Regex(
-        pattern: "/^[a-zA-Z0-9_]+$/",
-        message: "Username can only contain letters, numbers, and underscores."
-    )]
     #[Groups(['user:read', 'user:create', 'user:update'])]
-    #[ORM\Column(length: 30)]
+    #[ORM\Column(length: 30, unique: true)]
+    #[Assert\Regex(
+        pattern: self::USERNAME_REGEX,
+        message: "Le nom d'utilisateur ne peut contenir que des lettres minuscules, chiffres et underscores (_)."
+    )]
     private ?string $username = null;
 
     #[Assert\NotBlank(groups: ['user:create'])]
