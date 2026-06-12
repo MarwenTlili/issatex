@@ -203,6 +203,17 @@ curl --insecure https://localhost/api/rendements/2025-01
 curl --insecure https://localhost/api/rendements/2025
 ```
 
+## Helpers
+
+Generating the TypeScript API resource
+
+```bash
+API_PLATFORM_CLIENT_GENERATOR_BEARER="..." \
+  pnpm create @api-platform/client http://php generated \
+  --generator typescript \
+  --resource Client
+```
+
 ## 📄 License
 
 MIT
