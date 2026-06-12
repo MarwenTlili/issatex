@@ -103,10 +103,13 @@ regenerate-jwt-keypair:
 	$(COMPOSE) exec $(PHP) \
 		php bin/console lexik:jwt:generate-keypair --overwrite
 
-copy-cert:
+copy-caddy-root-ca:
 	mkdir -p api/frankenphp/certs
 	$(COMPOSE) cp $(PHP):/data/caddy/pki/authorities/local/root.crt \
-		api/frankenphp/certs/
+		api/frankenphp/certs/caddy-root.crt
+
+install-caddy-root-ca:
+	./api/scripts/install-caddy-root-ca.sh 
 
 logs:
 	$(COMPOSE) logs -f
