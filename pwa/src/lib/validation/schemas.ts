@@ -1,16 +1,21 @@
 import { VALIDATION } from "@/config/app";
+import {
+  CategoryTextileValues,
+  FocusMarcheValues,
+  TailleEntrepriseValues,
+  TypeEntrepriseValues,
+} from "@/types/resources/Client";
 import { TAILLE_ARTICLE_OPTIONS } from "@/types/resources/TailleOrdreFabrication";
 import { z } from "zod";
+
+const USERNAME_REGEX = /^[a-z0-9_]+$/;
 
 // Base schemas
 const emailSchema = z
   .string()
-  .min(1, "Email requis")
-  .max(
-    VALIDATION.MAX_LENGTH.EMAIL,
-    `Email trop long (max ${VALIDATION.MAX_LENGTH.EMAIL} caractères)`
-  )
-  .email("Format email invalide");
+  .trim()
+  .min(1, { message: "L'adresse e-mail est obligatoire" })
+  .email({ message: "Veuillez entrer une adresse e-mail valide" });
 
 // Article schemas
 export const articleSchema = z.object({
@@ -18,18 +23,18 @@ export const articleSchema = z.object({
     .string()
     .min(
       VALIDATION.MIN_LENGTH.DESIGNATION,
-      `Désignation trop courte (min ${VALIDATION.MIN_LENGTH.DESIGNATION} caractères)`
+      `Désignation trop courte (min ${VALIDATION.MIN_LENGTH.DESIGNATION} caractères)`,
     )
     .max(
       VALIDATION.MAX_LENGTH.DESIGNATION,
-      `Désignation trop longue (max ${VALIDATION.MAX_LENGTH.DESIGNATION} caractères)`
+      `Désignation trop longue (max ${VALIDATION.MAX_LENGTH.DESIGNATION} caractères)`,
     ),
   composition: z
     .string()
     .min(VALIDATION.MIN_LENGTH.COMPOSITION)
     .max(
       VALIDATION.MAX_LENGTH.COMPOSITION,
-      `Composition trop longue (max ${VALIDATION.MAX_LENGTH.COMPOSITION} caractères)`
+      `Composition trop longue (max ${VALIDATION.MAX_LENGTH.COMPOSITION} caractères)`,
     ),
 });
 
@@ -74,7 +79,7 @@ export const ordreFabricationSchema = z.object({
     .min(1, "Au moins une configuration de taille est requise")
     .refine(
       (tailleOFs) => tailleOFs.every((taille) => taille.quantite > 0),
-      "Toutes les tailles doivent avoir une quantité supérieure à 0"
+      "Toutes les tailles doivent avoir une quantité supérieure à 0",
     ),
 });
 
@@ -137,7 +142,7 @@ export const presenceSchema = z
       message:
         "L'heure de début et de fin sont requises pour les statuts Présent ou Retard.",
       path: ["heureDebut"], // attach to heureDebut input
-    }
+    },
   );
 
 // User schemas
@@ -146,15 +151,15 @@ export const userSchema = z.object({
     .string()
     .min(
       VALIDATION.MIN_LENGTH.USERNAME,
-      `Nom d'utilisateur trop court (min ${VALIDATION.MIN_LENGTH.USERNAME} caractères)`
+      `Nom d'utilisateur trop court (min ${VALIDATION.MIN_LENGTH.USERNAME} caractères)`,
     )
     .max(
       VALIDATION.MAX_LENGTH.USERNAME,
-      `Nom d'utilisateur trop long (max ${VALIDATION.MAX_LENGTH.USERNAME} caractères)`
+      `Nom d'utilisateur trop long (max ${VALIDATION.MAX_LENGTH.USERNAME} caractères)`,
     )
     .regex(
       /^[a-zA-Z0-9_]+$/,
-      "Le nom d'utilisateur ne peut contenir que des lettres, chiffres et underscores (_)"
+      "Le nom d'utilisateur ne peut contenir que des lettres, chiffres et underscores (_)",
     ),
   email: emailSchema,
   // roles: z.array(z.string()).min(1, "Au moins un rôle requis"),
@@ -169,7 +174,7 @@ export const passwordChangeSchema = z
       .string()
       .min(
         VALIDATION.MIN_LENGTH.PASSWORD,
-        `Nouveau mot de passe trop court (min ${VALIDATION.MIN_LENGTH.PASSWORD} caractères)`
+        `Nouveau mot de passe trop court (min ${VALIDATION.MIN_LENGTH.PASSWORD} caractères)`,
       ),
     confirmPassword: z.string().min(1, "Confirmation du mot de passe requise"),
   })
@@ -183,7 +188,7 @@ export const createUserSchema = userSchema.extend({
     .string()
     .min(
       VALIDATION.MIN_LENGTH.PASSWORD,
-      `Mot de passe trop court (min ${VALIDATION.MIN_LENGTH.PASSWORD} caractères)`
+      `Mot de passe trop court (min ${VALIDATION.MIN_LENGTH.PASSWORD} caractères)`,
     ),
 });
 
@@ -196,6 +201,70 @@ export const loginSchema = z.object({
   username: z.string().min(1, "Nom d'utilisateur requis"),
   password: z.string().min(1, "Mot de passe requis"),
 });
+
+// Registration schema
+export const registrationFormSchema = z.object({
+  username: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(3, { message: "Doit contenir au moins 3 caractères" })
+    .max(30, { message: "Doit contenir au maximum 30 caractères" })
+    .regex(USERNAME_REGEX, {
+      message:
+        "Le nom d'utilisateur ne peut contenir que des lettres minuscules, chiffres et underscores (_).",
+    }),
+  email: emailSchema,
+  plainPassword: z
+    .string()
+    .min(8, { message: "Le mot de passe doit contenir au moins 8 caractères" }),
+  nom: z
+    .string()
+    .trim()
+    .min(2, { message: "Le nom de l'entreprise est obligatoire" }),
+  prenomResponsable: z
+    .string()
+    .trim()
+    .min(2, { message: "Le prénom doit contenir au moins 2 caractères" }),
+  nomResponsable: z.string().trim().min(2, {
+    message: "Le nom de famille doit contenir au moins 2 caractères",
+  }),
+  tailleEntreprise: z.enum(TailleEntrepriseValues, {
+    errorMap: () => ({
+      message: "Veuillez sélectionner la taille de l'entreprise",
+    }),
+  }),
+  typeEntreprise: z.enum(TypeEntrepriseValues, {
+    errorMap: () => ({ message: "Veuillez sélectionner le type d'entreprise" }),
+  }),
+  categoryTextile: z.enum(CategoryTextileValues, {
+    errorMap: () => ({
+      message: "Veuillez sélectionner une catégorie textile",
+    }),
+  }),
+  adresse: z.string().trim().min(5, { message: "L'adresse est obligatoire" }),
+  ville: z.string().trim().min(2, { message: "La ville est obligatoire" }),
+  gouvernemental: z
+    .string()
+    .min(2, { message: "La région/province est obligatoire" }),
+  codePostal: z
+    .string()
+    .trim()
+    .min(3, { message: "Le code postal est obligatoire" }),
+  pays: z.string().trim().min(2, { message: "Le pays est obligatoire" }),
+  numeroTelephone: z
+    .string()
+    .trim()
+    .min(5, { message: "Le numéro de téléphone est obligatoire" }),
+  focusMarche: z
+    .array(z.enum(FocusMarcheValues))
+    .min(1, "Veuillez sélectionner au moins un marché cible"),
+  informationsComplementaires: z.string().trim().optional(),
+  termsAccepted: z.boolean().refine((val) => val === true, {
+    message: "Vous devez accepter les conditions générales d'utilisation",
+  }),
+});
+export type RegistrationFormData = z.infer<typeof registrationFormSchema>;
 
 // Type exports
 export type ArticleFormData = z.infer<typeof articleSchema>;
