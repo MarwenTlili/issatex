@@ -197,10 +197,11 @@ export const updateUserSchema = userSchema.partial().extend({
 });
 
 // Login schema
-export const loginSchema = z.object({
+export const loginFormSchema = z.object({
   username: z.string().min(1, "Nom d'utilisateur requis"),
   password: z.string().min(1, "Mot de passe requis"),
 });
+export type LoginFormData = z.infer<typeof loginFormSchema>;
 
 // Registration schema
 export const registrationFormSchema = z.object({
@@ -294,5 +295,3 @@ export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
 export type PasswordChangeFormData = z.infer<typeof passwordChangeSchema>;
-
-export type LoginFormData = z.infer<typeof loginSchema>;
