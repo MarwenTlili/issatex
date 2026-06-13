@@ -173,7 +173,7 @@ export function ClientRegistrationForm() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <RHFInput
-                  label="Prénom Responsabl"
+                  label="Prénom Responsable"
                   name="prenomResponsable"
                   type="text"
                   autoComplete="prenomResponsable"
@@ -184,7 +184,7 @@ export function ClientRegistrationForm() {
                 />
 
                 <RHFInput
-                  label="Nom Responsabl"
+                  label="Nom Responsable"
                   name="nomResponsable"
                   type="text"
                   autoComplete="nomResponsable"
