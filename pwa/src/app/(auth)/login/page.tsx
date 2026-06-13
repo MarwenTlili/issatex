@@ -17,10 +17,8 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
-      <div className="w-full">
-        <LoginForm />
-      </div>
+    <main className="min-h-screen w-full flex items-center justify-center bg-[#FBFBFA]">
+      <LoginForm />
     </main>
   );
 }
