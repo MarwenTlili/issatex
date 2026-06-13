@@ -3,6 +3,7 @@
 namespace App\ApiResource;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Entity\Client;
 use App\Entity\User;
@@ -18,7 +19,8 @@ use Symfony\Component\Validator\Constraints as Assert;
         new Post(
             uriTemplate: '/register-client',
             processor: RegisterClientProcessor::class,
-        )
+        ),
+        new GetCollection(security: "is_granted('ROLE_ADMIN')")
     ]
 )]
 class RegisterClientRequest {
