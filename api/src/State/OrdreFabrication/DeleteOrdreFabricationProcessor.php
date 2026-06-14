@@ -19,10 +19,10 @@ class DeleteOrdreFabricationProcessor implements ProcessorInterface {
     public function process(mixed $data, Operation $operation, array $uriVariables = [], array $context = []) {
         if ($data instanceof OrdreFabrication) {
             match ($data->getStatut()) {
-                StatutOF::IN_PROGRESS => throw new ConflictHttpException(
+                StatutOF::EN_COURS => throw new ConflictHttpException(
                     'Impossible de supprimer un ordre de fabrication en cours de production!'
                 ),
-                StatutOF::COMPLETED => throw new ConflictHttpException(
+                StatutOF::COMPLETE => throw new ConflictHttpException(
                     'Impossible de supprimer un ordre de fabrication terminé!'
                 ),
                 default => null,

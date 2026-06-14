@@ -32,19 +32,19 @@ class OrdreFabricationFixtues extends Fixture implements DependentFixtureInterfa
 
             // Choose dateCreation based on status realism
             switch ($statut) {
-                case StatutOF::DRAFT:
+                case StatutOF::BROUILLON:
                     $dateCreation = $this->faker->dateTimeBetween("-3 days", "now");
                     break;
-                case StatutOF::PLANNED:
+                case StatutOF::PREVUE:
                     $dateCreation = $this->faker->dateTimeBetween("-3 weeks", "-1 week");
                     break;
-                case StatutOF::IN_PROGRESS:
+                case StatutOF::EN_COURS:
                     $dateCreation = $this->faker->dateTimeBetween("-6 weeks", "-3 weeks");
                     break;
-                case StatutOF::COMPLETED:
+                case StatutOF::COMPLETE:
                     $dateCreation = $this->faker->dateTimeBetween("-2 months", "-1 month");
                     break;
-                case StatutOF::CANCELED:
+                case StatutOF::ANNULE:
                     $dateCreation = $this->faker->dateTimeBetween("-4 weeks", "-2 days");
                     break;
             }

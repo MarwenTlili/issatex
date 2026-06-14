@@ -39,11 +39,11 @@ class OrdreFabricationStatusService {
 
   private function getTitle(StatutOF $statut): string {
     return match ($statut) {
-      StatutOF::DRAFT => 'OF En Brouillon',
-      StatutOF::PLANNED => 'OF Planifié',
-      StatutOF::IN_PROGRESS => 'OF En Cours',
-      StatutOF::COMPLETED => 'OF Complété',
-      StatutOF::CANCELED => 'OF Annulé',
+      StatutOF::BROUILLON => 'OF En Brouillon',
+      StatutOF::PREVUE => 'OF Prévue',
+      StatutOF::EN_COURS => 'OF En Cours',
+      StatutOF::COMPLETE => 'OF Complété',
+      StatutOF::ANNULE => 'OF Annulé',
     };
   }
 

@@ -10,28 +10,28 @@ import {
 } from "./TailleOrdreFabrication";
 
 export const OF_STATUT = {
-  DRAFT: {
-    label: "DRAFT",
+  BROUILLON: {
+    label: "BROUILLON",
     muiColor: "primary",
-    twColor: "bg-blue-100 text-blue-800",
+    twColor: "bg-blue-100 text-grey-800",
   },
-  PLANNED: {
-    label: "PLANNED",
+  PREVUE: {
+    label: "PREVUE",
     muiColor: "secondary",
     twColor: "bg-indigo-100 text-indigo-800",
   },
-  IN_PROGRESS: {
-    label: "IN_PROGRESS",
+  EN_COURS: {
+    label: "EN_COURS",
     muiColor: "warning",
     twColor: "bg-amber-100 text-amber-800",
   },
-  COMPLETED: {
-    label: "COMPLETED",
+  COMPLETE: {
+    label: "COMPLETE",
     muiColor: "success",
     twColor: "bg-green-100 text-green-800",
   },
-  CANCELED: {
-    label: "CANCELED",
+  ANNULE: {
+    label: "ANNULE",
     muiColor: "error",
     twColor: "bg-red-100 text-red-800",
   },
@@ -44,7 +44,7 @@ export const OF_STATUT_CHOICES_RA = Object.entries(OF_STATUT).map(
   ([key, value]) => ({
     id: key,
     name: value.label,
-  })
+  }),
 );
 
 export interface OrdreFabrication extends Item {
@@ -80,8 +80,7 @@ export interface CreateOrdreFabricationData {
   client?: string;
 }
 
-export interface UpdateOrdreFabricationData
-  extends Partial<CreateOrdreFabricationData> {
+export interface UpdateOrdreFabricationData extends Partial<CreateOrdreFabricationData> {
   id: number;
 }
 

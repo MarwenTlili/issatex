@@ -31,32 +31,32 @@ class PlanningFixtures extends Fixture implements DependentFixtureInterface, Fix
             /**
              * No plannings for those status
              */
-            if (in_array($of->getStatut(), [StatutOF::DRAFT])) {
+            if (in_array($of->getStatut(), [StatutOF::BROUILLON])) {
                 continue;
             }
 
             /**
              * Compute planning week based on status
              */
-            if ($statut === StatutOF::PLANNED) {
+            if ($statut === StatutOF::PREVUE) {
                 // Future week
                 $monday = (new \DateTime())->modify('+1 week')->modify("Monday this week")->setTime(0, 0);
                 $saturday = (clone $monday)->modify('+5 days');
             }
 
-            if ($statut === StatutOF::IN_PROGRESS) {
+            if ($statut === StatutOF::EN_COURS) {
                 // This week
                 $monday = (new \DateTime("now"))->modify("Monday this week")->setTime(0, 0);
                 $saturday = (clone $monday)->modify('+5 days');
             }
 
-            if ($statut === StatutOF::COMPLETED) {
+            if ($statut === StatutOF::COMPLETE) {
                 // Past week
                 $monday = (new \DateTime())->modify('-2 weeks')->modify("Monday this week")->setTime(0, 0);
                 $saturday = (clone $monday)->modify('+5 days');
             }
 
-            if ($statut === StatutOF::CANCELED) {
+            if ($statut === StatutOF::ANNULE) {
                 // Random: past or future week
                 if ($this->faker->boolean(50)) {
                     // past

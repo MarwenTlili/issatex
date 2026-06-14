@@ -31,7 +31,7 @@ class ProductionFixtures extends Fixture implements DependentFixtureInterface, F
             if (!$of) continue;
 
             // Only produce for IN_PROGRESS or COMPLETED
-            if (!in_array($of->getStatut(), [StatutOF::IN_PROGRESS, StatutOF::COMPLETED])) {
+            if (!in_array($of->getStatut(), [StatutOF::EN_COURS, StatutOF::COMPLETE])) {
                 continue;
             }
 
@@ -41,7 +41,7 @@ class ProductionFixtures extends Fixture implements DependentFixtureInterface, F
 
             // If IN_PROGRESS, production stops at "today" (inclusive)
             $today = (new \DateTime())->setTime(0, 0, 0);
-            if ($of->getStatut() === StatutOF::IN_PROGRESS && $today < $end) {
+            if ($of->getStatut() === StatutOF::EN_COURS && $today < $end) {
                 // ensure we don't produce for future days
                 $end = $today;
             }

@@ -11,7 +11,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search, X } from "lucide-react";
-import { OrdreFabricationFilters } from "@/types/resources/OrdreFabrication";
+import {
+  OF_STATUT,
+  OrdreFabricationFilters,
+} from "@/types/resources/OrdreFabrication";
 
 interface OrdreFabricationsTableFiltersProps {
   filters: OrdreFabricationFilters;
@@ -82,11 +85,11 @@ export const OrdreFabricationsTableFilters = memo(
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="Cree">Créé</SelectItem>
-              <SelectItem value="En Cours">En Cours</SelectItem>
-              <SelectItem value="Terminee">Terminée</SelectItem>
-              <SelectItem value="Annule">Annulé</SelectItem>
-              <SelectItem value="En Attente">En Attente</SelectItem>
+              {Object.entries(OF_STATUT).map(([key, value]) => (
+                <SelectItem key={key} value={key}>
+                  {value.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>
@@ -111,5 +114,5 @@ export const OrdreFabricationsTableFilters = memo(
         </div>
       </div>
     );
-  }
+  },
 );

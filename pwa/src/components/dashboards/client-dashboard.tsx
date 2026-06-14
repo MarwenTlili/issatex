@@ -83,7 +83,7 @@ export default function ClientDashboard() {
         color: "bg-orange-500",
       },
     ],
-    []
+    [],
   );
 
   const statistics = useMemo(() => {
@@ -94,16 +94,16 @@ export default function ClientDashboard() {
 
     const urgentOrders = ordreFabrications.filter((of) => of.urgent).length;
     const completedOrders = ordreFabrications.filter(
-      (of) => of.statut === "COMPLETED"
+      (of) => of.statut === "COMPLETE",
     ).length;
     const inProgressOrders = ordreFabrications.filter(
-      (of) => of.statut === "IN_PROGRESS"
+      (of) => of.statut === "EN_COURS",
     ).length;
     const plannedOrders = ordreFabrications.filter(
-      (of) => of.statut === "PLANNED"
+      (of) => of.statut === "PREVUE",
     ).length;
     const createdOrders = ordreFabrications.filter(
-      (of) => of.statut === "DRAFT"
+      (of) => of.statut === "BROUILLON",
     ).length;
 
     return {
@@ -390,7 +390,9 @@ export default function ClientDashboard() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <Badge className={`text-xs ${OF_STATUT[of.statut].twColor}`}>
+                      <Badge
+                        className={`text-xs ${OF_STATUT[of.statut].twColor}`}
+                      >
                         {of.statut}
                       </Badge>
                       <div className="text-sm text-muted-foreground mt-1">

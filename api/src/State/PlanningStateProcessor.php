@@ -31,11 +31,11 @@ final class PlanningStateProcessor implements ProcessorInterface {
         $of = $data->getOrdreFabrication();
 
         // -----------------------------------------------------------
-        //  CREATE PLANNING → OF = PLANNED
+        //  CREATE PLANNING → OF = PREVUE
         // -----------------------------------------------------------
         if ($operation instanceof Post) {
             $old = $of->getStatut();
-            $new = StatutOF::PLANNED;
+            $new = StatutOF::PREVUE;
 
             $of->setStatut($new);
 
@@ -46,11 +46,11 @@ final class PlanningStateProcessor implements ProcessorInterface {
         }
 
         // -----------------------------------------------------------
-        //  DELETE PLANNING → OF = DRAFT
+        //  DELETE PLANNING → OF = BROUILLON
         // -----------------------------------------------------------
         if ($operation instanceof Delete) {
             $old = $of->getStatut();
-            $new = StatutOF::DRAFT;
+            $new = StatutOF::BROUILLON;
 
             $of->setStatut($new);
 
