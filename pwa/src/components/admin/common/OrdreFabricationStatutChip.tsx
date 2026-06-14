@@ -43,6 +43,10 @@ export const OrdreFabricationStatutChip = ({
   const o = record || contextRecord;
   if (!o) return null;
 
-  const { label, muiColor } = OF_STATUT[o.statut];
+  const { label, muiColor } = OF_STATUT[o.statut] ?? {
+    label: o.statut ?? "Unknown",
+    muiColor: "default",
+  };
+
   return <Chip label={label} color={muiColor} size="small" {...props} />;
 };

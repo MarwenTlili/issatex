@@ -25,7 +25,7 @@ const PlanningEdit = () => {
   });
 
   return (
-    <Edit<Planning> title={<CustomTitle />} transform={transform}>
+    <Edit<Planning> title={<CustomTitle />} transform={transform} mutationMode="pessimistic">
       <SimpleForm>
         <DateInput source="dateDebut" />
         <DateInput source="dateFin" />
