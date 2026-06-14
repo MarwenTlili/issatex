@@ -72,7 +72,7 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
   if (error || !article) {
     const message = isApiError(error)
       ? getErrorMessage(error)
-      : (error as Error)?.message ?? "Erreur inconnue";
+      : ((error as Error)?.message ?? "Erreur inconnue");
 
     if (
       isApiError(error) &&
@@ -129,7 +129,13 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
               <div className="flex flex-wrap gap-2">
                 {article.ordreFabrications?.map((order, index) => (
                   <Badge key={index} variant="outline" className="text-xs">
-                    {order}
+                    <Link
+                      href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_DETAIL(
+                        Number(order.split("/").pop()),
+                      )}
+                    >
+                      {order}
+                    </Link>
                   </Badge>
                 ))}
               </div>

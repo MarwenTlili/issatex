@@ -174,7 +174,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
                   </span>
                   <div className="font-medium">
                     {new Date(
-                      ordreFabrication.dateCloture
+                      ordreFabrication.dateCloture,
                     ).toLocaleDateString()}
                   </div>
                 </div>
@@ -223,7 +223,13 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
           <h3 className="text-base sm:text-lg font-medium mb-2">Article</h3>
           <div className="bg-muted/50 rounded-lg p-3 sm:p-4">
             <Badge className="text-md">
-              {`${ordreFabrication.article?.ref} - ${ordreFabrication.article?.designation}`}
+              <Link
+                href={APP_ROUTES.CLIENT.ARTICLE_DETAIL(
+                  Number(ordreFabrication.article.id),
+                )}
+              >
+                {`${ordreFabrication.article?.ref} - ${ordreFabrication.article?.designation}`}
+              </Link>
             </Badge>
           </div>
         </div>
@@ -279,7 +285,7 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
         </Button>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <Button variant="outline" asChild className="w-full sm:w-auto">
-            <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_EDIT(`${id}`)}>
+            <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_EDIT(id)}>
               <Edit className="mr-2 h-4 w-4" /> Modifier
             </Link>
           </Button>

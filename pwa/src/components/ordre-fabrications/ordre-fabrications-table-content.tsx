@@ -176,7 +176,7 @@ export const OrdreFabricationsTableContent = memo(
                         <Button variant="outline" size="icon" asChild>
                           <Link
                             href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_DETAIL(
-                              `${of.id}`
+                              of.id,
                             )}
                           >
                             <Eye className="h-4 w-4" />
@@ -188,7 +188,7 @@ export const OrdreFabricationsTableContent = memo(
                             <Button variant="outline" size="icon" asChild>
                               <Link
                                 href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_EDIT(
-                                  `${of.id}`
+                                  of.id,
                                 )}
                               >
                                 <Edit className="h-4 w-4" />
@@ -263,7 +263,7 @@ export const OrdreFabricationsTableContent = memo(
                       <DropdownMenuItem asChild>
                         <Link
                           href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_DETAIL(
-                            `${of.id}`
+                            of.id,
                           )}
                           className="flex items-center"
                         >
@@ -273,9 +273,7 @@ export const OrdreFabricationsTableContent = memo(
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link
-                          href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_EDIT(
-                            `${of.id}`
-                          )}
+                          href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_EDIT(of.id)}
                           className="flex items-center"
                         >
                           <Edit className="mr-2 h-4 w-4" />
@@ -313,5 +311,5 @@ export const OrdreFabricationsTableContent = memo(
         </div>
       </>
     );
-  }
+  },
 );

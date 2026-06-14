@@ -11,11 +11,11 @@ export const APP_ROUTES = {
     ARTICLE_EDIT: (id: number) => `/client/articles/${id}/edit`,
     ORDRE_FABRICATIONS: "/client/ordre-fabrications",
     ORDRE_FABRICATION_NEW: "/client/ordre-fabrications/new",
-    ORDRE_FABRICATION_DETAIL: (id: string) =>
+    ORDRE_FABRICATION_DETAIL: (id: number) =>
       `/client/ordre-fabrications/${id}`,
-    ORDRE_FABRICATION_EDIT: (id: string) =>
+    ORDRE_FABRICATION_EDIT: (id: number) =>
       `/client/ordre-fabrications/${id}/edit`,
-    SETTINGS: `/client/parametres`
+    SETTINGS: `/client/parametres`,
   },
   ADMIN: {
     DASHBOARD: "/admin",
