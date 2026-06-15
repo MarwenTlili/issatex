@@ -15,6 +15,7 @@ import {
   OF_STATUT,
   OrdreFabricationFilters,
 } from "@/types/resources/OrdreFabrication";
+import { cn } from "@/lib/utils";
 
 interface OrdreFabricationsTableFiltersProps {
   filters: OrdreFabricationFilters;
@@ -87,7 +88,14 @@ export const OrdreFabricationsTableFilters = memo(
               <SelectItem value="all">Tous les statuts</SelectItem>
               {Object.entries(OF_STATUT).map(([key, value]) => (
                 <SelectItem key={key} value={key}>
-                  {value.label}
+                  <span
+                    className={cn(
+                      value.twColor,
+                      "px-2 py-0.5 rounded-full text-xs font-medium",
+                    )}
+                  >
+                    {value.label}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>

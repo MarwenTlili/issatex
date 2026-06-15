@@ -3,7 +3,6 @@ import CredentialsProvider from "next-auth/providers/credentials";
 
 import { apiFetch, refreshTokens } from "./auth-functions";
 import type { JWT } from "next-auth/jwt";
-import { logger } from "@/lib/utils/Logger";
 import type { JwtAuthData, JwtPayload } from "@/types/index";
 
 import { parseJwt } from "@/lib/utils";
@@ -14,6 +13,8 @@ import {
   ENTRYPOINT,
 } from "@/config/api";
 import { User } from "@/types/resources/User";
+import { isApiError } from "../api/handle-api-error";
+import { logger } from "../utils/Logger";
 
 export const authOptions: NextAuthOptions = {
   secret: NEXTAUTH_SECRET,
@@ -33,7 +34,7 @@ export const authOptions: NextAuthOptions = {
             {
               username: credentials?.username,
               password: credentials?.password,
-            }
+            },
           );
 
           if (!authData) return null;
@@ -59,7 +60,13 @@ export const authOptions: NextAuthOptions = {
           /** Return a user object that will be stored in the JWT */
           return user;
         } catch (error) {
-          logger("error", "Authentication error", { error });
+          if (
+            isApiError(error) &&
+            error.status === 403 &&
+            error.detail === "AccountDisabled"
+          ) {
+            throw new Error("AccountDisabled");
+          }
           return null;
         }
       },
@@ -93,7 +100,7 @@ export const authOptions: NextAuthOptions = {
           const userResponse = await apiFetch<User>(
             `${ENTRYPOINT}${API_ENDPOINTS.USERS}/${token.user?.id}`,
             "GET",
-            token.accessToken
+            token.accessToken,
           );
 
           if (!userResponse) return token;

@@ -96,7 +96,7 @@ export function handleApiError(
   options?: {
     showToast?: boolean;
     customMessage?: string;
-  }
+  },
 ): FormErrors {
   const { showToast = true, customMessage } = options || {};
 
