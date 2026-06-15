@@ -1,8 +1,8 @@
 import { JWT } from "next-auth/jwt";
 
 import { JwtAuthData } from "@/types/index";
-import { logger } from "@/lib/utils/Logger";
 import { TOKEN_REFRESH_URL } from "@/config/api";
+import { ApiError, isApiError } from "../api/handle-api-error";
 
 /**
  * Fetch url with JWT Token bearer
@@ -26,7 +26,7 @@ export async function apiFetch<T>(
   url: string,
   method: "GET" | "POST",
   token?: string,
-  body?: Record<string, any>
+  body?: Record<string, any>,
 ): Promise<T | null> {
   try {
     const headers: HeadersInit = {
@@ -42,18 +42,25 @@ export async function apiFetch<T>(
 
     if (!response.ok) {
       const errorResponse = await response.json();
-      logger("error", "apiFetch failed", {
-        method,
-        url,
-        message: errorResponse.message || `HTTP ${response.status}`,
-      });
-      return null;
+
+      throw {
+        title: errorResponse.title,
+        detail: errorResponse.message ?? errorResponse.detail,
+        status: response.status,
+        type: errorResponse.type,
+        violations: errorResponse.violations,
+      } satisfies ApiError;
     }
 
     return response.json();
   } catch (error) {
-    logger("error", "apiFetch failed", { method, url });
-    return null;
+    if (isApiError(error)) {
+      throw error;
+    }
+    throw {
+      networkError: true,
+      detail: "Network error",
+    } satisfies ApiError;
   }
 }
 
@@ -70,7 +77,7 @@ export async function refreshTokens(token: JWT): Promise<JWT> {
       undefined,
       {
         refresh_token: token.refreshToken,
-      }
+      },
     );
 
     if (!refreshedTokens) {
@@ -80,7 +87,6 @@ export async function refreshTokens(token: JWT): Promise<JWT> {
       };
     }
 
-    logger("info", "Access token refreshed.");
     return {
       ...token,
       accessToken: refreshedTokens.access_token,
@@ -89,7 +95,6 @@ export async function refreshTokens(token: JWT): Promise<JWT> {
       error: undefined,
     };
   } catch (error) {
-    logger("error", "RefreshTokenError", { error });
     return {
       ...token,
       error: "RefreshTokenError",
