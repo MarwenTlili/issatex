@@ -28,7 +28,7 @@ error   = @printf "$(RED)❌ $(1)$(RESET)\n"
 	build build-no-cache build-prod build-prod-% build-prod-no-cache-% \
 	up test-db-init test-php up-prod \
 	create-admin-prod \
-	regenerate-jwt-keypair copy-cert logs php pwa \
+	regenerate-jwt-keypair logs php pwa \
 	down down-v down-prod
 
 ###############################################################################
