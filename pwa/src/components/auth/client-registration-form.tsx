@@ -2,12 +2,14 @@
 
 import type React from "react";
 import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FactoryIcon as Fabric } from "lucide-react";
-
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -17,35 +19,27 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+
 import {
   CategoryTextileValues,
   FocusMarcheValues,
   TailleEntrepriseValues,
   TypeEntrepriseValues,
 } from "@/types/resources/Client";
-import { useRegisterClient } from "@/hooks/use-registration";
+import { useRegisterClient } from "@/hooks/use-register-client";
 import {
   RegistrationFormData,
   registrationFormSchema,
 } from "@/lib/validation/schemas";
-import { toast } from "sonner";
-import {
-  extractFormErrors,
-  handleApiError,
-  isApiError,
-  isValidationError,
-} from "@/lib/api/handle-api-error";
-
+import { handleFormSubmitError } from "@/lib/api/handle-api-error";
 import { TermsOfUseModal } from "@/components/modals/terms-of-use";
 import { PrivacyPolicyModal } from "@/components/modals/privacy-policy";
-import { cn } from "@/lib/utils";
-import { RHFInput } from "../form/RHFInput";
-import { RHFSelect } from "../form/RHFSelect";
-import { RHFRadioGroup } from "../form/RHFRadioGroup";
-import { RHFCheckboxGroup } from "../form/RHFCheckboxGroup";
+import { RHFInput } from "@/components/form/RHFInput";
+import { RHFSelect } from "@/components/form/RHFSelect";
+import { RHFRadioGroup } from "@/components/form/RHFRadioGroup";
+import { RHFCheckboxGroup } from "@/components/form/RHFCheckboxGroup";
 
 export function ClientRegistrationForm() {
   const registration = useRegisterClient();
@@ -56,7 +50,7 @@ export function ClientRegistrationForm() {
     control,
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setError,
   } = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationFormSchema),
@@ -68,38 +62,12 @@ export function ClientRegistrationForm() {
   });
 
   const onSubmit = async (data: RegistrationFormData) => {
-    if (registration.isLoading) return;
     try {
       const response = await registration.mutateAsync(data);
       toast.success(response.message);
       router.replace("/login");
-    } catch (err: unknown) {
-      if (!isApiError(err)) {
-        throw err;
-      }
-
-      if (isValidationError(err)) {
-        const formErrors = extractFormErrors(err);
-
-        Object.entries(formErrors).forEach(([field, message], index) => {
-          setError(
-            field as keyof RegistrationFormData,
-            {
-              type: "api",
-              message,
-            },
-            {
-              shouldFocus: index === 0,
-            },
-          );
-        });
-
-        return;
-      }
-
-      handleApiError(err, {
-        customMessage: "Erreur lors de l'enregistrement de l'utilisateur",
-      });
+    } catch (error) {
+      handleFormSubmitError<RegistrationFormData>(error, setError);
     }
   };
 
@@ -410,11 +378,9 @@ export function ClientRegistrationForm() {
             type="submit"
             form="registrationForm"
             className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white"
-            disabled={registration.isLoading}
+            disabled={isSubmitting}
           >
-            {registration.isLoading
-              ? "Soumission..."
-              : "Complétez l'inscription"}
+            {isSubmitting ? "Soumission..." : "Complétez l'inscription"}
           </Button>
         </CardFooter>
       </Card>

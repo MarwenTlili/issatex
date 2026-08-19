@@ -1,4 +1,4 @@
-import { ApiService, apiRequest, buildQueryParams } from "./base";
+import { ApiService, apiRequest } from "@/lib/api/base";
 import type {
   Article,
   ArticlesFilters,
@@ -6,6 +6,7 @@ import type {
   UpdateArticleData,
 } from "@/types/resources/Article";
 import type { ApiCollection } from "@/types/resources/ApiCollection";
+import { buildQueryParams } from "@/lib/utils";
 import { API_ENDPOINTS } from "@/config/api";
 
 class ArticlesApiService extends ApiService<
@@ -18,8 +19,8 @@ class ArticlesApiService extends ApiService<
   }
 
   async getAllByClientId(
-    clientId: number,
-    filters: ArticlesFilters = {}
+    clientId: number | undefined,
+    filters: ArticlesFilters = {},
   ): Promise<ApiCollection<Article>> {
     const params = buildQueryParams({
       client: clientId,
@@ -27,7 +28,7 @@ class ArticlesApiService extends ApiService<
     });
 
     return apiRequest<ApiCollection<Article>>(
-      `${API_ENDPOINTS.ARTICLES}?${params}`
+      `${API_ENDPOINTS.ARTICLES}?${params}`,
     );
   }
 }

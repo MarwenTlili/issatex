@@ -32,7 +32,7 @@ services:
       API_PLATFORM_CREATE_CLIENT_OUTPUT: .
       # On Linux, you may want to comment the following line for improved performance
       # WATCHPACK_POLLING: "true"
-      NODE_TLS_REJECT_UNAUTHORIZED: 1
+      NODE_TLS_REJECT_UNAUTHORIZED: 0
     healthcheck:
       test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/api/health || exit 1" ]
       start_period: 15s

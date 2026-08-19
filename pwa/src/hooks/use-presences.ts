@@ -1,20 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { presencesApi } from "@/lib/api/presences-api";
-import { QUERY_KEYS, CACHE_CONFIG } from "@/config/cache";
-import { ApiError, handleApiError } from "@/lib/api/handle-api-error";
+import { toast } from "sonner";
+
 import type {
   PresencesFilters,
   CreatePresenceData,
   UpdatePresenceData,
 } from "@/types/resources/Presence";
-import { toast } from "sonner";
+import { presencesApi } from "@/lib/api/presences-api";
+
+import { QUERY_KEYS, CACHE_CONFIG } from "@/config/cache";
 
 export const usePresences = (filters: PresencesFilters = {}) => {
   return useQuery({
     queryKey: [QUERY_KEYS.PRESENCES, filters],
     queryFn: () => presencesApi.getAll({ ...filters }),
     staleTime: CACHE_CONFIG.STALE_TIME,
-    onError: (err) => handleApiError(err as ApiError),
   });
 };
 
@@ -24,7 +24,6 @@ export const usePresence = (identifier?: string | number) => {
     queryFn: () => presencesApi.getOne(identifier!),
     staleTime: CACHE_CONFIG.STALE_TIME,
     enabled: !!identifier,
-    onError: (err) => handleApiError(err as ApiError),
   });
 };
 
@@ -36,10 +35,6 @@ export const useCreatePresence = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRESENCES] });
       toast.success("Présence créée avec succès");
-    },
-    onError: (err) => {
-      handleApiError(err as ApiError);
-      toast.error("Erreur lors de la création de la présence");
     },
   });
 };
@@ -55,10 +50,6 @@ export const useUpdatePresence = () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRESENCE, id] });
       toast.success("Présence mise à jour avec succès");
     },
-    onError: (err) => {
-      handleApiError(err as ApiError);
-      toast.error("Erreur lors de la mise à jour de la présence");
-    },
   });
 };
 
@@ -70,10 +61,6 @@ export const useDeletePresence = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.PRESENCES] });
       toast.success("Présence supprimée avec succès");
-    },
-    onError: (err) => {
-      handleApiError(err as ApiError);
-      toast.error("Erreur lors de la suppression de la présence");
     },
   });
 };

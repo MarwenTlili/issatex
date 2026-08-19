@@ -1,7 +1,8 @@
 import type React from "react";
 
-import Providers from "@/app/providers";
 import { Toaster } from "sonner";
+
+import Providers from "@/app/providers";
 
 export default function MainLayout({
   children,

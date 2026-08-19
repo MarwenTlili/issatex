@@ -1,7 +1,8 @@
-import Header from "@/components/header";
-import Providers from "../providers";
-import Footer from "@/components/footer";
+import Header from "@/components/common/header";
+import Footer from "@/components/common/footer";
 import { Toaster } from "@/components/ui/sonner";
+
+import Providers from "@/app/providers";
 
 export default function SecretaryLayout({
   children,

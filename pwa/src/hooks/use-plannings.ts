@@ -1,8 +1,9 @@
-import { QUERY_KEYS } from "@/config/cache";
-import { ApiError, handleApiError } from "@/lib/api/handle-api-error";
+import { useQuery } from "@tanstack/react-query";
+
 import { planningsApi } from "@/lib/api/plannings-api";
 import { PlanningsFilters } from "@/types/resources/Planning";
-import { useQuery } from "@tanstack/react-query";
+
+import { QUERY_KEYS } from "@/config/cache";
 
 export const usePlannings = (filters: PlanningsFilters = {}) => {
   return useQuery({
@@ -10,6 +11,5 @@ export const usePlannings = (filters: PlanningsFilters = {}) => {
     queryFn: () => {
       return planningsApi.getAll({ ...filters });
     },
-    onError: (err) => handleApiError(err as ApiError),
   });
 };

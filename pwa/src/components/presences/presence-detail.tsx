@@ -1,17 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   Edit,
@@ -21,36 +13,33 @@ import {
   MapPin,
   Calendar,
 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { ErrorState } from "@/components/common/error-state";
+
 import { usePresence, useDeletePresence } from "@/hooks/use-presences";
-import { useState } from "react";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { isApiError, getErrorMessage } from "@/lib/api/handle-api-error";
-import { PRESENCE_STATUT } from "@/types/resources/Presence";
-import { APP_ROUTES } from "@/config/app";
 import { formatDate, formatDecimalHours, formatTime } from "@/lib/utils/date";
 import { PresenceStatutBadge } from "./PresenceStatutBadge";
+
+import { APP_ROUTES } from "@/config/app";
+import { handleApiError } from "@/lib/api/handle-api-error";
 
 interface PresenceDetailsProps {
   id: number;
 }
 
-const STATUT_COLORS = {
-  Present: "bg-green-100 text-green-800 border-green-200",
-  Absent: "bg-red-100 text-red-800 border-red-200",
-  Retard: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  Conge: "bg-blue-100 text-blue-800 border-blue-200",
-} as const;
-
-const STATUT_LABELS = {
-  Present: "Présent",
-  Absent: "Absent",
-  Retard: "Retard",
-  Conge: "Congé",
-} as const;
-
 export function PresenceDetails({ id }: PresenceDetailsProps) {
   const router = useRouter();
-  const { data: presence, isLoading, error } = usePresence(id);
+  const { data: presence, isLoading, refetch, error } = usePresence(id);
   const deletePresence = useDeletePresence();
   const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
   const [dialogData, setDialogData] = useState<{
@@ -71,12 +60,7 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
           setOpenConfirmDialog(false);
           router.push(APP_ROUTES.SECRETAIRE.PRESENCES);
         } catch (error) {
-          if (
-            isApiError(error) &&
-            ((error.status && error.status >= 500) || !error.status)
-          ) {
-            throw new Error(error.title || error.detail || "Server error");
-          }
+          handleApiError(error, "La présence ne peut pa être supprimer.");
           setOpenConfirmDialog(false);
         }
       },
@@ -95,32 +79,13 @@ export function PresenceDetails({ id }: PresenceDetailsProps) {
   }
 
   if (error || !presence) {
-    const message = isApiError(error)
-      ? getErrorMessage(error)
-      : (error as Error)?.message ?? "Erreur inconnue";
-
-    if (
-      isApiError(error) &&
-      ((error.status && error.status >= 500) || !error.status)
-    ) {
-      throw new Error(error.title || error.detail || "Server error");
-    }
-
     return (
-      <Card className="mx-4 sm:mx-0">
-        <CardContent className="p-4 sm:p-6">
-          <div className="text-center text-red-600 text-sm sm:text-base">
-            {message}
-          </div>
-          <div className="flex justify-center mt-4">
-            <Button asChild className="w-full sm:w-auto">
-              <Link href={APP_ROUTES.SECRETAIRE.PRESENCES}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux présences
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <ErrorState
+        error={error}
+        onRetry={refetch}
+        backUrl={APP_ROUTES.CLIENT.ARTICLES}
+        backLabel="Retour aux articles"
+      />
     );
   }
 

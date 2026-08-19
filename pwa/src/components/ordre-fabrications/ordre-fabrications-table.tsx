@@ -2,9 +2,15 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { ErrorState } from "@/components/common/error-state";
+
 import {
   useOrdreFabrications,
   useDeleteOrdreFabrication,
@@ -13,9 +19,10 @@ import { OrdreFabricationFilters } from "@/types/resources/OrdreFabrication";
 import { OrdreFabricationsTableFilters } from "./ordre-fabrications-table-filters";
 import { OrdreFabricationsTableContent } from "./ordre-fabrications-table-content";
 import { OrdreFabricationsTablePagination } from "./ordre-fabrications-table-pagination";
-import { ConfirmDialog } from "@/components/confirm-dialog";
+
+import { handleApiError } from "@/lib/api/handle-api-error";
+
 import { APP_ROUTES, MESSAGES } from "@/config/app";
-import { isApiError } from "@/lib/api/handle-api-error";
 
 export function OrdreFabricationsTable() {
   const [filters, setFilters] = useState<OrdreFabricationFilters>({
@@ -27,6 +34,7 @@ export function OrdreFabricationsTable() {
   const {
     data: ordreFabricationsResponse,
     isLoading,
+    refetch,
     error,
   } = useOrdreFabrications(filters);
   const deleteOrdreFabrication = useDeleteOrdreFabrication();
@@ -48,7 +56,7 @@ export function OrdreFabricationsTable() {
         page: "page" in newFilters ? newFilters.page : 1,
       }));
     },
-    []
+    [],
   );
 
   const handleSort = useCallback((field: "ref" | "dateCreation" | "statut") => {
@@ -74,47 +82,33 @@ export function OrdreFabricationsTable() {
             await deleteOrdreFabrication.mutateAsync(id);
             setOpenConfirmDialog(false);
           } catch (error) {
-            if (
-              isApiError(error) &&
-              ((error.status && error.status >= 500) || !error.status)
-            ) {
-              throw new Error(error.title || error.detail || "Server error");
-            }
+            handleApiError(error);
             setOpenConfirmDialog(false);
           }
         },
       });
       setOpenConfirmDialog(true);
     },
-    [deleteOrdreFabrication]
+    [deleteOrdreFabrication],
   );
 
   const handlePageChange = useCallback(
     (newPage: number) => {
       handleFilterChange({ page: newPage });
     },
-    [handleFilterChange]
+    [handleFilterChange],
   );
-
-  if (error) {
-    return (
-      <Card className="mx-4 sm:mx-0">
-        <CardContent className="p-4 sm:p-6">
-          <div className="text-center text-red-600 text-sm sm:text-base">
-            Error loading ordre fabrications:{" "}
-            {error instanceof Error ? error.message : "Unknown error occurred"}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
 
   const totalItems = ordreFabricationsResponse?.totalItems || 0;
 
+  if (error) {
+    return <ErrorState error={error} onRetry={refetch} />;
+  }
+
   return (
-    <Card className="mx-4 sm:mx-0">
+    <Card>
       <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 p-4 sm:p-6">
-        <CardTitle className="text-xl sm:text-2xl">Tout les ordres</CardTitle>
+        <CardTitle className="text-xl sm:text-2xl">Liste des ordres</CardTitle>
         <Button asChild className="w-full sm:w-auto">
           <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_NEW}>
             <Plus className="mr-2 h-4 w-4" /> Nouveau

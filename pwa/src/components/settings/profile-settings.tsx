@@ -1,27 +1,12 @@
 "use client";
 
 import type React from "react";
-
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+
 import { signOut, useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCurrentUser, useUpdateUser } from "@/hooks/use-current-user";
-import { uploadAvatar } from "@/lib/api/avatars-api";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FormField } from "@/components/ui/form-field";
+import { toast } from "sonner";
 import {
   User,
   Mail,
@@ -34,7 +19,26 @@ import {
   Eye,
   Lock,
 } from "lucide-react";
-import { toast } from "sonner";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { FormField } from "@/components/ui/form-field";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useCurrentUser, useUpdateUser } from "@/hooks/use-current-user";
+import { uploadAvatar } from "@/lib/api/avatars-api";
+
 import { API_CONFIG } from "@/config/api";
 import {
   PasswordChangeFormData,
@@ -43,16 +47,12 @@ import {
   userSchema,
 } from "@/lib/validation/schemas";
 import {
-  type ApiError,
-  handleApiError,
-  extractFormErrors,
-  isValidationError,
   type FormErrors,
+  handleFormSubmitError,
 } from "@/lib/api/handle-api-error";
-import { useRouter } from "next/navigation";
 
 export function ProfileSettings() {
-  const { data: session, update: updateSession } = useSession();
+  const { update: updateSession } = useSession();
   const { data: user, isLoading } = useCurrentUser();
   const updateUser = useUpdateUser();
   const router = useRouter();
@@ -226,39 +226,16 @@ export function ProfileSettings() {
 
       // if username was changed → disconnect
       if (oldUsername && oldUsername !== data.username) {
-        // toast.info(
-        //   "Votre nom d'utilisateur a changé. Veuillez vous reconnecter."
-        // );
         signOut({ redirect: false }).then(() => {
-          router.push("/login"); // or your login page
+          router.push("/login");
         });
       }
     } catch (error) {
-      const apiError = error as ApiError;
-
-      if (isValidationError(apiError)) {
-        const formErrors = extractFormErrors(apiError);
-        setApiErrors(formErrors);
-
-        // Set form errors for react-hook-form
-        Object.entries(formErrors).forEach(([field, message]) => {
-          setError(field as keyof UserFormData, {
-            type: "api",
-            message,
-          });
-        });
-      } else {
-        if ((apiError.status && apiError.status >= 500) || !apiError.status) {
-          // Server errors or network errors should trigger error boundary
-          throw new Error(apiError.title || apiError.detail || "Server error");
-        } else {
-          // Handle client errors (4xx) with toast
-          handleApiError(apiError, {
-            customMessage:
-              "Impossible de mettre à jour le profil. Vérifiez vos données.",
-          });
-        }
-      }
+      handleFormSubmitError<UserFormData>(
+        error,
+        setError,
+        "Impossible de mettre à jour le profil. Vérifiez vos données.",
+      );
     }
   };
 
@@ -277,31 +254,11 @@ export function ProfileSettings() {
         router.push("/login");
       });
     } catch (error) {
-      const apiError = error as ApiError;
-
-      if (isValidationError(apiError)) {
-        const formErrors = extractFormErrors(apiError);
-        setPasswordApiErrors(formErrors);
-
-        // Set form errors for react-hook-form
-        Object.entries(formErrors).forEach(([field, message]) => {
-          setPasswordError(field as keyof PasswordChangeFormData, {
-            type: "api",
-            message,
-          });
-        });
-      } else {
-        if ((apiError.status && apiError.status >= 500) || !apiError.status) {
-          // Server errors or network errors should trigger error boundary
-          throw new Error(apiError.title || apiError.detail || "Server error");
-        } else {
-          // Handle client errors (4xx) with toast
-          handleApiError(apiError, {
-            customMessage:
-              "Impossible de modifier le mot de passe. Vérifiez vos données.",
-          });
-        }
-      }
+      handleFormSubmitError<PasswordChangeFormData>(
+        error,
+        setPasswordError,
+        "Impossible de modifier le mot de passe. Vérifiez vos données.",
+      );
     }
   };
 

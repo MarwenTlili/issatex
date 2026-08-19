@@ -28,7 +28,7 @@ error   = @printf "$(RED)❌ $(1)$(RESET)\n"
 	build build-no-cache build-prod build-prod-% build-prod-no-cache-% \
 	up test-db-init test-php up-prod \
 	create-admin-prod \
-	regenerate-jwt-keypair copy-cert logs php pwa \
+	regenerate-jwt-keypair logs php pwa \
 	down down-v down-prod
 
 ###############################################################################
@@ -112,7 +112,16 @@ install-caddy-root-ca:
 	./api/scripts/install-caddy-root-ca.sh 
 
 logs:
-	$(COMPOSE) logs -f
+	$(COMPOSE) logs -f -n 1000
+
+logs-php:
+	$(COMPOSE) logs php -f -n 1000
+
+logs-pwa:
+	$(COMPOSE) logs pwa -f -n 1000
+
+logs-database:
+	$(COMPOSE) logs database -f -n 1000
 
 php:
 	$(COMPOSE) exec $(PHP) bash

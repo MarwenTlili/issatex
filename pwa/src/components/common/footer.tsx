@@ -4,7 +4,7 @@ import type React from "react";
 
 import Link from "next/link";
 import { FactoryIcon } from "lucide-react";
-import { ScrollToTop } from "./ui/scroll-to-top";
+import { ScrollToTop } from "../ui/scroll-to-top";
 
 export default function Footer() {
   return (

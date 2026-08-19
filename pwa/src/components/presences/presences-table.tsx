@@ -3,16 +3,24 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 
+import { Plus } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { ErrorState } from "@/components/common/error-state";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+
 import { usePresences, useDeletePresence } from "@/hooks/use-presences";
-import type { PresenceFieldOrder, PresencesFilters } from "@/types/resources/Presence";
+import type {
+  PresenceFieldOrder,
+  PresencesFilters,
+} from "@/types/resources/Presence";
 import { PresencesTableContent } from "./presences-table-content";
 import { PresencesTableFilters } from "./presences-table-filters";
 import { PresencesTablePagination } from "./presences-table-pagination";
-import { Plus } from "lucide-react";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { getErrorMessage, isApiError } from "@/lib/api/handle-api-error";
+import { handleApiError } from "@/lib/api/handle-api-error";
+
 import { APP_ROUTES, PAGINATION } from "@/config/app";
 
 export function PresencesTable() {
@@ -21,7 +29,12 @@ export function PresencesTable() {
     itemsPerPage: PAGINATION.DEFAULT_PAGE_SIZE,
     order: { datePresence: "desc" },
   });
-  const { data: presencesCollection, isLoading, error } = usePresences(filters);
+  const {
+    data: presencesCollection,
+    isLoading,
+    refetch,
+    error,
+  } = usePresences(filters);
   const deletePresence = useDeletePresence();
   const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
   const [dialogData, setDialogData] = useState<{
@@ -39,7 +52,7 @@ export function PresencesTable() {
         page: "page" in newFilters ? newFilters.page : PAGINATION.DEFAULT_PAGE,
       }));
     },
-    []
+    [],
   );
 
   const handleSort = useCallback((field: PresenceFieldOrder) => {
@@ -65,60 +78,25 @@ export function PresencesTable() {
             await deletePresence.mutateAsync(id);
             setOpenConfirmDialog(false);
           } catch (error) {
-            if (
-              isApiError(error) &&
-              ((error.status && error.status >= 500) || !error.status)
-            ) {
-              throw new Error(error.title || error.detail || "Server error");
-            }
+            handleApiError(error);
             setOpenConfirmDialog(false);
           }
         },
       });
       setOpenConfirmDialog(true);
     },
-    [deletePresence]
+    [deletePresence],
   );
 
   const handlePageChange = useCallback(
     (newPage: number) => {
       handleFilterChange({ page: newPage });
     },
-    [handleFilterChange]
+    [handleFilterChange],
   );
 
   if (error) {
-    const errorMessage = isApiError(error)
-      ? getErrorMessage(error)
-      : error instanceof Error
-      ? error.message
-      : "Une erreur inconnue s'est produite";
-
-    if (
-      isApiError(error) &&
-      ((error.status && error.status >= 500) || !error.status)
-    ) {
-      throw new Error(error.title || error.detail || "Server error");
-    }
-
-    return (
-      <Card className="mx-4 sm:mx-0">
-        <CardContent className="p-4 sm:p-6">
-          <div className="text-center text-red-600 text-sm sm:text-base">
-            Erreur lors du chargement des présences: {errorMessage}
-          </div>
-          <div className="flex justify-center mt-4">
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              Réessayer
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <ErrorState error={error} onRetry={refetch} />;
   }
 
   const totalItems = presencesCollection?.totalItems || 0;

@@ -56,7 +56,10 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[UniqueEntity(fields: ['username'])]
 #[UniqueEntity(fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface {
-    public const USERNAME_REGEX = '/^[a-z0-9_]{3,30}$/';
+    /**
+     * Match format only, delegate length validation to Assert\Length
+     */
+    public const USERNAME_REGEX = '/^[a-z0-9_]+$/';
 
     #[ORM\Id]
     #[ORM\GeneratedValue(strategy: "SEQUENCE")]
@@ -69,12 +72,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     private ?string $ref = null;
 
     #[Assert\NotBlank(groups: ['user:create'])]
-    #[Assert\Length(min: 3, max: 30)]
+    #[Assert\Length(min: 3, max: 30, groups: ['user:create', 'user:update'])]
     #[Groups(['user:read', 'user:create', 'user:update'])]
     #[ORM\Column(length: 30, unique: true)]
     #[Assert\Regex(
         pattern: self::USERNAME_REGEX,
-        message: "Le nom d'utilisateur ne peut contenir que des lettres minuscules, chiffres et underscores (_)."
+        message: "Le nom d'utilisateur ne peut contenir que des lettres minuscules, chiffres et underscores (_).",
+        groups: ['user:create', 'user:update']
     )]
     private ?string $username = null;
 
@@ -91,6 +95,13 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     private ?string $password = null;
 
     #[Assert\NotBlank(groups: ['user:create'])]
+    #[Assert\Length(
+        min: 8,
+        max: 4096,
+        minMessage: "Le mot de passe doit contenir au moins 8 caractères.",
+        maxMessage: "Le mot de passe est trop long.",
+        groups: ['user:create']
+    )]
     #[Groups(['user:create', 'user:update'])]
     private ?string $plainPassword = null;
 
@@ -156,7 +167,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface {
     }
 
     public function setUsername(string $username): static {
-        $this->username = $username;
+        $this->username = $username !== null
+            ? mb_strtolower(trim($username))
+            : null;
 
         return $this;
     }

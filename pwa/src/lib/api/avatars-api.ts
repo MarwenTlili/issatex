@@ -1,6 +1,7 @@
 import { getSession } from "next-auth/react";
 import { ENTRYPOINT } from "@/config/api";
 import type { Avatar } from "@/types/resources/Avatar";
+import { ForbiddenException } from "./exceptions";
 
 /**
  * Upload avatar to the server
@@ -9,7 +10,11 @@ export const uploadAvatar = async (file: File): Promise<Avatar> => {
   const session = await getSession();
 
   if (!session?.accessToken) {
-    throw new Error("Not authenticated");
+    throw new ForbiddenException({
+      status: 403,
+      title: "Forbidden",
+      detail: "You do not have permission to access this resource.",
+    });
   }
 
   const formData = new FormData();

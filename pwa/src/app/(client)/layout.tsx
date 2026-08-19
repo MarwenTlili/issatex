@@ -1,8 +1,10 @@
 import type React from "react";
-import Header from "@/components/header";
-import Providers from "@/app/providers";
-import Footer from "@/components/footer";
+
 import { Toaster } from "@/components/ui/sonner";
+
+import Header from "@/components/common/header";
+import Providers from "@/app/providers";
+import Footer from "@/components/common/footer";
 
 export default function MainLayout({
   children,

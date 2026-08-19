@@ -2,7 +2,6 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\ExistsFilter;
 use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
@@ -18,13 +17,21 @@ use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Post;
 use App\Filter\WithoutOrdreFabricationFilter;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
+#[ORM\UniqueConstraint(name: 'uniq_client_designation', columns: ['client_id', 'designation'])]
+#[UniqueEntity(
+    fields: ['client', 'designation'],
+    message: "Cette valeur est déjà utilisée.",
+    errorPath: 'designation'
+)]
 #[ApiResource(
     mercure: true,
     paginationClientItemsPerPage: true,
+    security: "is_granted('IS_AUTHENTICATED_FULLY')",
     operations: [
         new Post(),
         new Get(),
@@ -54,7 +61,7 @@ class Article {
     #[Groups(['ordreFabrication:read'])]
     private ?string $ref = null;
 
-    #[ORM\Column(length: 255, unique: true)]
+    #[ORM\Column(length: 255)]
     #[Assert\NotBlank]
     #[Groups(['ordreFabrication:read'])]
     private ?string $designation = null;
@@ -66,6 +73,7 @@ class Article {
 
     #[ORM\ManyToOne(inversedBy: 'articles')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Assert\NotNull(message: "Le champ client est obligatoire.")]
     private ?Client $client = null;
 
     /**

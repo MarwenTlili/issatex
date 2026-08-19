@@ -2,7 +2,12 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+
 import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { AlertCircle, ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,8 +26,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { AlertCircle, ArrowLeft, Plus, Trash2 } from "lucide-react";
-import Link from "next/link";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+
+import { ErrorState } from "@/components/common/error-state";
+
 import { useArticles } from "@/hooks/use-articles";
 import {
   useCreateOrdreFabrication,
@@ -34,13 +41,14 @@ import {
   TAILLE_ARTICLE_OPTIONS,
   type TailleArticle,
 } from "@/types/resources/TailleOrdreFabrication";
-import { APP_ROUTES, MESSAGES, PAGINATION } from "@/config/app";
 import {
   ordreFabricationSchema,
   type OrdreFabricationFormData,
 } from "@/lib/validation/schemas";
-import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { handleFormSubmitError } from "@/lib/api/handle-api-error";
+
+import { APP_ROUTES, MESSAGES, PAGINATION } from "@/config/app";
 
 interface OrdreFabricationFormProps {
   ordreFabricationId?: number;
@@ -62,7 +70,17 @@ export function OrdreFabricationForm({
   const router = useRouter();
 
   // React Hook Form setup
-  const form = useForm<OrdreFabricationFormData>({
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    getValues,
+    setValue,
+    setError,
+    formState,
+  } = useForm<OrdreFabricationFormData>({
     resolver: zodResolver(ordreFabricationSchema),
     defaultValues: {
       dateCloture: "",
@@ -76,7 +94,7 @@ export function OrdreFabricationForm({
   });
 
   const { fields, append, remove } = useFieldArray({
-    control: form.control,
+    control: control,
     name: "tailleOFs",
   });
 
@@ -84,6 +102,8 @@ export function OrdreFabricationForm({
     data: ordreFabrication,
     isLoading: isLoadingOF,
     isSuccess: isSuccessOF,
+    refetch,
+    error,
   } = useOrdreFabrication(ordreFabricationId!);
 
   // React Query hooks with optimized configuration
@@ -127,7 +147,7 @@ export function OrdreFabricationForm({
         tailleOFs,
       };
 
-      form.reset(formData);
+      reset(formData);
     }
   }, [
     ordreFabricationId,
@@ -137,11 +157,11 @@ export function OrdreFabricationForm({
     ordreFabrication,
     tailleOFsResponse,
     articlesResponse,
-    form,
+    reset,
   ]);
 
   // Watch tailleOFs to calculate total quantity and check if form should be disabled
-  const watchedTailleOFs = form.watch("tailleOFs");
+  const watchedTailleOFs = watch("tailleOFs");
   const totalQuantity =
     watchedTailleOFs?.reduce(
       (sum, taille) => sum + (taille.quantite || 0),
@@ -159,10 +179,9 @@ export function OrdreFabricationForm({
     isEdit && (isLoadingOF || isLoadingArticles || isLoadingTailles);
 
   // Enhanced form validation
-  const isFormValid =
-    form.formState.isValid && hasTailleOFs && hasValidTailleOFs;
+  const isFormValid = formState.isValid && hasTailleOFs && hasValidTailleOFs;
 
-  const hasChanges = isEdit ? form.formState.isDirty : true;
+  const hasChanges = isEdit ? formState.isDirty : true;
   const canSubmit = isFormValid && hasChanges;
 
   const onSubmit = async (data: OrdreFabricationFormData) => {
@@ -178,18 +197,29 @@ export function OrdreFabricationForm({
           id: ordreFabricationId,
           ...formDataForAPI,
         });
+        toast.success(MESSAGES.SUCCESS.ORDRE_FABRICATION_UPDATED, {
+          description: "Vos modifications ont été enregistrées.",
+        });
       } else {
         await createOrdreFabrication.mutateAsync(formDataForAPI);
+        toast.success(MESSAGES.SUCCESS.ORDRE_FABRICATION_CREATED, {
+          description:
+            "Le nouvel ordre de fabrication a été ajouté à votre collection.",
+        });
       }
       router.push(APP_ROUTES.CLIENT.ORDRE_FABRICATIONS);
     } catch (error) {
-      console.error("Form submission error:", error);
+      handleFormSubmitError<OrdreFabricationFormData>(
+        error,
+        setError,
+        isEdit ? "Impossible de modifier l'OF." : "Impossible d'Ajouter l'OF.",
+      );
     }
   };
 
   // Fixed function to get available sizes for a specific field
   const getAvailableSizes = (currentIndex: number): TailleArticle[] => {
-    const currentFormValues = form.getValues("tailleOFs");
+    const currentFormValues = getValues("tailleOFs");
     const usedSizes = currentFormValues
       .map((item, index) =>
         index !== currentIndex ? item.tailleArticle : null,
@@ -200,7 +230,7 @@ export function OrdreFabricationForm({
   };
 
   const addTailleOF = () => {
-    const currentFormValues = form.getValues("tailleOFs");
+    const currentFormValues = getValues("tailleOFs");
     const usedSizes = currentFormValues.map((item) => item.tailleArticle);
     const availableSizes = TAILLE_ARTICLE_OPTIONS.filter(
       (size) => !usedSizes.includes(size),
@@ -216,7 +246,7 @@ export function OrdreFabricationForm({
 
   // Handle size change with proper form update
   const handleSizeChange = (index: number, newSize: TailleArticle) => {
-    form.setValue(`tailleOFs.${index}.tailleArticle`, newSize, {
+    setValue(`tailleOFs.${index}.tailleArticle`, newSize, {
       shouldValidate: true,
       shouldDirty: true,
       shouldTouch: true,
@@ -239,6 +269,16 @@ export function OrdreFabricationForm({
     );
   }
 
+  if (error) {
+    return (
+      <ErrorState
+        error={error}
+        onRetry={refetch}
+        backUrl={APP_ROUTES.CLIENT.ORDRE_FABRICATIONS}
+      />
+    );
+  }
+
   return (
     <Card className="mx-4 sm:mx-0 max-w-4xl">
       <CardHeader>
@@ -246,7 +286,7 @@ export function OrdreFabricationForm({
           {isEdit ? "Edit Ordre Fabrication" : "Create New Ordre Fabrication"}
         </CardTitle>
       </CardHeader>
-      <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <CardContent className="p-4 sm:p-6 space-y-6">
           {/* Article Selection */}
           <div className="space-y-2">
@@ -255,7 +295,7 @@ export function OrdreFabricationForm({
             </Label>
             <Controller
               name="article"
-              control={form.control}
+              control={control}
               rules={{ required: "L'article est obligatoire" }}
               render={({ field }) => (
                 <Select
@@ -267,9 +307,7 @@ export function OrdreFabricationForm({
                 >
                   <SelectTrigger
                     id="article"
-                    className={
-                      form.formState.errors.article ? "border-red-500" : ""
-                    }
+                    className={formState.errors.article ? "border-red-500" : ""}
                   >
                     <SelectValue placeholder="Select an article" />
                   </SelectTrigger>
@@ -283,10 +321,10 @@ export function OrdreFabricationForm({
                 </Select>
               )}
             />
-            {form.formState.errors.article && (
+            {formState.errors.article && (
               <div className="flex items-center gap-1 text-sm text-red-600">
                 <AlertCircle className="h-4 w-4" />
-                {form.formState.errors.article.message}
+                {formState.errors.article.message}
               </div>
             )}
           </div>
@@ -301,7 +339,7 @@ export function OrdreFabricationForm({
                 id="dateCloture"
                 type="date"
                 min={getTomorrowDate()}
-                {...form.register("dateCloture", {
+                {...register("dateCloture", {
                   required: "Date de cloture est requis",
                   validate: (value) => {
                     if (!value) return "Date de cloture est requis";
@@ -315,22 +353,22 @@ export function OrdreFabricationForm({
                   },
                 })}
                 className={`text-sm sm:text-base ${
-                  form.formState.errors.dateCloture ? "border-red-500" : ""
+                  formState.errors.dateCloture ? "border-red-500" : ""
                 }`}
               />
-              {form.formState.errors.dateCloture && (
+              {formState.errors.dateCloture && (
                 <div className="flex items-center gap-1 text-sm text-red-600">
                   <AlertCircle className="h-4 w-4" />
-                  {form.formState.errors.dateCloture.message}
+                  {formState.errors.dateCloture.message}
                 </div>
               )}
             </div>
             <div className="flex items-center space-x-2 pt-6">
               <Checkbox
                 id="urgent"
-                checked={form.watch("urgent") ?? false}
+                checked={watch("urgent") ?? false}
                 onCheckedChange={(checked) =>
-                  form.setValue("urgent", !!checked, {
+                  setValue("urgent", !!checked, {
                     shouldValidate: true,
                     shouldDirty: true,
                     shouldTouch: true,
@@ -354,17 +392,17 @@ export function OrdreFabricationForm({
                 step="0.01"
                 min="0.01"
                 placeholder="0.00"
-                {...form.register("prixUnitaire", {
+                {...register("prixUnitaire", {
                   required: "Le prix unitaire est obligatoire",
                 })}
                 className={`text-sm sm:text-base ${
-                  form.formState.errors.prixUnitaire ? "border-red-500" : ""
+                  formState.errors.prixUnitaire ? "border-red-500" : ""
                 }`}
               />
-              {form.formState.errors.prixUnitaire && (
+              {formState.errors.prixUnitaire && (
                 <div className="flex items-center gap-1 text-sm text-red-600">
                   <AlertCircle className="h-4 w-4" />
-                  {form.formState.errors.prixUnitaire.message}
+                  {formState.errors.prixUnitaire.message}
                 </div>
               )}
             </div>
@@ -377,18 +415,18 @@ export function OrdreFabricationForm({
                 type="number"
                 min="1"
                 placeholder="0"
-                {...form.register("tempsUnitaire", {
+                {...register("tempsUnitaire", {
                   required: "Le temps unitaire est obligatoire",
                   setValueAs: (v) => (v === "" ? undefined : Number(v)),
                 })}
                 className={`text-sm sm:text-base ${
-                  form.formState.errors.tempsUnitaire ? "border-red-500" : ""
+                  formState.errors.tempsUnitaire ? "border-red-500" : ""
                 }`}
               />
-              {form.formState.errors.tempsUnitaire && (
+              {formState.errors.tempsUnitaire && (
                 <div className="flex items-center gap-1 text-sm text-red-600">
                   <AlertCircle className="h-4 w-4" />
-                  {form.formState.errors.tempsUnitaire.message}
+                  {formState.errors.tempsUnitaire.message}
                 </div>
               )}
             </div>
@@ -420,9 +458,7 @@ export function OrdreFabricationForm({
               <div className="space-y-3">
                 {fields.map((field, index) => {
                   const availableSizes = getAvailableSizes(index);
-                  const currentSize = form.watch(
-                    `tailleOFs.${index}.tailleArticle`,
-                  );
+                  const currentSize = watch(`tailleOFs.${index}.tailleArticle`);
 
                   return (
                     <div
@@ -462,7 +498,7 @@ export function OrdreFabricationForm({
                         <Input
                           type="number"
                           placeholder="0"
-                          {...form.register(`tailleOFs.${index}.quantite`, {
+                          {...register(`tailleOFs.${index}.quantite`, {
                             setValueAs: (v) =>
                               v === "" ? undefined : Number(v),
                           })}
@@ -482,10 +518,10 @@ export function OrdreFabricationForm({
               </div>
             )}
 
-            {form.formState.errors.tailleOFs && (
+            {formState.errors.tailleOFs && (
               <div className="flex items-center gap-1 text-sm text-red-600">
                 <AlertCircle className="h-4 w-4" />
-                {form.formState.errors.tailleOFs.message ||
+                {formState.errors.tailleOFs.message ||
                   "Au moins une configuration de taille est requise"}
               </div>
             )}

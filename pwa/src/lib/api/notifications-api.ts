@@ -2,10 +2,11 @@ import type {
   Notification,
   NotificationFilters,
 } from "@/types/resources/Notification";
-import { apiRequest, ApiService, buildQueryParams } from "./base";
+import { apiRequest, ApiService } from "./base";
 import { ApiCollection } from "@/types/resources/ApiCollection";
 
 import { API_ENDPOINTS } from "@/config/api";
+import { buildQueryParams } from "@/lib/utils";
 
 class NotificationsApiService extends ApiService<Notification> {
   constructor() {
@@ -13,8 +14,8 @@ class NotificationsApiService extends ApiService<Notification> {
   }
 
   async getAllByAccountId(
-    accountId: number,
-    filters: NotificationFilters = {}
+    accountId?: number,
+    filters: NotificationFilters = {},
   ): Promise<ApiCollection<Notification>> {
     const params = buildQueryParams({
       account: accountId,
@@ -22,7 +23,7 @@ class NotificationsApiService extends ApiService<Notification> {
     });
 
     return apiRequest<ApiCollection<Notification>>(
-      `${API_ENDPOINTS.NOTIFICATIONS}?${params}`
+      `${API_ENDPOINTS.NOTIFICATIONS}?${params}`,
     );
   }
 
@@ -42,7 +43,7 @@ class NotificationsApiService extends ApiService<Notification> {
     await Promise.all(
       notifications
         .filter((n) => !n.lu)
-        .map((n) => notificationsApi.markAsRead(n.id))
+        .map((n) => notificationsApi.markAsRead(n.id)),
     );
   }
 

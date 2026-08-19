@@ -1,9 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,8 +27,9 @@ import {
 } from "@/components/ui/select";
 import { FormField } from "@/components/ui/form-field";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
+
+import { ErrorState } from "@/components/common/error-state";
+
 import {
   usePresence,
   useCreatePresence,
@@ -31,14 +37,7 @@ import {
 } from "@/hooks/use-presences";
 import { useIlots } from "@/hooks/use-ilots";
 import { PRESENCE_STATUT } from "@/types/resources/Presence";
-import {
-  type ApiError,
-  handleApiError,
-  extractFormErrors,
-  isValidationError,
-  type FormErrors,
-} from "@/lib/api/handle-api-error";
-import { APP_ROUTES } from "@/config/app";
+import { handleFormSubmitError } from "@/lib/api/handle-api-error";
 import {
   diffHours,
   formatDate,
@@ -48,6 +47,8 @@ import {
 import { PresenceFormData, presenceSchema } from "@/lib/validation/schemas";
 import { useAffectationEmployeIlot } from "@/hooks/use-affectation-employe-ilot";
 
+import { APP_ROUTES, MESSAGES } from "@/config/app";
+
 interface PresenceFormProps {
   presenceId?: number;
 }
@@ -55,7 +56,6 @@ interface PresenceFormProps {
 export function PresenceForm({ presenceId }: PresenceFormProps) {
   const isEdit = !!presenceId;
   const router = useRouter();
-  const [apiErrors, setApiErrors] = useState<FormErrors>({});
 
   const {
     register,
@@ -82,8 +82,12 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
   const heureDebut = useWatch({ control, name: "heureDebut" });
   const heureFin = useWatch({ control, name: "heureFin" });
 
-  const { data: presence, isLoading: isLoadingPresence } =
-    usePresence(presenceId);
+  const {
+    data: presence,
+    isLoading: isLoadingPresence,
+    refetch,
+    error,
+  } = usePresence(presenceId);
   const { data: ilotsData, isLoading: isLoadingIlots } = useIlots();
 
   const createPresence = useCreatePresence();
@@ -148,8 +152,6 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
 
   const onSubmit = async (data: PresenceFormData) => {
     try {
-      setApiErrors({});
-
       // remove tempsPresenceText (UI only)
       const { tempsPresenceText, ...payload } = data;
 
@@ -161,25 +163,24 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
 
       if (isEdit && presenceId) {
         await updatePresence.mutateAsync({ id: presenceId, ...payload });
+        toast.success(MESSAGES.SUCCESS.PRESENCE_CREATED, {
+          description: "La nouvel présence a été ajouté à votre collection.",
+        });
       } else {
         await createPresence.mutateAsync(payload);
+        toast.success(MESSAGES.SUCCESS.PRESENCE_UPDATED, {
+          description: "Vos modifications ont été enregistrées.",
+        });
       }
       router.push(APP_ROUTES.SECRETAIRE.PRESENCES);
-    } catch (err) {
-      const apiError = err as ApiError;
-      if (isValidationError(apiError)) {
-        const formErrors = extractFormErrors(apiError);
-        setApiErrors(formErrors);
-        Object.entries(formErrors).forEach(([field, message]) => {
-          setError(field as keyof PresenceFormData, { type: "api", message });
-        });
-      } else {
-        handleApiError(apiError, {
-          customMessage: isEdit
-            ? "Impossible de modifier la présence."
-            : "Impossible de créer la présence.",
-        });
-      }
+    } catch (error) {
+      handleFormSubmitError<PresenceFormData>(
+        error,
+        setError,
+        isEdit
+          ? "Impossible de modifier la présence."
+          : "Impossible de créer la présence.",
+      );
     }
   };
 
@@ -198,6 +199,17 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
 
   const ilots = ilotsData?.member ?? [];
 
+  if (error) {
+    return (
+      <ErrorState
+        error={error}
+        onRetry={refetch}
+        backUrl={APP_ROUTES.SECRETAIRE.PRESENCES}
+        backLabel="Retour aux présences"
+      />
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -207,12 +219,12 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
       </CardHeader>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
-        <CardContent className="space-y-6">
+        <CardContent className="p-4 sm:p-6 space-y-6">
           <div className="grid md:grid-cols-2 gap-6">
             <FormField
               label="Date de présence"
               htmlFor="datePresence"
-              error={errors.datePresence?.message || apiErrors.datePresence}
+              error={errors.datePresence?.message}
               required
             >
               <Input
@@ -225,7 +237,7 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
             <FormField
               label="Statut"
               htmlFor="statut"
-              error={errors.statut?.message || apiErrors.statut}
+              error={errors.statut?.message}
               required
             >
               <Controller
@@ -246,7 +258,7 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
                           <SelectItem key={value} value={value}>
                             {label}
                           </SelectItem>
-                        )
+                        ),
                       )}
                     </SelectContent>
                   </Select>
@@ -259,7 +271,7 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
             <FormField
               label="Heure de début"
               htmlFor="heureDebut"
-              error={errors.heureDebut?.message || apiErrors.heureDebut}
+              error={errors.heureDebut?.message}
             >
               <Input
                 id="heureDebut"
@@ -273,7 +285,7 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
             <FormField
               label="Heure de fin"
               htmlFor="heureFin"
-              error={errors.heureFin?.message || apiErrors.heureFin}
+              error={errors.heureFin?.message}
             >
               <Input
                 id="heureFin"
@@ -302,7 +314,7 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
               label="Îlot"
               htmlFor="ilot"
               required
-              error={errors.ilot?.message || apiErrors.ilot}
+              error={errors.ilot?.message}
             >
               <Controller
                 name="ilot"
@@ -333,7 +345,7 @@ export function PresenceForm({ presenceId }: PresenceFormProps) {
             <FormField
               label="Employé"
               htmlFor="employe"
-              error={errors.employe?.message || apiErrors.employe}
+              error={errors.employe?.message}
               required
             >
               <Controller

@@ -1,10 +1,18 @@
 "use client";
 
 import { type ReactNode, useState } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SessionProvider } from "next-auth/react";
-import { CACHE_CONFIG } from "@/config/cache";
+import {
+  MutationCache,
+  QueryCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+
 import { SessionGuard } from "@/providers/session-guard";
+import { handleApiError } from "@/lib/api/handle-api-error";
+
+import { CACHE_CONFIG } from "@/config/cache";
 
 // Base providers
 export default function Providers({ children }: { children: ReactNode }) {
@@ -20,7 +28,17 @@ export default function Providers({ children }: { children: ReactNode }) {
             retry: false,
           },
         },
-      })
+        /**
+         * queryCache + mutationCache: v5-compliant
+         * instead of adding onError to each useQuery Hook
+         */
+        queryCache: new QueryCache({
+          onError: (error) => {},
+        }),
+        mutationCache: new MutationCache({
+          onError: (error) => handleApiError(error),
+        }),
+      }),
   );
 
   return (

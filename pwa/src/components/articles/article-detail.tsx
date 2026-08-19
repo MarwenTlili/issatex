@@ -1,9 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+
 import {
   Card,
   CardContent,
@@ -11,12 +14,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Edit, Trash2 } from "lucide-react";
+
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { ErrorState } from "@/components/common/error-state";
+
 import { useArticle, useDeleteArticle } from "@/hooks/use-articles";
-import { useState } from "react";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { isApiError, getErrorMessage } from "@/lib/api/handle-api-error";
+import { handleApiError } from "@/lib/api/handle-api-error";
+
 import { APP_ROUTES, MESSAGES } from "@/config/app";
 
 interface ArticleDetailsProps {
@@ -25,7 +31,7 @@ interface ArticleDetailsProps {
 
 export function ArticleDetails({ id }: ArticleDetailsProps) {
   const router = useRouter();
-  const { data: article, isLoading, error } = useArticle(id);
+  const { data: article, isLoading, refetch, error } = useArticle(id);
   const deleteArticle = useDeleteArticle();
   const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
   const [dialogData, setDialogData] = useState<{
@@ -43,15 +49,11 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
       onConfirm: async () => {
         try {
           await deleteArticle.mutateAsync(id);
+          toast.success("L'article à été supprimer de votre collection.");
           setOpenConfirmDialog(false);
           router.push(APP_ROUTES.CLIENT.ARTICLES);
         } catch (error) {
-          if (
-            isApiError(error) &&
-            ((error.status && error.status >= 500) || !error.status)
-          ) {
-            throw new Error(error.title || error.detail || "Server error");
-          }
+          handleApiError(error, "Article ne peut pa être supprimer.");
           setOpenConfirmDialog(false);
         }
       },
@@ -70,32 +72,13 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
   }
 
   if (error || !article) {
-    const message = isApiError(error)
-      ? getErrorMessage(error)
-      : ((error as Error)?.message ?? "Erreur inconnue");
-
-    if (
-      isApiError(error) &&
-      ((error.status && error.status >= 500) || !error.status)
-    ) {
-      throw new Error(error.title || error.detail || "Server error");
-    }
-
     return (
-      <Card className="mx-4 sm:mx-0">
-        <CardContent className="p-4 sm:p-6">
-          <div className="text-center text-red-600 text-sm sm:text-base">
-            {message}
-          </div>
-          <div className="flex justify-center mt-4">
-            <Button asChild className="w-full sm:w-auto">
-              <Link href={APP_ROUTES.CLIENT.ARTICLES}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Retour aux articles
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <ErrorState
+        error={error}
+        onRetry={refetch}
+        backUrl={APP_ROUTES.CLIENT.ARTICLES}
+        backLabel="Retour aux articles"
+      />
     );
   }
 
@@ -131,7 +114,7 @@ export function ArticleDetails({ id }: ArticleDetailsProps) {
                   <Badge key={index} variant="outline" className="text-xs">
                     <Link
                       href={APP_ROUTES.CLIENT.ORDRE_FABRICATION_DETAIL(
-                        Number(order.split("/").pop()),
+                        Number(order.split("/").pop() ?? 0),
                       )}
                     >
                       {order}
