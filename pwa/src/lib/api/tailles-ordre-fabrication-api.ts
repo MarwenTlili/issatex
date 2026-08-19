@@ -6,9 +6,9 @@ import {
 } from "@/types/resources/TailleOrdreFabrication";
 
 export const taillesOrdreFabricationApi = {
-  getAllByOrdreFabrication: async (ordreFabricationId: string | number) => {
+  getAllByOrdreFabrication: async (ordreFabricationId?: string | number) => {
     return apiRequest<ApiCollection<TailleOrdreFabrication>>(
-      `/api/taille_ordre_fabrications?ordreFabrication=${ordreFabricationId}`
+      `/api/taille_ordre_fabrications?ordreFabrication=${ordreFabricationId}`,
     );
   },
 
@@ -22,7 +22,7 @@ export const taillesOrdreFabricationApi = {
       {
         method: "POST",
         body: JSON.stringify(data),
-      }
+      },
     );
   },
 
@@ -31,14 +31,14 @@ export const taillesOrdreFabricationApi = {
     data: {
       tailleArticle: TailleArticle;
       quantite: number;
-    }
+    },
   ) => {
     return apiRequest<TailleOrdreFabrication>(
       `/api/taille_ordre_fabrications/${id}`,
       {
         method: "PUT",
         body: JSON.stringify(data),
-      }
+      },
     );
   },
 

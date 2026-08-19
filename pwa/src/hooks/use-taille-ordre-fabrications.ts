@@ -1,24 +1,21 @@
-import { QUERY_KEYS } from "@/config/cache";
-import { ApiError, handleApiError } from "@/lib/api/handle-api-error";
-import { taillesOrdreFabricationApi } from "@/lib/api/tailles-ordre-fabrication-api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import { ApiCollection } from "@/types/resources/ApiCollection";
 import {
   TailleArticle,
   TailleOrdreFabrication,
 } from "@/types/resources/TailleOrdreFabrication";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { taillesOrdreFabricationApi } from "@/lib/api/tailles-ordre-fabrication-api";
+
+import { QUERY_KEYS } from "@/config/cache";
 
 export const useTaillesByOrdreFabrication = (identifier?: string | number) => {
   return useQuery<ApiCollection<TailleOrdreFabrication>, Error>({
-    queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION, `${identifier}`],
+    queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION, identifier],
     queryFn: () => {
-      if (!identifier) {
-        throw new Error("Aucun ordre de fabrication avec cette ID");
-      }
       return taillesOrdreFabricationApi.getAllByOrdreFabrication(identifier);
     },
     enabled: !!identifier,
-    onError: (err) => handleApiError(err as ApiError),
   });
 };
 
@@ -38,14 +35,8 @@ export const useCreateTailleOrdreFabrication = () => {
     onSuccess: (_, variables) => {
       const id = variables.ordreFabrication.split("/").pop();
       queryClient.invalidateQueries({
-        queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION, `${id}`],
+        queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION, id],
       });
-    },
-    onError: (error) => {
-      const formErrors = handleApiError(error as ApiError, {
-        showToast: false,
-      });
-      return formErrors;
     },
   });
 };
@@ -69,12 +60,6 @@ export const useUpdateTailleOrdreFabrication = () => {
         queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION],
       });
     },
-    onError: (error) => {
-      const formErrors = handleApiError(error as ApiError, {
-        showToast: false,
-      });
-      return formErrors;
-    },
   });
 };
 
@@ -87,12 +72,6 @@ export const useDeleteTailleOrdreFabrication = () => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.TAILLES_ORDRE_FABRICATION],
       });
-    },
-    onError: (error) => {
-      const formErrors = handleApiError(error as ApiError, {
-        showToast: false,
-      });
-      return formErrors;
     },
   });
 };

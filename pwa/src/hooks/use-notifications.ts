@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
 import type {
   Notification,
   NotificationFilters,
 } from "@/types/resources/Notification";
 import { notificationsApi } from "@/lib/api/notifications-api";
-import { type ApiError, handleApiError } from "@/lib/api/handle-api-error";
-import { QUERY_KEYS } from "@/config/cache";
 import { useCurrentUser } from "./use-current-user";
 import { useMercureNotifications } from "@/mercure/useMercureNotifications";
+
+import { QUERY_KEYS } from "@/config/cache";
 
 export const useNotifications = (filters: NotificationFilters = {}) => {
   const { data: currentUser } = useCurrentUser();
@@ -18,13 +19,9 @@ export const useNotifications = (filters: NotificationFilters = {}) => {
   return useQuery({
     queryKey: [QUERY_KEYS.NOTIFICATIONS, currentUser?.id, filters],
     queryFn: async () => {
-      if (!currentUser?.id) {
-        throw new Error("Aucun utilisteur trouvé");
-      }
       return notificationsApi.getAllByAccountId(currentUser?.id, filters);
     },
     enabled: !!currentUser?.id,
-    onError: (err) => handleApiError(err as ApiError),
   });
 };
 
@@ -38,10 +35,6 @@ export const useMarkNotificationAsRead = () => {
         queryKey: [QUERY_KEYS.NOTIFICATIONS],
       });
     },
-    onError: (error) =>
-      handleApiError(error as ApiError, {
-        customMessage: "Impossible de marquer la notification comme lue.",
-      }),
   });
 };
 
@@ -55,10 +48,6 @@ export const useMarkNotificationAsUnread = () => {
         queryKey: [QUERY_KEYS.NOTIFICATIONS],
       });
     },
-    onError: (error) =>
-      handleApiError(error as ApiError, {
-        customMessage: "Impossible de marquer la notification com non lue.",
-      }),
   });
 };
 
@@ -75,9 +64,5 @@ export const useDeleteNotification = () => {
         exact: false, // with or without filters
       });
     },
-    onError: (error) =>
-      handleApiError(error as ApiError, {
-        customMessage: "Impossible de supprimer la notification.",
-      }),
   });
 };

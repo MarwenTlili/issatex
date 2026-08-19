@@ -1,10 +1,12 @@
 "use client"; // Error boundaries must be Client Components
 
 import { useEffect } from "react";
-import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
 import Link from "next/link";
 
+import { AlertTriangle, ArrowLeft, RefreshCw } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { mapError } from "@/lib/api/handle-api-error";
 
 export default function GlobalError({
   error,
@@ -13,6 +15,8 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const { title, message } = mapError(error);
+
   useEffect(() => {
     // Log the error to an error reporting service
     console.error(error);
@@ -28,7 +32,7 @@ export default function GlobalError({
                 <AlertTriangle className="h-8 w-8 text-red-600 dark:text-red-400" />
               </div>
               <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-50 mb-2">
-                Something went wrong!
+                {title ?? "Something went wrong!"}
               </h1>
               <p className="text-slate-500 dark:text-slate-400 mb-6">
                 We&apos;ve encountered an unexpected error. Our team has been
@@ -37,6 +41,7 @@ export default function GlobalError({
               {error.digest && (
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-md p-3 mb-6">
                   <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                    <p>{message}</p>
                     Error ID: {error.digest}
                   </p>
                 </div>

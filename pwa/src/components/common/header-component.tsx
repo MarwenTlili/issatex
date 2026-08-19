@@ -2,9 +2,12 @@
 
 import { type FC, useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
+import type { Session } from "next-auth";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+
 import {
   ChevronDown,
   Menu,
@@ -14,12 +17,12 @@ import {
   UserPlus,
   FactoryIcon,
 } from "lucide-react";
+
 import { Separator } from "@/components/ui/separator";
-import type { Session } from "next-auth";
-import Image from "next/image";
 import { getNavigationItems, getProfileMenuItems } from "@/config/navigation";
+import { NotificationsDropdown } from "@/components/notifications/notifications-dropdown";
+
 import { API_CONFIG } from "@/config/api";
-import { NotificationsDropdown } from "./notifications/notifications-dropdown";
 
 type SessionStatus = "authenticated" | "unauthenticated";
 

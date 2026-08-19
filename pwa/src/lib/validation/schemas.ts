@@ -1,14 +1,26 @@
-import { VALIDATION } from "@/config/app";
+import { z } from "zod";
+
 import {
   CategoryTextileValues,
   FocusMarcheValues,
   TailleEntrepriseValues,
   TypeEntrepriseValues,
 } from "@/types/resources/Client";
-import { TAILLE_ARTICLE_OPTIONS } from "@/types/resources/TailleOrdreFabrication";
-import { z } from "zod";
 
+import { TAILLE_ARTICLE_OPTIONS } from "@/types/resources/TailleOrdreFabrication";
+import { VALIDATION } from "@/config/app";
+
+// Match format character classes only to keep responsibility segregated
 const USERNAME_REGEX = /^[a-z0-9_]+$/;
+
+const USERNAME_FORMAT_MESSAGE =
+  "Le nom d'utilisateur ne peut contenir que des lettres minuscules, chiffres et underscores (_).";
+
+const USERNAME_MIN_LENGTH = 3;
+const USERNAME_MAX_LENGTH = 30;
+
+const PASSWORD_MIN_LENGTH = 8;
+const PASSWORD_MAX_LENGTH = 4096;
 
 // Base schemas
 const emailSchema = z
@@ -31,7 +43,10 @@ export const articleSchema = z.object({
     ),
   composition: z
     .string()
-    .min(VALIDATION.MIN_LENGTH.COMPOSITION)
+    .min(
+      VALIDATION.MIN_LENGTH.COMPOSITION,
+      `Composition trop courte (min ${VALIDATION.MIN_LENGTH.COMPOSITION}) caractères`,
+    )
     .max(
       VALIDATION.MAX_LENGTH.COMPOSITION,
       `Composition trop longue (max ${VALIDATION.MAX_LENGTH.COMPOSITION} caractères)`,
@@ -198,7 +213,14 @@ export const updateUserSchema = userSchema.partial().extend({
 
 // Login schema
 export const loginFormSchema = z.object({
-  username: z.string().min(1, "Nom d'utilisateur requis"),
+  username: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, "Nom d'utilisateur requis")
+    .regex(USERNAME_REGEX, {
+      message: USERNAME_FORMAT_MESSAGE,
+    }),
   password: z.string().min(1, "Mot de passe requis"),
 });
 export type LoginFormData = z.infer<typeof loginFormSchema>;
@@ -209,16 +231,22 @@ export const registrationFormSchema = z.object({
     .string()
     .trim()
     .toLowerCase()
-    .min(3, { message: "Doit contenir au moins 3 caractères" })
-    .max(30, { message: "Doit contenir au maximum 30 caractères" })
+    .min(USERNAME_MIN_LENGTH, {
+      message: `Doit contenir au moins ${USERNAME_MIN_LENGTH} caractères`,
+    })
+    .max(USERNAME_MAX_LENGTH, {
+      message: `Doit contenir au maximum ${USERNAME_MAX_LENGTH} caractères`,
+    })
     .regex(USERNAME_REGEX, {
-      message:
-        "Le nom d'utilisateur ne peut contenir que des lettres minuscules, chiffres et underscores (_).",
+      message: USERNAME_FORMAT_MESSAGE,
     }),
   email: emailSchema,
   plainPassword: z
     .string()
-    .min(8, { message: "Le mot de passe doit contenir au moins 8 caractères" }),
+    .min(PASSWORD_MIN_LENGTH, {
+      message: `Le mot de passe doit contenir au moins ${PASSWORD_MIN_LENGTH} caractères`,
+    })
+    .max(PASSWORD_MAX_LENGTH, { message: "Le mot de passe est trop long" }), // Linked to security limits in PHP
   nom: z
     .string()
     .trim()

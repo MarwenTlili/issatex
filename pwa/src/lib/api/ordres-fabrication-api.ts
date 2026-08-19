@@ -1,13 +1,15 @@
-import { ApiService, apiRequest, buildQueryParams } from "./base";
-import { API_ENDPOINTS } from "@/config/api";
-import { taillesOrdreFabricationApi } from "./tailles-ordre-fabrication-api";
 import type {
   CreateOrdreFabricationData,
   OrdreFabrication,
   OrdreFabricationFilters,
   UpdateOrdreFabricationData,
 } from "@/types/resources/OrdreFabrication";
+import { ApiService, apiRequest } from "./base";
+import { taillesOrdreFabricationApi } from "./tailles-ordre-fabrication-api";
 import type { ApiCollection } from "@/types/resources/ApiCollection";
+import { buildQueryParams } from "@/lib/utils";
+
+import { API_ENDPOINTS } from "@/config/api";
 
 class OrdresFabricationApiService extends ApiService<
   OrdreFabrication,
@@ -19,8 +21,8 @@ class OrdresFabricationApiService extends ApiService<
   }
 
   async getAllByClientId(
-    clientId: number,
-    filters: OrdreFabricationFilters = {}
+    clientId?: number,
+    filters: OrdreFabricationFilters = {},
   ): Promise<ApiCollection<OrdreFabrication>> {
     const params = buildQueryParams({
       client: clientId,
@@ -28,7 +30,7 @@ class OrdresFabricationApiService extends ApiService<
     });
 
     return apiRequest<ApiCollection<OrdreFabrication>>(
-      `${API_ENDPOINTS.ORDRE_FABRICATIONS}?${params}`
+      `${API_ENDPOINTS.ORDRE_FABRICATIONS}?${params}`,
     );
   }
 
@@ -47,7 +49,7 @@ class OrdresFabricationApiService extends ApiService<
           lance: false,
           client: client,
         }),
-      }
+      },
     );
 
     // Create size configurations
@@ -57,8 +59,8 @@ class OrdresFabricationApiService extends ApiService<
           taillesOrdreFabricationApi.create({
             ...tailleOF,
             ordreFabrication: ordreFabrication["@id"],
-          })
-        )
+          }),
+        ),
       );
     }
 
@@ -67,7 +69,7 @@ class OrdresFabricationApiService extends ApiService<
 
   async update(
     id: number,
-    data: UpdateOrdreFabricationData
+    data: UpdateOrdreFabricationData,
   ): Promise<OrdreFabrication> {
     const { tailleOFs, ...updateData } = data;
 
@@ -78,7 +80,7 @@ class OrdresFabricationApiService extends ApiService<
         method: "PATCH",
         headers: { "Content-Type": "application/merge-patch+json" },
         body: JSON.stringify(updateData),
-      }
+      },
     );
 
     // Update size configurations if provided
@@ -89,8 +91,8 @@ class OrdresFabricationApiService extends ApiService<
       // Delete existing configurations
       await Promise.all(
         existingTailleOFs.member.map((tof) =>
-          taillesOrdreFabricationApi.delete(tof.id)
-        )
+          taillesOrdreFabricationApi.delete(tof.id),
+        ),
       );
 
       // Create new configurations
@@ -100,8 +102,8 @@ class OrdresFabricationApiService extends ApiService<
             taillesOrdreFabricationApi.create({
               ...tailleOF,
               ordreFabrication: ordreFabrication["@id"],
-            })
-          )
+            }),
+          ),
         );
       }
     }

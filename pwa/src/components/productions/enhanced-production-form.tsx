@@ -1,8 +1,18 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  CalendarIcon,
+  Loader2,
+  Target,
+  AlertTriangle,
+  CheckCircle2,
+} from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,14 +33,10 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FormField } from "@/components/ui/form-field";
 
-import {
-  CalendarIcon,
-  Loader2,
-  Target,
-  AlertTriangle,
-  CheckCircle2,
-} from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { RHFInput } from "@/components/form/RHFInput";
+import { ErrorState } from "@/components/common/error-state";
+import { OrderContextPanel } from "@/components/productions/order-context-panel";
+
 import type { Production } from "@/types/resources/Production";
 import {
   productionSchema,
@@ -45,14 +51,9 @@ import {
   useCreateProduction,
   useUpdateProduction,
 } from "@/hooks/use-productions";
-import { OrderContextPanel } from "./order-context-panel";
-import {
-  type ApiError,
-  handleApiError,
-  extractFormErrors,
-  isValidationError,
-  type FormErrors,
-} from "@/lib/api/handle-api-error";
+import { handleFormSubmitError } from "@/lib/api/handle-api-error";
+
+import { MESSAGES } from "@/config/app";
 
 interface EnhancedProductionFormProps {
   planningId: string;
@@ -73,14 +74,11 @@ export function EnhancedProductionForm({
   onSuccess,
   onCancel,
 }: EnhancedProductionFormProps) {
-  const [apiErrors, setApiErrors] = useState<FormErrors>({});
-
   const {
     register,
     handleSubmit,
     reset,
     setError,
-    clearErrors,
     watch,
     setValue,
     formState: { errors, isSubmitting, isDirty, isValid },
@@ -98,8 +96,11 @@ export function EnhancedProductionForm({
   const watchedValues = watch();
 
   const ordreFabricationId = ordreFabricationUri.split("/").pop() || "";
-  const { data: taillesData } =
-    useTaillesByOrdreFabrication(ordreFabricationId);
+  const {
+    data: taillesData,
+    error: taillesError,
+    refetch: refetchTailles,
+  } = useTaillesByOrdreFabrication(ordreFabricationId);
 
   const createMutation = useCreateProduction();
   const updateMutation = useUpdateProduction();
@@ -119,7 +120,8 @@ export function EnhancedProductionForm({
   // Auto-calculate total quantity
   useEffect(() => {
     const total =
-      watchedValues.quantitePremiereChoix + watchedValues.quantiteDeuxiemeChoix;
+      (watchedValues.quantitePremiereChoix || 0) +
+      (watchedValues.quantiteDeuxiemeChoix || 0);
     setValue("quantiteTotale", total);
   }, [
     watchedValues.quantitePremiereChoix,
@@ -127,20 +129,9 @@ export function EnhancedProductionForm({
     setValue,
   ]);
 
-  const handleInputChange = (fieldName: keyof ProductionFormData) => {
-    if (apiErrors[fieldName]) {
-      setApiErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[fieldName];
-        return newErrors;
-      });
-      clearErrors(fieldName);
-    }
-  };
-
   // Get order information for selected size
   const selectedSizeOrder = taillesData?.["member"]?.find(
-    (taille) => taille.tailleArticle === watchedValues.tailleArticle
+    (taille) => taille.tailleArticle === watchedValues.tailleArticle,
   );
 
   // Calculate working days between planning dates
@@ -166,15 +157,12 @@ export function EnhancedProductionForm({
 
   const onSubmit: SubmitHandler<ProductionFormData> = async (data) => {
     try {
-      setApiErrors({});
-
       if (production) {
         await updateMutation.mutateAsync({
           id: production.id.toString(),
           data,
         });
-        toast({
-          title: "Production mise à jour",
+        toast.success(MESSAGES.SUCCESS.PRODUCTION_UPDATED, {
           description: "La production a été mise à jour avec succès.",
         });
       } else {
@@ -182,41 +170,25 @@ export function EnhancedProductionForm({
           ...data,
           planning: `/api/plannings/${planningId}`,
         });
-        toast({
-          title: "Production créée",
+        toast.success(MESSAGES.SUCCESS.PRODUCTION_CREATED, {
           description: "La nouvelle production a été créée avec succès.",
         });
       }
       onSuccess?.();
     } catch (error) {
-      const apiError = error as ApiError;
-
-      if (isValidationError(apiError)) {
-        const formErrors = extractFormErrors(apiError);
-        setApiErrors(formErrors);
-
-        // Set form errors for react-hook-form
-        Object.entries(formErrors).forEach(([field, message]) => {
-          setError(field as keyof ProductionFormData, {
-            type: "api",
-            message,
-          });
-        });
-      } else {
-        if ((apiError.status && apiError.status >= 500) || !apiError.status) {
-          // Server errors or network errors should trigger error boundary
-          throw new Error(apiError.title || apiError.detail || "Server error");
-        } else {
-          // Handle client errors (4xx) with toast
-          handleApiError(apiError, {
-            customMessage: production
-              ? "Impossible de modifier la production. Vérifiez vos données."
-              : "Impossible de créer la production. Vérifiez vos données.",
-          });
-        }
-      }
+      handleFormSubmitError<ProductionFormData>(
+        error,
+        setError,
+        production
+          ? "Impossible de modifier la production. Vérifiez vos données."
+          : "Impossible de créer la production. Vérifiez vos données.",
+      );
     }
   };
+
+  if (taillesError) {
+    return <ErrorState error={taillesError} onRetry={refetchTailles} />;
+  }
 
   const isLoading =
     isSubmitting || createMutation.isLoading || updateMutation.isLoading;
@@ -296,58 +268,38 @@ export function EnhancedProductionForm({
               noValidate
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
+                <RHFInput
                   label="Date de production"
-                  htmlFor="dateProduction"
-                  error={
-                    errors.dateProduction?.message || apiErrors.dateProduction
-                  }
+                  name="dateProduction"
+                  type="date"
+                  register={register}
+                  error={errors.dateProduction}
                   required
-                >
-                  <Input
-                    id="dateProduction"
-                    type="date"
-                    {...register("dateProduction", {
-                      onChange: () => handleInputChange("dateProduction"),
-                    })}
-                    min={dateDebut}
-                    max={dateFin}
-                    className={
-                      errors.dateProduction || apiErrors.dateProduction
-                        ? "border-red-500"
-                        : ""
-                    }
-                  />
-                </FormField>
+                />
 
                 <FormField
                   label="Taille article"
                   htmlFor="tailleArticle"
-                  error={
-                    errors.tailleArticle?.message || apiErrors.tailleArticle
-                  }
+                  error={errors.tailleArticle?.message}
                   required
                 >
                   <Select
                     value={watchedValues.tailleArticle}
                     onValueChange={(value: TailleArticle) => {
-                      setValue("tailleArticle", value);
-                      handleInputChange("tailleArticle");
+                      setValue("tailleArticle", value, {
+                        shouldValidate: true,
+                      });
                     }}
                   >
                     <SelectTrigger
-                      className={
-                        errors.tailleArticle || apiErrors.tailleArticle
-                          ? "border-red-500"
-                          : ""
-                      }
+                      className={errors.tailleArticle ? "border-red-500" : ""}
                     >
                       <SelectValue placeholder="Sélectionner une taille" />
                     </SelectTrigger>
                     <SelectContent>
                       {availableSizes.map((taille) => {
                         const orderInfo = taillesData?.["member"]?.find(
-                          (t) => t.tailleArticle === taille
+                          (t) => t.tailleArticle === taille,
                         );
                         return (
                           <SelectItem key={taille} value={taille}>
@@ -400,59 +352,23 @@ export function EnhancedProductionForm({
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
+                <RHFInput
                   label="Quantité 1er choix"
-                  htmlFor="quantitePremiereChoix"
-                  error={
-                    errors.quantitePremiereChoix?.message ||
-                    apiErrors.quantitePremiereChoix
-                  }
+                  name="quantitePremiereChoix"
+                  type="number"
+                  register={register}
+                  error={errors.quantitePremiereChoix}
                   required
-                >
-                  <Input
-                    id="quantitePremiereChoix"
-                    type="number"
-                    min="0"
-                    {...register("quantitePremiereChoix", {
-                      valueAsNumber: true,
-                      onChange: () =>
-                        handleInputChange("quantitePremiereChoix"),
-                    })}
-                    className={
-                      errors.quantitePremiereChoix ||
-                      apiErrors.quantitePremiereChoix
-                        ? "border-red-500"
-                        : ""
-                    }
-                  />
-                </FormField>
+                />
 
-                <FormField
+                <RHFInput
                   label="Quantité 2ème choix"
-                  htmlFor="quantiteDeuxiemeChoix"
-                  error={
-                    errors.quantiteDeuxiemeChoix?.message ||
-                    apiErrors.quantiteDeuxiemeChoix
-                  }
+                  name="quantiteDeuxiemeChoix"
+                  type="number"
+                  register={register}
+                  error={errors.quantiteDeuxiemeChoix}
                   required
-                >
-                  <Input
-                    id="quantiteDeuxiemeChoix"
-                    type="number"
-                    min="0"
-                    {...register("quantiteDeuxiemeChoix", {
-                      valueAsNumber: true,
-                      onChange: () =>
-                        handleInputChange("quantiteDeuxiemeChoix"),
-                    })}
-                    className={
-                      errors.quantiteDeuxiemeChoix ||
-                      apiErrors.quantiteDeuxiemeChoix
-                        ? "border-red-500"
-                        : ""
-                    }
-                  />
-                </FormField>
+                />
 
                 <div className="space-y-2">
                   <Label htmlFor="quantiteTotale">Quantité totale</Label>
@@ -474,11 +390,12 @@ export function EnhancedProductionForm({
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      const target = dailyTarget;
-                      setValue("quantitePremiereChoix", target);
-                      setValue("quantiteDeuxiemeChoix", 0);
-                      handleInputChange("quantitePremiereChoix");
-                      handleInputChange("quantiteDeuxiemeChoix");
+                      setValue("quantitePremiereChoix", dailyTarget, {
+                        shouldValidate: true,
+                      });
+                      setValue("quantiteDeuxiemeChoix", 0, {
+                        shouldValidate: true,
+                      });
                     }}
                   >
                     Utiliser l&apos;objectif quotidien ({dailyTarget})
@@ -504,7 +421,7 @@ export function EnhancedProductionForm({
                   {isLoading && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  {production ? "Mise à jour" : "Créé"}
+                  {production ? "Mise à jour" : "Créer"}
                 </Button>
               </div>
             </form>

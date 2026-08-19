@@ -1,6 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,11 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  useOrdreFabrication,
-  useDeleteOrdreFabrication,
-} from "@/hooks/use-ordre-fabrications";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Edit,
@@ -25,11 +24,18 @@ import {
   Euro,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+import { ErrorState } from "@/components/common/error-state";
+
+import {
+  useOrdreFabrication,
+  useDeleteOrdreFabrication,
+} from "@/hooks/use-ordre-fabrications";
 import { useTaillesByOrdreFabrication } from "@/hooks/use-taille-ordre-fabrications";
-import { useState } from "react";
-import { ConfirmDialog } from "@/components/confirm-dialog";
+import { handleApiError } from "@/lib/api/handle-api-error";
+
 import { APP_ROUTES, MESSAGES } from "@/config/app";
-import { isApiError } from "@/lib/api/handle-api-error";
 
 interface OrdreFabricationDetailsProps {
   id: number;
@@ -54,7 +60,12 @@ const getStatusColor = (statut: string) => {
 
 export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
   const router = useRouter();
-  const { data: ordreFabrication, isLoading, error } = useOrdreFabrication(id);
+  const {
+    data: ordreFabrication,
+    isLoading,
+    refetch,
+    error,
+  } = useOrdreFabrication(id);
   const { data: tailleOFsResponse } = useTaillesByOrdreFabrication(id);
   const deleteOrdreFabrication = useDeleteOrdreFabrication();
   const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
@@ -74,14 +85,13 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
         try {
           await deleteOrdreFabrication.mutateAsync(id);
           setOpenConfirmDialog(false);
+          toast.success(MESSAGES.SUCCESS.ORDRE_FABRICATION_DELETED, {
+            description:
+              "L'ordre de fabrication a été supprimé de votre collection.",
+          });
           router.push(APP_ROUTES.CLIENT.ORDRE_FABRICATIONS);
         } catch (error) {
-          if (
-            isApiError(error) &&
-            ((error.status && error.status >= 500) || !error.status)
-          ) {
-            throw new Error(error.title || error.detail || "Server error");
-          }
+          handleApiError(error, "L'Ordre ne peut pa être supprimer.");
           setOpenConfirmDialog(false);
         }
       },
@@ -103,27 +113,11 @@ export function OrdreFabricationDetails({ id }: OrdreFabricationDetailsProps) {
 
   if (error || !ordreFabrication) {
     return (
-      <Card className="mx-4 sm:mx-0">
-        <CardContent className="p-4 sm:p-6">
-          <div className="text-center text-red-600 text-sm sm:text-base">
-            {error
-              ? `Error loading ordre fabrication: ${
-                  error instanceof Error
-                    ? error.message
-                    : "Unknown error occurred"
-                }`
-              : "Ordre fabrication not found"}
-          </div>
-          <div className="flex justify-center mt-4">
-            <Button asChild className="w-full sm:w-auto">
-              <Link href={APP_ROUTES.CLIENT.ORDRE_FABRICATIONS}>
-                <ArrowLeft className="mr-2 h-4 w-4" /> Back to Ordre
-                Fabrications
-              </Link>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <ErrorState
+        error={error}
+        onRetry={refetch}
+        backUrl={APP_ROUTES.CLIENT.ORDRE_FABRICATIONS}
+      />
     );
   }
 

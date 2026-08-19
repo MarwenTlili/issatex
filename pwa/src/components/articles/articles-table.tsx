@@ -3,16 +3,22 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+import { ErrorState } from "@/components/common/error-state";
+
 import { useArticles, useDeleteArticle } from "@/hooks/use-articles";
 import type { ArticlesFilters } from "@/types/resources/Article";
 import { ArticlesTableContent } from "./articles-table-content";
 import { ArticlesTableFilters } from "./articles-table-filters";
 import { ArticlesTablePagination } from "./articles-table-pagination";
-import { Plus } from "lucide-react";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import { getErrorMessage, isApiError } from "@/lib/api/handle-api-error";
+import { handleApiError } from "@/lib/api/handle-api-error";
+
 import { APP_ROUTES, MESSAGES, PAGINATION } from "@/config/app";
 
 export function ArticlesTable() {
@@ -21,7 +27,12 @@ export function ArticlesTable() {
     itemsPerPage: PAGINATION.DEFAULT_PAGE_SIZE,
     order: { ref: "desc" },
   });
-  const { data: articlesCollection, isLoading, error } = useArticles(filters);
+  const {
+    data: articlesCollection,
+    isLoading,
+    refetch,
+    error,
+  } = useArticles(filters);
   const deleteArticle = useDeleteArticle();
   const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
   const [dialogData, setDialogData] = useState<{
@@ -39,7 +50,7 @@ export function ArticlesTable() {
         page: "page" in newFilters ? newFilters.page : PAGINATION.DEFAULT_PAGE,
       }));
     },
-    []
+    [],
   );
 
   const handleSort = useCallback((field: "ref" | "designation") => {
@@ -63,76 +74,42 @@ export function ArticlesTable() {
         onConfirm: async () => {
           try {
             await deleteArticle.mutateAsync(id);
+            toast.success("L'article à été supprimer de votre collection.");
             setOpenConfirmDialog(false);
           } catch (error) {
-            if (
-              isApiError(error) &&
-              ((error.status && error.status >= 500) || !error.status)
-            ) {
-              throw new Error(error.title || error.detail || "Server error");
-            }
+            handleApiError(error);
             setOpenConfirmDialog(false);
           }
         },
       });
       setOpenConfirmDialog(true);
     },
-    [deleteArticle]
+    [deleteArticle],
   );
 
   const handlePageChange = useCallback(
     (newPage: number) => {
       handleFilterChange({ page: newPage });
     },
-    [handleFilterChange]
+    [handleFilterChange],
   );
 
-  if (error) {
-    const errorMessage = isApiError(error)
-      ? getErrorMessage(error)
-      : error instanceof Error
-      ? error.message
-      : "Une erreur inconnue s'est produite";
-
-    if (
-      isApiError(error) &&
-      ((error.status && error.status >= 500) || !error.status)
-    ) {
-      throw new Error(error.title || error.detail || "Server error");
-    }
-
-    return (
-      <Card className="mx-4 sm:mx-0">
-        <CardContent className="p-4 sm:p-6">
-          <div className="text-center text-red-600 text-sm sm:text-base">
-            Erreur lors du chargement des articles: {errorMessage}
-          </div>
-          <div className="flex justify-center mt-4">
-            <Button
-              onClick={() => window.location.reload()}
-              variant="outline"
-              className="w-full sm:w-auto"
-            >
-              Réessayer
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const totalItems = articlesCollection?.totalItems || 0;
+
+  if (error) {
+    return <ErrorState error={error} onRetry={refetch} />;
+  }
 
   return (
     <div>
       <Card>
         <CardHeader className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0 p-4 sm:p-6">
           <CardTitle className="text-xl sm:text-2xl">
-            List des Articles
+            Liste des Articles
           </CardTitle>
           <Button asChild className="w-full sm:w-auto">
             <Link href={APP_ROUTES.CLIENT.ARTICLE_NEW}>
-              <Plus className="mr-2 h-4 w-4" /> Ajout Article
+              <Plus className="mr-2 h-4 w-4" /> Nouveau
             </Link>
           </Button>
         </CardHeader>
@@ -141,7 +118,6 @@ export function ArticlesTable() {
             filters={filters}
             onFilterChange={handleFilterChange}
           />
-
           <ArticlesTableContent
             articlesCollection={articlesCollection}
             isLoading={isLoading}
@@ -150,7 +126,6 @@ export function ArticlesTable() {
             onDelete={handleDelete}
             deleteLoading={deleteArticle.isLoading}
           />
-
           <ArticlesTablePagination
             totalItems={totalItems}
             filters={filters}

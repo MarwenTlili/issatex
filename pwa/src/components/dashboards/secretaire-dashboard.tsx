@@ -1,13 +1,9 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+import { fr } from "date-fns/locale";
+import { format, isToday, startOfDay, endOfDay } from "date-fns";
 import {
   Users,
   Calendar,
@@ -19,15 +15,23 @@ import {
   Plus,
   Eye,
 } from "lucide-react";
-import Link from "next/link";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+
 import { usePresences } from "@/hooks/use-presences";
 import { usePlannings } from "@/hooks/use-plannings";
-import { format, isToday, startOfDay, endOfDay } from "date-fns";
-import { fr } from "date-fns/locale";
 import type { Presence } from "@/types/resources/Presence";
 import type { Planning } from "@/types/resources/Planning";
-import { APP_ROUTES } from "@/config/app";
 import { PresenceStatutBadge } from "@/components/presences/PresenceStatutBadge";
+
+import { APP_ROUTES } from "@/config/app";
 
 export function SecretaryDashboard() {
   const { data: presences, isLoading: presencesLoading } = usePresences({
@@ -39,8 +43,6 @@ export function SecretaryDashboard() {
 
   const { data: plannings, isLoading: planningsLoading } = usePlannings({});
 
-  // const { data: employes, isLoading: employesLoading } = useActiveEmployes();
-
   const todayPresences =
     presences?.member?.filter((p: Presence) =>
       isToday(new Date(p.datePresence)),
@@ -49,15 +51,16 @@ export function SecretaryDashboard() {
   const presentCount = todayPresences.filter(
     (p: Presence) => p.statut === "Present",
   ).length;
+
   const absentCount = todayPresences.filter(
     (p: Presence) => p.statut === "Absent",
   ).length;
+
   const lateCount = todayPresences.filter(
     (p: Presence) => p.statut === "Retard",
   ).length;
 
   const activePlannings = plannings?.member || [];
-  // const totalEmployees = employes?.member?.length || 0;
 
   const stats = [
     {
@@ -143,8 +146,8 @@ export function SecretaryDashboard() {
         })}
       </div>
 
+      {/* Recent Presences */}
       <div className="grid gap-6 lg:grid-cols-2">
-        {/* Recent Presences */}
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-4">
             <div className="flex items-center justify-between">
@@ -166,11 +169,24 @@ export function SecretaryDashboard() {
           </CardHeader>
           <CardContent className="space-y-4">
             {presencesLoading ? (
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 rounded-lg bg-slate-50 animate-pulse"
+                  >
+                    {/* Left section: Matches the avatar/text container */}
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="flex-1 space-y-1.5">
+                        {/* Line 1: Matches font-medium text-slate-900 line height */}
+                        <div className="h-5 bg-slate-200 rounded w-1/3"></div>
+                        {/* Line 2: Matches text-sm text-slate-600 line height */}
+                        <div className="h-4 bg-slate-200 rounded w-1/4"></div>
+                      </div>
+                    </div>
+
+                    {/* Right section: Matches PresenceStatutBadge dimensions */}
+                    <div className="h-6 w-20 bg-slate-200 rounded-full"></div>
                   </div>
                 ))}
               </div>
@@ -226,11 +242,18 @@ export function SecretaryDashboard() {
           </CardHeader>
           <CardContent className="space-y-4">
             {planningsLoading ? (
-              <div className="space-y-3">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+              <div className="space-y-4">
+                {[...Array(5)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center justify-between p-3 rounded-lg bg-slate-50 animate-pulse"
+                  >
+                    <div className="flex-1 space-y-1.5">
+                      {/* Line 1: Matches planning.ref (font-medium text-slate-900 -> 20px / h-5) */}
+                      <div className="h-5 bg-slate-200 rounded w-1/3"></div>
+                      {/* Line 2: Matches date range string (text-sm text-slate-600 -> 16px / h-4) */}
+                      <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                    </div>
                   </div>
                 ))}
               </div>

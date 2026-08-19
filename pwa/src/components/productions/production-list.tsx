@@ -1,10 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
 import {
   Plus,
   Edit,
@@ -14,11 +11,21 @@ import {
   BarChart3,
   Delete,
 } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+
+import { ErrorState } from "@/components/common/error-state";
+import { ConfirmDialog } from "@/components/common/confirm-dialog";
+
+import { EnhancedProductionForm } from "./enhanced-production-form";
+
 import { Production } from "@/types/resources/Production";
 import { useDeleteProduction, useProductions } from "@/hooks/use-productions";
-import { EnhancedProductionForm } from "./enhanced-production-form";
-import { ConfirmDialog } from "@/components/confirm-dialog";
+import { handleApiError } from "@/lib/api/handle-api-error";
 
 interface ProductionListProps {
   planningId: string;
@@ -48,7 +55,7 @@ export function ProductionList({
 }: ProductionListProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingProduction, setEditingProduction] = useState<Production | null>(
-    null
+    null,
   );
   const [openConfirmDialog, setOpenConfirmDialog] = useState<boolean>(false);
   const [dialogData, setDialogData] = useState<{
@@ -61,10 +68,9 @@ export function ProductionList({
   const {
     data: productionsData,
     isLoading,
+    refetch,
     error,
   } = useProductions(planningId);
-
-  // const productionIsExpired = new Date(dateFin) <= new Date();
 
   const deleteProduction = useDeleteProduction();
 
@@ -87,15 +93,15 @@ export function ProductionList({
     Object.entries(grouped).forEach(([date, dayProductions]) => {
       const totalQuantity = dayProductions.reduce(
         (sum, p) => sum + p.quantiteTotale,
-        0
+        0,
       );
       const totalFirstChoice = dayProductions.reduce(
         (sum, p) => sum + p.quantitePremiereChoix,
-        0
+        0,
       );
       const totalSecondChoice = dayProductions.reduce(
         (sum, p) => sum + p.quantiteDeuxiemeChoix,
-        0
+        0,
       );
       const sizes = [...new Set(dayProductions.map((p) => p.tailleArticle))];
 
@@ -111,7 +117,7 @@ export function ProductionList({
 
     // Sort summaries by date (most recent first)
     summaries.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
     );
 
     return { groupedProductions: grouped, daySummaries: summaries };
@@ -123,19 +129,24 @@ export function ProductionList({
   };
 
   const handleDelete = useCallback(
-    async (id: number) => {
+    async (production: Production) => {
       setDialogData({
-        title: `Supprimer la production "${id}"?`,
+        title: `Supprimer la production "${production.ref}"?`,
         description: "Vous-ête sûre de supprimer cette production?",
         actionLabel: "Supprimer",
-        onConfirm: () => {
-          deleteProduction.mutateAsync(id);
-          setOpenConfirmDialog(false);
+        onConfirm: async () => {
+          try {
+            await deleteProduction.mutateAsync(production.id);
+            setOpenConfirmDialog(false);
+          } catch (error) {
+            handleApiError(error);
+            setOpenConfirmDialog(false);
+          }
         },
       });
       setOpenConfirmDialog(true);
     },
-    [deleteProduction]
+    [deleteProduction],
   );
 
   const handleFormSuccess = () => {
@@ -210,15 +221,7 @@ export function ProductionList({
   }
 
   if (error) {
-    return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="text-destructive">
-            Erreur lors du chargement des productions
-          </p>
-        </CardContent>
-      </Card>
-    );
+    return <ErrorState error={error} onRetry={refetch} />;
   }
 
   const totalProductions = productionsData?.["member"]?.length || 0;
@@ -389,7 +392,7 @@ export function ProductionList({
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleDelete(production.id)}
+                          onClick={() => handleDelete(production)}
                           className="ml-4"
                         >
                           <Delete className="h-4 w-4 text-red-500" />

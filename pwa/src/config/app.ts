@@ -50,6 +50,9 @@ export const MESSAGES = {
     PRODUCTION_CREATED: "Production créée avec succès",
     PRODUCTION_UPDATED: "Production mise à jour avec succès",
     PRODUCTION_DELETED: "Production supprimée avec succès",
+    PRESENCE_CREATED: "Présence créée avec succès",
+    PRESENCE_UPDATED: "Présence mise à jour avec succès",
+    PRESENCE_DELETED: "Présence supprimée avec succès",
   },
   DIALOG: {
     ARTICLE_DELETE: "Êtes-vous sûr de vouloir supprimer cet article ?",

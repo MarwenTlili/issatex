@@ -1,32 +1,29 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { FactoryIcon as Fabric } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { signIn } from "next-auth/react";
+
+import { FactoryIcon as Fabric } from "lucide-react";
+import { Path, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
-import { LoginFormData, loginFormSchema } from "@/lib/validation/schemas";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  extractFormErrors,
-  handleApiError,
-  isApiError,
-  isValidationError,
-} from "@/lib/api/handle-api-error";
 import { RHFInput } from "@/components/form/RHFInput";
 
-const LoginForm = () => {
+import { LoginFormData, loginFormSchema } from "@/lib/validation/schemas";
+import { handleApiError } from "@/lib/api/handle-api-error";
+import { logger } from "@/lib/utils/Logger";
+import { getAuthErrorMessage } from "@/lib/auth/errors";
+
+export function LoginForm() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
     setError,
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginFormSchema),
@@ -34,75 +31,36 @@ const LoginForm = () => {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    setIsLoading(true);
-
     try {
       const response = await signIn("credentials", {
         username: data.username,
         password: data.password,
         redirect: false,
       });
+      // logger("info", "onSubmit", { response });
 
-      // 1. Handle Successful Login
       if (response?.ok) {
         router.refresh();
         return;
       }
 
-      // 2. Handle 403 / disabled account Failure
-      if (response?.error === "AccountDisabled") {
+      // Handle Next-Auth credentials failure (401)
+      if (response?.error) {
+        logger("error", "onSubmit", { response });
         setError("root.serverError", {
           type: "manual",
-          message:
-            "Votre compte n'est pas activé pour le moment.\nVeuillez contacter votre administrateur.",
-        });
-
-        return;
-      }
-
-      // 3. Handle 401 / Credentials Failure
-      if (response?.status === 401 && response?.error === "CredentialsSignin") {
-        setError("root.serverError", {
-          type: "manual",
-          message: "Nom d'utilisateur ou mot de passe incorrect.",
+          message: getAuthErrorMessage(response.error),
         });
         return;
       }
-
-      // 4. Handle other next-auth edge case responses if any
-      setError("root.serverError", {
-        type: "manual",
-        message: "Une erreur inattendue est survenue.",
-      });
-    } catch (err) {
-      if (!isApiError(err)) {
-        throw err;
-      }
-
-      if (isValidationError(err)) {
-        const formErrors = extractFormErrors(err);
-
-        Object.entries(formErrors).forEach(([field, message], index) => {
-          setError(
-            field as keyof LoginFormData,
-            {
-              type: "api",
-              message,
-            },
-            {
-              shouldFocus: index === 0,
-            },
-          );
-        });
-
-        return;
-      }
-
-      handleApiError(err, {
-        customMessage: "Erreur lors de l'authentication de l'utilisateur",
-      });
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      /**
+       * signIn("credentials") from NextAuth does not throw exceptions but
+       * catches them internally in the authorize block and returns an error
+       * string inside the response payload.
+       */
+      // if (error instanceof ValidationException) {}
+      handleApiError(error);
     }
   };
 
@@ -138,7 +96,6 @@ const LoginForm = () => {
         </div>
       </div>
 
-      {/* Right Side: Redesigned to fit the ClientRegistrationForm design language */}
       <div className="col-span-1 md:col-span-7 flex flex-col justify-between bg-white">
         {/* Header matching registration styles */}
         <div className="bg-white border-b p-6 sm:p-8">
@@ -163,7 +120,7 @@ const LoginForm = () => {
           >
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-gray-800 border-b pb-2 border-amber-600">
-                Informations d'authentification
+                {"Informations d'authentification"}
               </h2>
 
               <div className="space-y-4">
@@ -192,7 +149,10 @@ const LoginForm = () => {
 
               {/* Global 401 Error Alert */}
               {errors.root?.serverError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-sm text-red-600 animate-in fade-in duration-200">
+                <div
+                  role="alert"
+                  className="p-3 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2 text-sm text-red-600 animate-in fade-in duration-200"
+                >
                   <svg
                     className="h-5 w-5 shrink-0 text-red-500"
                     fill="none"
@@ -223,17 +183,17 @@ const LoginForm = () => {
               href="/register"
               className="text-amber-600 hover:text-amber-700 font-medium hover:underline"
             >
-              S'inscrire
+              {"S'inscrire"}
             </Link>
           </p>
 
           <Button
             type="submit"
             form="loginForm"
-            disabled={isLoading}
+            disabled={isSubmitting}
             className="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white font-medium"
           >
-            {isLoading ? (
+            {isSubmitting ? (
               <span className="flex items-center gap-2">
                 <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24">
                   <circle
@@ -261,6 +221,4 @@ const LoginForm = () => {
       </div>
     </div>
   );
-};
-
-export default LoginForm;
+}

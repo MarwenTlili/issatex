@@ -1,19 +1,21 @@
-import type { NextAuthOptions, User as NextAuthUser } from "next-auth";
+import type { NextAuthOptions } from "next-auth";
+import type { JWT } from "next-auth/jwt";
+import type { JwtPayload } from "@/types/index";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import { apiFetch, refreshTokens } from "./auth-functions";
-import type { JWT } from "next-auth/jwt";
-import type { JwtAuthData, JwtPayload } from "@/types/index";
-
+import { User } from "@/types/resources/User";
 import { parseJwt } from "@/lib/utils";
+import { apiRequest } from "@/lib/api/base";
+import { UnauthorizedException } from "@/lib/api/exceptions";
+import { authService } from "@/lib/auth/auth-service";
+import { AuthErrorFactory } from "@/lib/auth/errors";
+
 import {
-  AUTH_URL,
   NEXTAUTH_SECRET,
   API_ENDPOINTS,
+  API_CONFIG,
   ENTRYPOINT,
 } from "@/config/api";
-import { User } from "@/types/resources/User";
-import { isApiError } from "../api/handle-api-error";
 import { logger } from "../utils/Logger";
 
 export const authOptions: NextAuthOptions = {
@@ -27,24 +29,23 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         try {
-          const authData = await apiFetch<JwtAuthData>(
-            AUTH_URL,
-            "POST",
-            undefined,
-            {
-              username: credentials?.username,
-              password: credentials?.password,
-            },
+          const authData = await authService.login(
+            credentials?.username ?? "",
+            credentials?.password ?? "",
           );
+          // logger("info", "authorize", { authData });
 
-          if (!authData) return null;
-
-          // Use access_token's payload to check for access token expiration
           const payload = parseJwt<JwtPayload>(authData.access_token);
 
-          if (!payload) return null;
+          if (!payload) {
+            // Treat corrupted or invalid JWT structures as a generic credentials failure
+            throw new UnauthorizedException({
+              status: 401,
+              title: "Invalid Token Payload",
+            });
+          }
 
-          const user: NextAuthUser = {
+          return {
             id: payload.sub,
             name: payload.username,
             email: payload.email,
@@ -52,22 +53,11 @@ export const authOptions: NextAuthOptions = {
             image: payload.avatar,
             accessToken: authData.access_token,
             refreshToken: authData.refresh_token,
-            // store expires_in in user's object as timestamp (ms) after calculation
-            expiresAt: Date.now() + authData.expires_in * 1000, // ms
+            expiresAt: Date.now() + authData.expires_in * 1000,
             mercureJwt: authData.mercureJwt,
           };
-
-          /** Return a user object that will be stored in the JWT */
-          return user;
         } catch (error) {
-          if (
-            isApiError(error) &&
-            error.status === 403 &&
-            error.detail === "AccountDisabled"
-          ) {
-            throw new Error("AccountDisabled");
-          }
-          return null;
+          throw AuthErrorFactory.from(error);
         }
       },
     }),
@@ -96,11 +86,19 @@ export const authOptions: NextAuthOptions = {
       // Fetch the latest user data from the API to get updated avatar
       if (trigger === "update") {
         try {
-          // we are on server-side that's why using ENTRYPOINT instead of API_CONFIG.BASE_URL
-          const userResponse = await apiFetch<User>(
+          if (!token?.user?.id) {
+            return {
+              ...token,
+              error: "NoSessionFoundError",
+            };
+          }
+
+          // const userResponse = usersApiService.getOne(token.user?.id);
+          const userResponse = await apiRequest<User>(
             `${ENTRYPOINT}${API_ENDPOINTS.USERS}/${token.user?.id}`,
-            "GET",
-            token.accessToken,
+            {
+              token: token.accessToken,
+            },
           );
 
           if (!userResponse) return token;
@@ -125,9 +123,10 @@ export const authOptions: NextAuthOptions = {
             image: avatarUrl || "",
           };
         } catch (error) {
-          logger("error", "Failed to fetch user data during session update", {
-            error,
-          });
+          // Flag the error on the token instead of throwing an unhandled exception
+          token.error = "RefreshUserDataError";
+          // logger("error", "jwt - trigger", error);
+          // throw AuthErrorFactory.from(error);
         }
 
         return token;
@@ -139,7 +138,7 @@ export const authOptions: NextAuthOptions = {
       }
 
       // Access token has expired, try to refresh it
-      const jwt = await refreshTokens(token);
+      const jwt = await authService.refreshTokens(token);
 
       return jwt;
     },

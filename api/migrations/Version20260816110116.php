@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20260614170644 extends AbstractMigration
+final class Version20260816110116 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -41,8 +41,8 @@ final class Version20260614170644 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_1C3FEDC59A4BD21C ON affectation_employe_ilot (ilot_id)');
         $this->addSql('CREATE TABLE article (id INT NOT NULL, client_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, designation VARCHAR(255) NOT NULL, composition TEXT DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_23A0E66146F3EA3 ON article (ref)');
-        $this->addSql('CREATE UNIQUE INDEX UNIQ_23A0E668947610D ON article (designation)');
         $this->addSql('CREATE INDEX IDX_23A0E6619EB6921 ON article (client_id)');
+        $this->addSql('CREATE UNIQUE INDEX uniq_client_designation ON article (client_id, designation)');
         $this->addSql('CREATE TABLE avatar (id INT NOT NULL, file_path VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE TABLE client (id INT NOT NULL, account_id INT NOT NULL, ref VARCHAR(255) DEFAULT NULL, nom VARCHAR(255) NOT NULL, prenom_responsable VARCHAR(255) NOT NULL, nom_responsable VARCHAR(255) NOT NULL, taille_entreprise VARCHAR(255) NOT NULL, type_entreprise VARCHAR(255) NOT NULL, category_textile VARCHAR(255) NOT NULL, adresse VARCHAR(255) DEFAULT NULL, ville VARCHAR(255) NOT NULL, gouvernemental VARCHAR(255) DEFAULT NULL, code_postal VARCHAR(255) NOT NULL, pays VARCHAR(255) NOT NULL, numero_telephone VARCHAR(255) DEFAULT NULL, focus_marche JSON NOT NULL, informations_complementaires TEXT DEFAULT NULL, privilegie BOOLEAN DEFAULT false NOT NULL, PRIMARY KEY(id))');
         $this->addSql('CREATE UNIQUE INDEX UNIQ_C7440455146F3EA3 ON client (ref)');

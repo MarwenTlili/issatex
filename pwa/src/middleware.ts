@@ -1,8 +1,6 @@
 import { NextRequestWithAuth, withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
 
-// ✅ Define role-based route access
-// or move roleAccess to src/lib/config/role-access.ts
 const roleAccess: Record<string, string[]> = {
   "/admin": ["ROLE_ADMIN"],
   "/client": ["ROLE_CLIENT"],
@@ -12,9 +10,9 @@ const roleAccess: Record<string, string[]> = {
 export default withAuth(
   function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl;
+    const token = req.nextauth.token;
     const userRoles = req.nextauth.token?.user?.roles || [];
 
-    // ✅ Match path to role access
     for (const [routePrefix, allowedRoles] of Object.entries(roleAccess)) {
       if (pathname.startsWith(routePrefix)) {
         const hasAccess = userRoles.some((role) => allowedRoles.includes(role));
@@ -26,20 +24,26 @@ export default withAuth(
       }
     }
 
+    // Continue routing normally
     return NextResponse.next();
   },
   {
     callbacks: {
-      // ✅ require authentication for protected routes
-      authorized: ({ token, req }) => {
-        const isAuthorized = !!token;
-        return isAuthorized; // if true: will redirect to "/login"
+      authorized: ({ token }) => {
+        // Reject if token is missing or contains any token error
+        if (
+          !token ||
+          token.error === "RefreshTokenError" ||
+          token.error === "NoSessionFoundError"
+        ) {
+          return false;
+        }
+        return true;
       },
     },
-  }
+  },
 );
 
 export const config = {
-  // ✅ Protected routes
   matcher: ["/admin/:path*", "/client/:path*", "/secretaire/:path*"],
 };
